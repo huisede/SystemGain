@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="Image">
+    <file>Icon/compare01.png</file>
+    <file>Icon/find.png</file>
+    <file>Icon/wave.png</file>
+  </qresource>
+</RCC>

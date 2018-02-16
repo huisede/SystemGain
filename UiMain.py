@@ -347,6 +347,10 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.MainProcess_thread_cal.start()
 
     def show_ax_pictures_sg(self):  # System Gain 绘图函数
+        """
+        
+        :return:
+        """
 
         # self.createContextMenu_sg_fig_view()
 
