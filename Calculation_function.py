@@ -370,14 +370,16 @@ class SaveAndLoad(object):
     def __init__(self):
         pass
 
-    def store_result(self, file_path, store_data):
+    @staticmethod
+    def store_result(file_path, store_data):
         # os.chdir(file_path)
         output_file = open(file_path, 'wb')
         pickle.dump(store_data, output_file)
         output_file.close()
         return
 
-    def reload_result(self, file_path_list):
+    @staticmethod
+    def reload_result(file_path_list):
         # if len(file_path) > 2:
         # os.chdir(file_path)
         data_reload = []

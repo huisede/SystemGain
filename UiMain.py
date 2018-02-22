@@ -8,7 +8,6 @@ from Calculation_function import *  # 计算函数
 from re import match  # 正则表达式
 from ctypes import windll
 
-
 try:
     temp1 = windll.LoadLibrary('DLL\\Qt5Core.dll')
     temp2 = windll.LoadLibrary('DLL\\Qt5Gui.dll')
@@ -24,7 +23,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(MainUiWindow, self).__init__(parent)
         self.setupUi(self)
-        self.initial()
+        # self.initial()
 
         self.menu_InputData.triggered.connect(self.load_sys_gain_data)
         self.menu_Save.triggered.connect(self.save_sys_gain_data)
@@ -33,6 +32,9 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.action_Compare_Result.triggered.connect(lambda: self.change_main_page(2))
         self.SysGain_Cal.clicked.connect(self.cal_sys_gain_data)
         self.History_Data_Choose_PushButton.clicked.connect(self.history_data_reload)
+
+        self.menu_Engine_Working_Dist.triggered.connect(self.data_view_check_box_list)
+        self.menu_Shifting_Strategy.triggered.connect(self.resize_figs)
 
         self.info_list = []
         self.MainProcess_thread = []
@@ -47,61 +49,62 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                                 'System_Gain_AT_DCT_EnSpd',
                                 'System_Gain_AT_DCT_TbSpd']
 
+        # self.buttonGroup_data_viewer = QtWidgets.QButtonGroup(self.verticalLayout)
+
         self.dr_acc_curve = MyFigureCanvas(width=6, height=4, plot_type='3d')
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(self.dr_acc_curve)
         self.PicToolBar_1 = NavigationBar(self.dr_acc_curve, self)
-        self.System_Gain_AT_DCT_Fig_LayG1.addWidget(self.PicToolBar_1)
-        self.System_Gain_AT_DCT_Fig_1.setScene(self.scene)
-        self.System_Gain_AT_DCT_Fig_1.show()
+        self.gridLayout_2.addWidget(self.PicToolBar_1,0,0,1,1)
+        self.gridLayout_2.addWidget(self.dr_acc_curve,1,0,1,1)
+        self.dr_acc_curve.setMinimumSize(QtCore.QSize(0, 600))
 
         self.dr_sg_curve = MyFigureCanvas(width=6, height=4, plot_type='2d')
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(self.dr_sg_curve)
         self.PicToolBar_2 = NavigationBar(self.dr_sg_curve, self)
-        self.System_Gain_AT_DCT_Fig_LayG2.addWidget(self.PicToolBar_2)
-        self.System_Gain_AT_DCT_Fig_2.setScene(self.scene)
-        self.System_Gain_AT_DCT_Fig_2.show()
+        self.gridLayout_2.addWidget(self.PicToolBar_2,0,1,1,1)
+        self.gridLayout_2.addWidget(self.dr_sg_curve,1,1,1,1)
+        self.dr_sg_curve.setMinimumSize(QtCore.QSize(0, 600))
 
         self.dr_cons_spd = MyFigureCanvas(width=6, height=4, plot_type='2d')
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(self.dr_cons_spd)
         self.PicToolBar_3 = NavigationBar(self.dr_cons_spd, self)
-        self.System_Gain_AT_DCT_Fig_LayG3.addWidget(self.PicToolBar_3)
-        self.System_Gain_AT_DCT_Fig_3.setScene(self.scene)
-        self.System_Gain_AT_DCT_Fig_3.show()
+        self.gridLayout_2.addWidget(self.PicToolBar_3,2,0,1,1)
+        self.gridLayout_2.addWidget(self.dr_cons_spd,3,0,1,1)
+        self.dr_cons_spd.setMinimumSize(QtCore.QSize(0, 600))
 
         self.dr_shift_map = MyFigureCanvas(width=6, height=4, plot_type='2d')
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(self.dr_shift_map)
         self.PicToolBar_4 = NavigationBar(self.dr_shift_map, self)
-        self.System_Gain_AT_DCT_Fig_LayG4.addWidget(self.PicToolBar_4)
-        self.System_Gain_AT_DCT_Fig_4.setScene(self.scene)
-        self.System_Gain_AT_DCT_Fig_4.show()
+        self.gridLayout_2.addWidget(self.PicToolBar_4,2,1,1,1)
+        self.gridLayout_2.addWidget(self.dr_shift_map,3,1,1,1)
+        self.dr_shift_map.setMinimumSize(QtCore.QSize(0, 600))
 
         self.dr_launch = MyFigureCanvas(width=6, height=4, plot_type='2d')
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(self.dr_launch)
         self.PicToolBar_5 = NavigationBar(self.dr_launch, self)
-        self.System_Gain_AT_DCT_Fig_LayG5.addWidget(self.PicToolBar_5)
-        self.System_Gain_AT_DCT_Fig_5.setScene(self.scene)
-        self.System_Gain_AT_DCT_Fig_5.show()
+        self.gridLayout_2.addWidget(self.PicToolBar_5,4,0,1,1)
+        self.gridLayout_2.addWidget(self.dr_launch,5,0,1,1)
+        self.dr_launch.setMinimumSize(QtCore.QSize(0, 600))
 
         self.dr_ped_map = MyFigureCanvas(width=6, height=4, plot_type='2d')
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(self.dr_ped_map)
         self.PicToolBar_6 = NavigationBar(self.dr_ped_map, self)
-        self.System_Gain_AT_DCT_Fig_LayG6.addWidget(self.PicToolBar_6)
-        self.System_Gain_AT_DCT_Fig_6.setScene(self.scene)
-        self.System_Gain_AT_DCT_Fig_6.show()
+        self.gridLayout_2.addWidget(self.PicToolBar_6,4,1,1,1)
+        self.gridLayout_2.addWidget(self.dr_ped_map,5,1,1,1)
+        self.dr_ped_map.setMinimumSize(QtCore.QSize(0, 600))
 
-    # ---------------------------- 初始化 -----------------------------------------
-    def initial(self):
-        self.data_viewer_graphics_view = MyQtGraphicView(self.Data_Viewer_page)
-        self.data_viewer_graphics_view.setObjectName("data_viewer_graphics_view")
-        self.Data_Viewer_graphicsView_LayG.addWidget(self.data_viewer_graphics_view)
+        self.dr_max_acc = MyFigureCanvas(width=6, height=4, plot_type='2d')
+        self.PicToolBar_7 = NavigationBar(self.dr_max_acc, self)
+        self.gridLayout_2.addWidget(self.PicToolBar_7,6,0,1,1)
+        self.gridLayout_2.addWidget(self.dr_max_acc,7,0,1,1)
+        self.dr_max_acc.setMinimumSize(QtCore.QSize(0, 600))
+
+        self.dr_raw = MyFigureCanvas(width=15, height=8, plot_type='2d-multi')
+        self.PicToolBar_raw = NavigationBar(self.dr_raw, self)
+        self.Data_Viewer_page_graphicsView_LayV.addWidget(self.PicToolBar_raw)
+        self.Data_Viewer_page_graphicsView_LayV.addWidget(self.dr_raw)
+
+        # ---------------------------- 初始化 -----------------------------------------
+        # def initial(self):
+        # self.data_viewer_graphics_view = MyQtGraphicView(self.Data_Viewer_page)
+        # self.data_viewer_graphics_view.setObjectName("data_viewer_graphics_view")
+        # self.Data_Viewer_graphicsView_LayG.addWidget(self.data_viewer_graphics_view)
         # self.data_viewer_graphics_view.Message_Drag_accept.connect(self.show_data_edit_drag_pictures)  # 拖拽重绘
-        self.data_viewer_graphics_view.Message_DoubleClick.connect(self.highlight_signal)  # 双击高亮
+        # self.data_viewer_graphics_view.Message_DoubleClick.connect(self.highlight_signal)  # 双击高亮
         # self.initial_data_edit()
 
     # ---------------------------- 右键菜单 -----------------------------------------
@@ -125,91 +128,6 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
         return
 
-    # def createContextMenu_sg_fig_view(self):
-    #     '''
-    #
-    #     :return:
-    #     '''
-    #     self.graphicsView_3.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-    #     self.graphicsView_3.customContextMenuRequested.connect(lambda: self.showContextMenu('graphicsView_3'))
-    #     self.graphicsView_3.contextMenu = QtWidgets.QMenu(self)
-    #     self.graphicsView_3.actionA = self.graphicsView_3.contextMenu.addAction(QtGui.QIcon("./Image/DataIcon.png"),
-    #                                                                             u'| 加速度相应曲面')
-    #     self.graphicsView_3.actionB = self.graphicsView_3.contextMenu.addAction(QtGui.QIcon("./Image/DataIcon.png"),
-    #                                                                             u"| 起步特性")
-    #     self.graphicsView_3.actionC = self.graphicsView_3.contextMenu.addAction(QtGui.QIcon("./Image/DataIcon.png"),
-    #                                                                             u"| Pedal Map")
-    #     self.graphicsView_3.actionD = self.graphicsView_3.contextMenu.addAction(QtGui.QIcon("./Image/DataIcon.png"),
-    #                                                                             u"| Shift Map")
-    #     self.graphicsView_3.actionE = self.graphicsView_3.contextMenu.addAction(QtGui.QIcon("./Image/DataIcon.png"),
-    #                                                                             u"| 香蕉图")
-    #     self.graphicsView_3.actionF = self.graphicsView_3.contextMenu.addAction(QtGui.QIcon("./Image/DataIcon.png"),
-    #                                                                             u"| 稳态车速")
-    #     self.graphicsView_3.actionA.triggered.connect(lambda: self.change_handle_pictures('Acceleration Curve',
-    #                                                                                       'PicToolBar_1',
-    #                                                                                       'graphicsView_3',
-    #                                                                                       'gridLayout_5'))
-    #     self.graphicsView_3.actionB.triggered.connect(lambda: self.change_handle_pictures('Launch',
-    #                                                                                       'PicToolBar_1',
-    #                                                                                       'graphicsView_3',
-    #                                                                                       'gridLayout_5'))
-    #     self.graphicsView_3.actionC.triggered.connect(lambda: self.change_handle_pictures('Pedal Map',
-    #                                                                                       'PicToolBar_1',
-    #                                                                                       'graphicsView_3',
-    #                                                                                       'gridLayout_5'))
-    #     self.graphicsView_3.actionD.triggered.connect(lambda: self.change_handle_pictures('Shift Map',
-    #                                                                                       'PicToolBar_1',
-    #                                                                                       'graphicsView_3',
-    #                                                                                       'gridLayout_5'))
-    #     self.graphicsView_3.actionE.triggered.connect(lambda: self.change_handle_pictures('SystemGain Curve',
-    #                                                                                       'PicToolBar_1',
-    #                                                                                       'graphicsView_3',
-    #                                                                                       'gridLayout_5'))
-    #     self.graphicsView_3.actionF.triggered.connect(lambda: self.change_handle_pictures('Constant Speed',
-    #                                                                                       'PicToolBar_1',
-    #                                                                                       'graphicsView_3',
-    #                                                                                       'gridLayout_5'))
-    #
-    #     self.graphicsView_4.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-    #     self.graphicsView_4.customContextMenuRequested.connect(lambda: self.showContextMenu('graphicsView_4'))
-    #     self.graphicsView_4.contextMenu = QtWidgets.QMenu(self)
-    #     self.graphicsView_4.actionA = self.graphicsView_4.contextMenu.addAction(QtGui.QIcon("./Image/DataIcon.png"),
-    #                                                                             u'| 加速度相应曲面')
-    #     self.graphicsView_4.actionB = self.graphicsView_4.contextMenu.addAction(QtGui.QIcon("./Image/DataIcon.png"),
-    #                                                                             u"| 起步特性")
-    #     self.graphicsView_4.actionC = self.graphicsView_4.contextMenu.addAction(QtGui.QIcon("./Image/DataIcon.png"),
-    #                                                                             u"| Pedal Map")
-    #     self.graphicsView_4.actionD = self.graphicsView_4.contextMenu.addAction(QtGui.QIcon("./Image/DataIcon.png"),
-    #                                                                             u"| Shift Map")
-    #     self.graphicsView_4.actionE = self.graphicsView_4.contextMenu.addAction(QtGui.QIcon("./Image/DataIcon.png"),
-    #                                                                             u"| 香蕉图")
-    #     self.graphicsView_4.actionF = self.graphicsView_4.contextMenu.addAction(QtGui.QIcon("./Image/DataIcon.png"),
-    #                                                                             u"| 稳态车速")
-    #     self.graphicsView_4.actionA.triggered.connect(lambda: self.change_handle_pictures('Acceleration Curve',
-    #                                                                                       'PicToolBar_2',
-    #                                                                                       'graphicsView_4',
-    #                                                                                       'gridLayout_17'))
-    #     self.graphicsView_4.actionB.triggered.connect(lambda: self.change_handle_pictures('Launch',
-    #                                                                                       'PicToolBar_2',
-    #                                                                                       'graphicsView_4',
-    #                                                                                       'gridLayout_17'))
-    #     self.graphicsView_4.actionC.triggered.connect(lambda: self.change_handle_pictures('Pedal Map',
-    #                                                                                       'PicToolBar_2',
-    #                                                                                       'graphicsView_4',
-    #                                                                                       'gridLayout_17'))
-    #     self.graphicsView_4.actionD.triggered.connect(lambda: self.change_handle_pictures('Shift Map',
-    #                                                                                       'PicToolBar_2',
-    #                                                                                       'graphicsView_4',
-    #                                                                                       'gridLayout_17'))
-    #     self.graphicsView_4.actionE.triggered.connect(lambda: self.change_handle_pictures('SystemGain Curve',
-    #                                                                                       'PicToolBar_2',
-    #                                                                                       'graphicsView_4',
-    #                                                                                       'gridLayout_17'))
-    #     self.graphicsView_4.actionF.triggered.connect(lambda: self.change_handle_pictures('Constant Speed',
-    #                                                                                       'PicToolBar_2',
-    #                                                                                       'graphicsView_4',
-    #                                                                                       'gridLayout_17'))
-
     def showContextMenu(self, handle):
         '''''
         右键点击时调用的函数
@@ -227,8 +145,11 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         file_path = file[0]
         self.MainProcess_thread_rd = ThreadProcess(method='sg_read_thread', filepath=file_path)
         self.MainProcess_thread_rd.Message_Finish.connect(self.initial_data_edit)
-        self.MainProcess_thread_rd.Message_Finish.connect(lambda: self.combobox_index_initial(self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig))
+        self.MainProcess_thread_rd.Message_Finish.connect(
+            lambda: self.combobox_index_initial(self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig))
         self.MainProcess_thread_rd.start()
+        message_str = 'Message: Importing ' + file_path + ' ...'
+        self.info_widget_update(message_str)
 
     def save_sys_gain_data(self):
         file = QFileDialog.getSaveFileName(self, filter='.pkl')
@@ -239,15 +160,39 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         except Exception:
             pass
 
+    def resize_figs(self):
+        self.dr_acc_curve.fig.set_size_inches(self.System_Gain_AT_DCT_Fig_1.size().width() / 100 * 0.9,
+                                              self.System_Gain_AT_DCT_Fig_1.size().height() / 100 * 0.9)
+        self.dr_sg_curve.fig.set_size_inches(self.System_Gain_AT_DCT_Fig_2.size().width() / 100 * 0.9,
+                                             self.System_Gain_AT_DCT_Fig_2.size().height() / 100 * 0.9)
+        self.dr_cons_spd.fig.set_size_inches(self.System_Gain_AT_DCT_Fig_3.size().width() / 100 * 0.9,
+                                             self.System_Gain_AT_DCT_Fig_3.size().height() / 100 * 0.9)
+        self.dr_shift_map.fig.set_size_inches(self.System_Gain_AT_DCT_Fig_4.size().width() / 100 * 0.9,
+                                              self.System_Gain_AT_DCT_Fig_4.size().height() / 100 * 0.9)
+        self.dr_launch.fig.set_size_inches(self.System_Gain_AT_DCT_Fig_5.size().width() / 100 * 0.9,
+                                           self.System_Gain_AT_DCT_Fig_5.size().height() / 100 * 0.9)
+        self.dr_ped_map.fig.set_size_inches(self.System_Gain_AT_DCT_Fig_6.size().width() / 100 * 0.9,
+                                            self.System_Gain_AT_DCT_Fig_6.size().height() / 100 * 0.9)
+        self.dr_raw.fig.set_size_inches(self.Data_Viewer_page_graphicsView.size().width() / 100 * 0.9,
+                                        self.Data_Viewer_page_graphicsView.size().height() / 100)
+        self.PicToolBar_raw.dynamic_update()
+        message_str = 'Message: Figs have been resized!'
+        self.info_widget_update(message_str)
+
     # -----|--|主页面
     def change_main_page(self, index_page):
         self.MainStackedWidget.setCurrentIndex(index_page)
+
+    def info_widget_update(self, message_str):
+        self.info_list.append(message_str)
+        self.InfoWidget.addItem(self.info_list[-1])
+        self.InfoWidget.setCurrentRow(self.InfoWidget.count() - 1)  # 滚动条置为最下方
 
     # -----|--|Data Edit 页面
     def initial_data_edit(self):
         while self.verticalLayout.itemAt(0) is not None:  # 删除当前Lay中的元素
             try:
-                self.verticalLayout.itemAt(0).widget().setParent(None)   # 删除当前Lay中widget元素，在此为CheckBox
+                self.verticalLayout.itemAt(0).widget().setParent(None)  # 删除当前Lay中widget元素，在此为CheckBox
                 self.verticalLayout.itemAt(0).widget().deleteLater()
                 self.verticalLayout.removeWidget(self.verticalLayout.itemAt(0).widget())
             except AttributeError:
@@ -257,60 +202,32 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             exec('self.checkBox' + ch + '= QtWidgets.QCheckBox(self.Data_Viewer_CheckBox_groupBox)')
             eval('self.checkBox' + ch + '.setObjectName("' + ch + '")')
             eval('self.verticalLayout.addWidget(self.checkBox' + ch + ')')
-            eval('self.checkBox' + ch + '.setText("' + self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig[i] + '")')
+            eval('self.checkBox' + ch + '.setText("' + self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig[
+                i] + '")')
 
         spacer_item = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacer_item)  # 添加新spacer排版占位
 
-    @QtCore.pyqtSlot(dict)
-    def show_data_edit_common(self, dict_in):  # 原始数据编辑界面
-        '''
+        message_str = 'Message: Finished data import!'
+        self.info_widget_update(message_str)
 
-        :param dict_in: Contains the specific input of the signal to plot
-                        [fig_name(mostly same as signal_name), signal_name, Navigation bar needed? T/F]
-        :return:
-        '''
-        raw_index = {'VehicleSpd': 'VehSpdAvgNonDrvnHSC1',
-                     'AccPed': 'AccelActuPosHSC1',
-                     'LongtiAcc': 'LongAccelG_M',
-                     'time': 'Time_abs'}
-        try:
-            self.dr.fig.clear()
-            self.dr.reset_i()
-        except Exception as e:
-            print(e)
+    def data_view_check_box_list(self):
+        checked_list = []
+        for i in range(self.verticalLayout.count()):
+            try:
+                checked_list.append(self.verticalLayout.itemAt(i).widget().isChecked())
+            except AttributeError as e:
+                print('Error From data_view_check_box_list!')
+        self.data_view_signal_plot(checked_list)
 
-        try:
-            self.PicToolBar.press(self.PicToolBar.home())
-            self.dr.plot_raw_data(
-                time=self.MainProcess_thread.ax_holder_SG.sysGain_class.rawdata[raw_index['time']].tolist(),
-                raw_data=self.MainProcess_thread.ax_holder_SG.sysGain_class.rawdata[
-                    raw_index[dict_in['data']]].tolist(),
-                legend=[dict_in['data']])
-            self.dr.axes.set_title('Launch', fontsize=14)  # 这句话想办法写到Generate_Figs里面
-            self.PicToolBar.dynamic_update()
+    def data_view_signal_plot(self, signal_list):
 
-            self.dr.mpl_connect('button_press_event', self.get_mouse_xy_plot)
-        except Exception as e:
-            print(e)
-
-    @QtCore.pyqtSlot(dict)
-    def show_data_edit_drag_pictures(self, dict_in):
-        raw_index = {'VehicleSpd': 'VehSpdAvgNonDrvnHSC1',
-                     'AccPed': 'AccelActuPosHSC1',
-                     'LongtiAcc': 'LongAccelG_M',
-                     'time': 'Time_abs'}
-        try:
-            self.PicToolBar.press(self.PicToolBar.home())
-            self.dr.plot_raw_data(
-                time=self.MainProcess_thread.ax_holder_SG.sysGain_class.rawdata[raw_index['time']].tolist(),
-                raw_data=self.MainProcess_thread.ax_holder_SG.sysGain_class.rawdata[
-                    raw_index[dict_in['data']]].tolist(),
-                legend=[dict_in['data']])
-            self.PicToolBar.dynamic_update()
-        except Exception as e:
-            print(e)
-            print('from show_data_edit_drag_pictures')
+        self.dr_raw.fig.clear()
+        self.dr_raw.plot_raw_data(time=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.iloc[:, 0],
+                                  # 时间序列不一定是第一列！！！后续修改
+                                  df=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.iloc[:, signal_list])
+        self.PicToolBar_raw.press(self.PicToolBar_raw.home())
+        self.PicToolBar_raw.dynamic_update()
 
     def select_marker(self):
         QtCore.Qt.Key_Left
@@ -334,7 +251,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
     def combobox_index_pre_select(self, pre_select_item_index_list):  # 自动预选字段
         for i in range(self.combo_box_names.__len__()):  # 编号
-            eval('self.' + self.combo_box_names[i] + '.setCurrentIndex('+str(pre_select_item_index_list[i])+')')
+            eval('self.' + self.combo_box_names[i] + '.setCurrentIndex(' + str(pre_select_item_index_list[i]) + ')')
 
     def cal_sys_gain_data(self):
         feature_array = []
@@ -346,29 +263,35 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.MainProcess_thread_cal.Message_Finish.connect(self.show_ax_pictures_sg)
         self.MainProcess_thread_cal.start()
 
+        message_str = 'Message: Start calculating system gain data ...'
+        self.info_widget_update(message_str)
+
     def show_ax_pictures_sg(self):  # System Gain 绘图函数
         """
-        
+
         :return:
         """
 
         # self.createContextMenu_sg_fig_view()
 
         self.dr_acc_curve.axes.clear()
-        self.dr_acc_curve.plot_acc_response(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.accresponce.data,
-                                            ped_avg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.accresponce.pedal_avg)
+        self.dr_acc_curve.plot_acc_response(
+            data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.accresponce.data,
+            ped_avg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.accresponce.pedal_avg)
         self.PicToolBar_1.press(self.PicToolBar_1.home())
         self.PicToolBar_1.dynamic_update()
 
         self.dr_sg_curve.axes.clear()
-        self.dr_sg_curve.plot_systemgain_curve(vehspd_sg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.vehspd_sg,
-                                               acc_sg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.acc_sg)
+        self.dr_sg_curve.plot_systemgain_curve(
+            vehspd_sg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.vehspd_sg,
+            acc_sg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.acc_sg)
         self.PicToolBar_2.press(self.PicToolBar_2.home())
         self.PicToolBar_2.dynamic_update()
 
         self.dr_cons_spd.axes.clear()
-        self.dr_cons_spd.plot_constant_speed(vehspd_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.vehspd_cs,
-                                             pedal_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.pedal_cs)
+        self.dr_cons_spd.plot_constant_speed(
+            vehspd_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.vehspd_cs,
+            pedal_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.pedal_cs)
         self.PicToolBar_3.press(self.PicToolBar_3.home())
         self.PicToolBar_3.dynamic_update()
 
@@ -387,6 +310,14 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.PicToolBar_6.press(self.PicToolBar_6.home())
         self.PicToolBar_6.dynamic_update()
 
+        self.dr_max_acc.axes.clear()
+        self.dr_max_acc.plot_max_acc(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.maxacc.data)
+        self.PicToolBar_7.press(self.PicToolBar_7.home())
+        self.PicToolBar_7.dynamic_update()
+
+        message_str = 'Message: System gain calculation finished!'
+        self.info_widget_update(message_str)
+
     # -----|--|Comparison 页面
     def history_data_reload(self):
         file = QFileDialog.getOpenFileNames(self, filter='*.pkl')
@@ -394,10 +325,8 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         try:
             self.sl = SaveAndLoad()
             self.history_data = self.sl.reload_result(file_path_list=file_path_list)
-            self.info_list.append('Import OK!')
-            # self.InfoWidget.insertItem(1, self.info_list[0])
-            self.InfoWidget.addItem(self.info_list[-1])
-            self.InfoWidget.setCurrentRow(self.InfoWidget.count() - 1)  # 滚动条最下方
+            message_str = 'Message: History data --' + str(file_path_list) + ' import finished!'
+            self.info_widget_update(message_str)
             self.history_data_plot()
         except Exception as e:
             print('From Reload History Data')
@@ -406,7 +335,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
     def history_data_plot(self):
 
         dr_history_sg_curve = MyFigureCanvas(width=6, height=4, plot_type='2d')
-        for i in range(len(self.history_data)):   # 将每次画一根线
+        for i in range(len(self.history_data)):  # 将每次画一根线
             dr_history_sg_curve.plot_systemgain_curve(vehspd_sg=self.history_data[i].sysGain_class.systemgain.vehspd_sg,
                                                       acc_sg=self.history_data[i].sysGain_class.systemgain.acc_sg)
         self.scene = QtWidgets.QGraphicsScene()
@@ -414,7 +343,8 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         try:
             if self.History_Data_Comp_graphicsView_LayG1.itemAt(0):  # 如果已经有NVbar,删掉后重新捆绑
                 self.History_Data_Comp_graphicsView_LayG1.itemAt(0).widget().deleteLater()
-                self.History_Data_Comp_graphicsView_LayG1.removeWidget(self.History_Data_Comp_graphicsView_LayG1.itemAt(0).widget())
+                self.History_Data_Comp_graphicsView_LayG1.removeWidget(
+                    self.History_Data_Comp_graphicsView_LayG1.itemAt(0).widget())
             else:
                 # self.createContextMenu_sg_fig_view()  # 第一次初始化右键菜单，一次把两个canvas的菜单都初始化了  ！！！
                 pass
@@ -426,7 +356,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             print(e)
 
         dr_history_cons_spd = MyFigureCanvas(width=6, height=4, plot_type='2d')
-        for i in range(len(self.history_data)):   # 将每次画一根线
+        for i in range(len(self.history_data)):  # 将每次画一根线
             dr_history_cons_spd.plot_constant_speed(vehspd_cs=self.history_data[i].sysGain_class.systemgain.vehspd_cs,
                                                     pedal_cs=self.history_data[i].sysGain_class.systemgain.pedal_cs)
         self.scene = QtWidgets.QGraphicsScene()
@@ -434,7 +364,8 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         try:
             if self.History_Data_Comp_graphicsView_LayG2.itemAt(0):  # 如果已经有NVbar,删掉后重新捆绑
                 self.History_Data_Comp_graphicsView_LayG2.itemAt(0).widget().deleteLater()
-                self.History_Data_Comp_graphicsView_LayG2.removeWidget(self.History_Data_Comp_graphicsView_LayG2.itemAt(0).widget())
+                self.History_Data_Comp_graphicsView_LayG2.removeWidget(
+                    self.History_Data_Comp_graphicsView_LayG2.itemAt(0).widget())
             else:
                 # self.createContextMenu_sg_fig_view()  # 第一次初始化右键菜单，一次把两个canvas的菜单都初始化了  ！！！
                 pass
@@ -446,14 +377,15 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             print(e)
 
         dr_history_max_acc = MyFigureCanvas(width=6, height=4, plot_type='2d')
-        for i in range(len(self.history_data)):   # 将每次画一根线
+        for i in range(len(self.history_data)):  # 将每次画一根线
             dr_history_max_acc.plot_max_acc(data=self.history_data[i].sysGain_class.maxacc.data)
         self.scene = QtWidgets.QGraphicsScene()
         self.scene.addWidget(dr_history_max_acc)
         try:
             if self.History_Data_Comp_graphicsView_LayG3.itemAt(0):  # 如果已经有NVbar,删掉后重新捆绑
                 self.History_Data_Comp_graphicsView_LayG3.itemAt(0).widget().deleteLater()
-                self.History_Data_Comp_graphicsView_LayG3.removeWidget(self.History_Data_Comp_graphicsView_LayG3.itemAt(0).widget())
+                self.History_Data_Comp_graphicsView_LayG3.removeWidget(
+                    self.History_Data_Comp_graphicsView_LayG3.itemAt(0).widget())
             else:
                 # self.createContextMenu_sg_fig_view()  # 第一次初始化右键菜单，一次把两个canvas的菜单都初始化了  ！！！
                 pass
