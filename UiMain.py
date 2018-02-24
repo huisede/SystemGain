@@ -7,6 +7,7 @@ from Generate_Figs import *  # 绘图函数
 from Calculation_function import *  # 计算函数
 from re import match  # 正则表达式
 from ctypes import windll
+from UiSetIndexName import UiSetIndexName
 
 try:
     temp1 = windll.LoadLibrary('DLL\\Qt5Core.dll')
@@ -29,9 +30,13 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.menu_Save.triggered.connect(self.save_sys_gain_data)
         self.action_Data_Viewer.triggered.connect(lambda: self.change_main_page(0))
         self.action_System_Gain.triggered.connect(lambda: self.change_main_page(1))
-        self.action_Compare_Result.triggered.connect(lambda: self.change_main_page(2))
-        self.SysGain_Cal.clicked.connect(self.cal_sys_gain_data)
+        self.action_Cal_Result.triggered.connect(lambda: self.change_main_page(2))
+        self.action_Compare_Result.triggered.connect(lambda: self.change_main_page(3))
+        self.action_Data_Base.triggered.connect(lambda: self.change_main_page(4))
+        self.action_Cal_Setting.triggered.connect(lambda: self.change_main_page(5))
+        self.SysGain_Cal.clicked.connect(self.cal_sys_gain_data_pre)
         self.History_Data_Choose_PushButton.clicked.connect(self.history_data_reload)
+
 
         self.menu_Engine_Working_Dist.triggered.connect(self.data_view_check_box_list)
         self.menu_Shifting_Strategy.triggered.connect(self.resize_figs)
@@ -53,44 +58,44 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
         self.dr_acc_curve = MyFigureCanvas(width=6, height=4, plot_type='3d')
         self.PicToolBar_1 = NavigationBar(self.dr_acc_curve, self)
-        self.gridLayout_2.addWidget(self.PicToolBar_1,0,0,1,1)
-        self.gridLayout_2.addWidget(self.dr_acc_curve,1,0,1,1)
+        self.gridLayout_2.addWidget(self.PicToolBar_1, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.dr_acc_curve, 1, 0, 1, 1)
         self.dr_acc_curve.setMinimumSize(QtCore.QSize(0, 600))
 
         self.dr_sg_curve = MyFigureCanvas(width=6, height=4, plot_type='2d')
         self.PicToolBar_2 = NavigationBar(self.dr_sg_curve, self)
-        self.gridLayout_2.addWidget(self.PicToolBar_2,0,1,1,1)
-        self.gridLayout_2.addWidget(self.dr_sg_curve,1,1,1,1)
+        self.gridLayout_2.addWidget(self.PicToolBar_2, 0, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.dr_sg_curve, 1, 1, 1, 1)
         self.dr_sg_curve.setMinimumSize(QtCore.QSize(0, 600))
 
         self.dr_cons_spd = MyFigureCanvas(width=6, height=4, plot_type='2d')
         self.PicToolBar_3 = NavigationBar(self.dr_cons_spd, self)
-        self.gridLayout_2.addWidget(self.PicToolBar_3,2,0,1,1)
-        self.gridLayout_2.addWidget(self.dr_cons_spd,3,0,1,1)
+        self.gridLayout_2.addWidget(self.PicToolBar_3, 2, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.dr_cons_spd, 3, 0, 1, 1)
         self.dr_cons_spd.setMinimumSize(QtCore.QSize(0, 600))
 
         self.dr_shift_map = MyFigureCanvas(width=6, height=4, plot_type='2d')
         self.PicToolBar_4 = NavigationBar(self.dr_shift_map, self)
-        self.gridLayout_2.addWidget(self.PicToolBar_4,2,1,1,1)
-        self.gridLayout_2.addWidget(self.dr_shift_map,3,1,1,1)
+        self.gridLayout_2.addWidget(self.PicToolBar_4, 2, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.dr_shift_map, 3, 1, 1, 1)
         self.dr_shift_map.setMinimumSize(QtCore.QSize(0, 600))
 
         self.dr_launch = MyFigureCanvas(width=6, height=4, plot_type='2d')
         self.PicToolBar_5 = NavigationBar(self.dr_launch, self)
-        self.gridLayout_2.addWidget(self.PicToolBar_5,4,0,1,1)
-        self.gridLayout_2.addWidget(self.dr_launch,5,0,1,1)
+        self.gridLayout_2.addWidget(self.PicToolBar_5, 4, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.dr_launch, 5, 0, 1, 1)
         self.dr_launch.setMinimumSize(QtCore.QSize(0, 600))
 
         self.dr_ped_map = MyFigureCanvas(width=6, height=4, plot_type='2d')
         self.PicToolBar_6 = NavigationBar(self.dr_ped_map, self)
-        self.gridLayout_2.addWidget(self.PicToolBar_6,4,1,1,1)
-        self.gridLayout_2.addWidget(self.dr_ped_map,5,1,1,1)
+        self.gridLayout_2.addWidget(self.PicToolBar_6, 4, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.dr_ped_map, 5, 1, 1, 1)
         self.dr_ped_map.setMinimumSize(QtCore.QSize(0, 600))
 
         self.dr_max_acc = MyFigureCanvas(width=6, height=4, plot_type='2d')
         self.PicToolBar_7 = NavigationBar(self.dr_max_acc, self)
-        self.gridLayout_2.addWidget(self.PicToolBar_7,6,0,1,1)
-        self.gridLayout_2.addWidget(self.dr_max_acc,7,0,1,1)
+        self.gridLayout_2.addWidget(self.PicToolBar_7, 6, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.dr_max_acc, 7, 0, 1, 1)
         self.dr_max_acc.setMinimumSize(QtCore.QSize(0, 600))
 
         self.dr_raw = MyFigureCanvas(width=15, height=8, plot_type='2d-multi')
@@ -145,8 +150,9 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         file_path = file[0]
         self.MainProcess_thread_rd = ThreadProcess(method='sg_read_thread', filepath=file_path)
         self.MainProcess_thread_rd.Message_Finish.connect(self.initial_data_edit)
-        self.MainProcess_thread_rd.Message_Finish.connect(
-            lambda: self.combobox_index_initial(self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig))
+        # self.MainProcess_thread_rd.Message_Finish.connect(
+        #     lambda: self.combobox_index_initial(self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig))
+        self.MainProcess_thread_rd.Message_Finish.connect(self.combobox_index_features_initial)
         self.MainProcess_thread_rd.start()
         message_str = 'Message: Importing ' + file_path + ' ...'
         self.info_widget_update(message_str)
@@ -242,21 +248,76 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         print(self.xyCoordinates)
 
     # -----|--|System Gain
+    def combobox_index_features_initial(self):  # 将字段规则导入
+        try:
+            self.slfi = SaveAndLoad()
+            self.history_index = self.slfi.reload_feature_index()
+            self.System_Gain_AT_DCT_Index_comboBox.clear()
+            self.System_Gain_AT_DCT_Index_comboBox.addItem('请选择')
+            for i in self.history_index:
+                self.System_Gain_AT_DCT_Index_comboBox.addItem(i)  # 配合下面的注释
+        except Exception:
+            message_str = 'Error: from combobox_index_features_initial!'
+            self.info_widget_update(message_str)
+        self.System_Gain_AT_DCT_Index_comboBox.currentIndexChanged.connect(
+            self.combobox_index_features_initial_callback)    # 写在这里是为了防止上面addItem改变了currentIndex导致误触发
+        self.combobox_index_initial(self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig)
+
+    def combobox_index_features_initial_callback(self):
+        columns = self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig.tolist()
+        columns_to_pre_select = []
+        err = True
+        for i in self.history_index[self.System_Gain_AT_DCT_Index_comboBox.currentText()]:
+            try:
+                columns_to_pre_select.append(columns.index(i))
+            except ValueError:  # 如果需要索引的信号名不含在目前的数据中
+                err = False
+                columns_to_pre_select.append(0)  # 默认选0
+        self.combobox_index_pre_select(columns_to_pre_select)
+
+        if err:
+            message_str = 'Message: Features selected!'
+        else:
+            message_str = 'Error: Signal not in Current data!'
+        self.info_widget_update(message_str)
+
     def combobox_index_initial(self, item_list):  # 将文件中的所有字段写入列表
         for i in self.combo_box_names:  # 编号
             eval('self.' + i + '.clear()')  # 清空当前列表
             for j in item_list:
                 eval('self.' + i + ".addItem('" + j + "')")
-        self.combobox_index_pre_select(self.MainProcess_thread_rd.ax_holder_rd.pre_select_features())
+        # self.combobox_index_pre_select(self.MainProcess_thread_rd.ax_holder_rd.pre_select_features())
 
     def combobox_index_pre_select(self, pre_select_item_index_list):  # 自动预选字段
         for i in range(self.combo_box_names.__len__()):  # 编号
             eval('self.' + self.combo_box_names[i] + '.setCurrentIndex(' + str(pre_select_item_index_list[i]) + ')')
 
+    def cal_sys_gain_data_pre(self):
+        try:
+            if self.System_Gain_AT_DCT_New_Index.isChecked():
+                self.UiSetIndexName = UiSetIndexName()
+                self.UiSetIndexName.show()
+                self.UiSetIndexName.message.connect(self.save_feature_index)
+            self.cal_sys_gain_data()
+        except Exception:
+            message_str = 'Error: Please INPUT DATA and CHOOSE SIGNALS!'
+            self.info_widget_update(message_str)
+
+    def save_feature_index(self, feature_save_name):
+        feature_array = []
+        for i in self.combo_box_names:  # 编号
+            eval('feature_array.append(self.' + i + '.currentText())')
+        self.slfi = SaveAndLoad()
+        self.history_index[feature_save_name] = feature_array  # 追加
+        self.slfi.store_feature_index(store_index=self.history_index)  # 重新替换feature_index.pkl中所有数据
+        message_str = 'Message: Feature index ' + feature_save_name + ' added!'
+        self.info_widget_update(message_str)
+
     def cal_sys_gain_data(self):
         feature_array = []
         for i in self.combo_box_names:  # 编号
             eval('feature_array.append(self.' + i + '.currentText())')
+
         self.MainProcess_thread_cal = ThreadProcess(method='sg_cal_thread',
                                                     raw_data=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful,
                                                     feature_array=feature_array)

@@ -361,6 +361,7 @@ class ReadFile(object):
                 back_up_counter += 1
                 self.file_columns.append('signal' + str(back_up_counter) + '_with_known_char')
 
+
     def pre_select_features(self):
         # return [0,3,1,2,17,6,10,5,11]
         return [0, 2, 3, 1, 6, 5, 0, 4, 0]
@@ -387,6 +388,20 @@ class SaveAndLoad(object):
             input_file = open(i, 'rb')
             data_reload.append(pickle.load(input_file))
             input_file.close()
+        return data_reload
+
+    @staticmethod
+    def store_feature_index(store_index):
+        output_file = open('./bin/feature_index.pkl', 'wb')
+        pickle.dump(store_index, output_file)
+        output_file.close()
+        return
+
+    @staticmethod
+    def reload_feature_index():
+        input_file = open('./bin/feature_index.pkl', 'rb')
+        data_reload = pickle.load(input_file)
+        input_file.close()
         return data_reload
 
 

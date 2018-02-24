@@ -29,8 +29,7 @@ class MyFigureCanvas(FigureCanvas):
         plot_pedal_map_
         plot_raw_data
         plot_radar_map_
-    test function
-        test
+
     """
 
     def __init__(self, parent=None, width=10, height=10, dpi=100, plot_type='3d', **kwargs):

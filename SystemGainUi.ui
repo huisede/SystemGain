@@ -6,12 +6,22 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1011</width>
-    <height>902</height>
+    <width>1010</width>
+    <height>945</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>SystemGainSolver V1.0.0</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="Icon.qrc">
+    <normaloff>:/Image/Icon/SAIC.PNG</normaloff>:/Image/Icon/SAIC.PNG</iconset>
+  </property>
+  <property name="iconSize">
+   <size>
+    <width>40</width>
+    <height>40</height>
+   </size>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_3">
@@ -46,8 +56,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>356</width>
-               <height>712</height>
+               <width>959</width>
+               <height>730</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout">
@@ -59,32 +69,13 @@
                 <property name="alignment">
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
                 </property>
-                <layout class="QVBoxLayout" name="verticalLayout">
-                 <item>
-                  <widget class="QLabel" name="Infolabel">
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <pointsize>26</pointsize>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>请先选取数据</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
+                <layout class="QVBoxLayout" name="verticalLayout"/>
                </widget>
               </item>
              </layout>
             </widget>
            </widget>
-           <widget class="QWidget" name="">
+           <widget class="QWidget" name="layoutWidget">
             <layout class="QVBoxLayout" name="Data_Viewer_page_graphicsView_LayV"/>
            </widget>
           </widget>
@@ -133,40 +124,106 @@
                 <string>配置</string>
                </property>
                <layout class="QGridLayout" name="gridLayout_13">
-                <item row="0" column="0" colspan="2">
+                <item row="0" column="0" colspan="3">
                  <layout class="QGridLayout" name="System_Gain_AT_DCT_Config_Lay">
+                  <item row="1" column="1">
+                   <widget class="QRadioButton" name="System_Gain_CVT">
+                    <property name="text">
+                     <string>CVT</string>
+                    </property>
+                    <attribute name="buttonGroup">
+                     <string notr="true">buttonGroup</string>
+                    </attribute>
+                   </widget>
+                  </item>
                   <item row="1" column="0">
+                   <widget class="QRadioButton" name="System_Gain_AT_DCT">
+                    <property name="text">
+                     <string>AT/DCT</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                    <attribute name="buttonGroup">
+                     <string notr="true">buttonGroup</string>
+                    </attribute>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="System_Gain_AT_DCT_Features_lab">
+                    <property name="minimumSize">
+                     <size>
+                      <width>100</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>400</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>Microsoft YaHei</family>
+                      <pointsize>13</pointsize>
+                      <weight>75</weight>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="layoutDirection">
+                     <enum>Qt::LeftToRight</enum>
+                    </property>
+                    <property name="text">
+                     <string>字段选择：</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0" colspan="3">
+                   <widget class="QLabel" name="System_Gain_AT_DCT_Features_lab_2">
+                    <property name="minimumSize">
+                     <size>
+                      <width>100</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>400</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>Microsoft YaHei</family>
+                      <pointsize>13</pointsize>
+                      <weight>75</weight>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="layoutDirection">
+                     <enum>Qt::LeftToRight</enum>
+                    </property>
+                    <property name="text">
+                     <string>动力总成：</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="2">
+                   <widget class="QRadioButton" name="System_Gain_MT">
+                    <property name="text">
+                     <string>MT</string>
+                    </property>
+                    <attribute name="buttonGroup">
+                     <string notr="true">buttonGroup</string>
+                    </attribute>
+                   </widget>
+                  </item>
+                  <item row="2" column="2">
+                   <widget class="QComboBox" name="System_Gain_AT_DCT_Index_comboBox"/>
+                  </item>
+                  <item row="3" column="0" colspan="3">
                    <layout class="QVBoxLayout" name="System_Gain_AT_DCT_Config_LayV">
-                    <item>
-                     <widget class="QLabel" name="System_Gain_AT_DCT_Features_lab">
-                      <property name="minimumSize">
-                       <size>
-                        <width>100</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>400</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="font">
-                       <font>
-                        <family>Microsoft YaHei</family>
-                        <pointsize>13</pointsize>
-                        <weight>75</weight>
-                        <bold>true</bold>
-                       </font>
-                      </property>
-                      <property name="layoutDirection">
-                       <enum>Qt::LeftToRight</enum>
-                      </property>
-                      <property name="text">
-                       <string>字段选择：</string>
-                      </property>
-                     </widget>
-                    </item>
                     <item>
                      <widget class="QLabel" name="System_Gain_AT_DCT_Time_lab">
                       <property name="minimumSize">
@@ -475,7 +532,50 @@
                     </item>
                    </layout>
                   </item>
+                  <item row="2" column="1">
+                   <widget class="QCheckBox" name="System_Gain_AT_DCT_New_Index">
+                    <property name="font">
+                     <font>
+                      <family>微软雅黑</family>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>新建索引</string>
+                    </property>
+                   </widget>
+                  </item>
                  </layout>
+                </item>
+                <item row="4" column="0" colspan="3">
+                 <widget class="QPushButton" name="SysGain_Cal">
+                  <property name="font">
+                   <font>
+                    <family>Microsoft YaHei</family>
+                    <pointsize>18</pointsize>
+                   </font>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton{border-image: url(./Image/RunIcon.png);}
+</string>
+                  </property>
+                  <property name="text">
+                   <string>计  算</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="2">
+                 <widget class="QPushButton" name="pushButton_3">
+                  <property name="text">
+                   <string>导入</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="2">
+                 <widget class="QPushButton" name="pushButton_2">
+                  <property name="text">
+                   <string>导入</string>
+                  </property>
+                 </widget>
                 </item>
                 <item row="1" column="0" colspan="2">
                  <widget class="QLabel" name="System_Gain_AT_DCT_AddInput">
@@ -507,37 +607,12 @@
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="0">
-                 <widget class="QLabel" name="System_Gain_AT_DCT_StableVspd_lab">
-                  <property name="minimumSize">
-                   <size>
-                    <width>100</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>60</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="font">
-                   <font>
-                    <family>Microsoft YaHei</family>
-                    <pointsize>10</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>稳态车速：</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="2" column="1">
                  <widget class="QTextEdit" name="System_Gain_AT_DCT_StableVspd_TextEdit">
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
-                    <height>40</height>
+                    <height>20</height>
                    </size>
                   </property>
                   <property name="maximumSize">
@@ -551,7 +626,7 @@
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;输入稳态车速，以空格为间隔&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;-----&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                  </widget>
                 </item>
@@ -585,7 +660,7 @@ p, li { white-space: pre-wrap; }
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
-                    <height>40</height>
+                    <height>20</height>
                    </size>
                   </property>
                   <property name="maximumSize">
@@ -599,24 +674,32 @@ p, li { white-space: pre-wrap; }
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;输入踏板信号，以空格为间隔&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;-----&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                  </widget>
                 </item>
-                <item row="4" column="0" colspan="2">
-                 <widget class="QPushButton" name="SysGain_Cal">
+                <item row="2" column="0">
+                 <widget class="QLabel" name="System_Gain_AT_DCT_StableVspd_lab">
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>60</width>
+                    <height>20</height>
+                   </size>
+                  </property>
                   <property name="font">
                    <font>
                     <family>Microsoft YaHei</family>
-                    <pointsize>18</pointsize>
+                    <pointsize>10</pointsize>
                    </font>
                   </property>
-                  <property name="styleSheet">
-                   <string notr="true">QPushButton{border-image: url(./Image/RunIcon.png);}
-</string>
-                  </property>
                   <property name="text">
-                   <string>计  算</string>
+                   <string>稳态车速：</string>
                   </property>
                  </widget>
                 </item>
@@ -629,7 +712,7 @@ p, li { white-space: pre-wrap; }
                 <string>输出图片</string>
                </property>
                <layout class="QGridLayout" name="gridLayout_8">
-                <item row="1" column="0" colspan="3">
+                <item row="0" column="0">
                  <widget class="QScrollArea" name="System_Gain_AT_DCT_Figs_scrollArea">
                   <property name="widgetResizable">
                    <bool>true</bool>
@@ -639,8 +722,8 @@ p, li { white-space: pre-wrap; }
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>626</width>
-                     <height>673</height>
+                     <width>625</width>
+                     <height>716</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_2"/>
@@ -666,6 +749,150 @@ p, li { white-space: pre-wrap; }
           </widget>
          </item>
         </layout>
+       </widget>
+       <widget class="QWidget" name="Cal_Result_page">
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QTabWidget" name="Cal_Result_tabWidget">
+           <property name="tabPosition">
+            <enum>QTabWidget::East</enum>
+           </property>
+           <property name="tabShape">
+            <enum>QTabWidget::Triangular</enum>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="Cal_Result_acc_curve_tab">
+            <attribute name="title">
+             <string>Acc Curve</string>
+            </attribute>
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QSplitter" name="splitter_Cal_Result_acc_curve_tab">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <widget class="QWidget" name="verticalLayoutWidget">
+                <layout class="QVBoxLayout" name="Cal_Result_page_acc_curve_tabLayV">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
+                </layout>
+               </widget>
+               <widget class="QTableWidget" name="Cal_Result_acc_curve_tab_tableWidget">
+                <row>
+                 <property name="text">
+                  <string>新建行</string>
+                 </property>
+                </row>
+                <row>
+                 <property name="text">
+                  <string>新建行</string>
+                 </property>
+                </row>
+                <row>
+                 <property name="text">
+                  <string>新建行</string>
+                 </property>
+                </row>
+                <row>
+                 <property name="text">
+                  <string>新建行</string>
+                 </property>
+                </row>
+                <row>
+                 <property name="text">
+                  <string>新建行</string>
+                 </property>
+                </row>
+                <row>
+                 <property name="text">
+                  <string>新建行</string>
+                 </property>
+                </row>
+                <column>
+                 <property name="text">
+                  <string>新建列</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>新建列</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>新建列</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>新建列</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>新建列</string>
+                 </property>
+                </column>
+               </widget>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tab_2">
+            <attribute name="title">
+             <string>System Gain Curve</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout_3"/>
+           </widget>
+           <widget class="QWidget" name="tab_3">
+            <attribute name="title">
+             <string>Cons Speed</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="tab_4">
+            <attribute name="title">
+             <string>Shift Map</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="tab_5">
+            <attribute name="title">
+             <string>Launch</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="tab_6">
+            <attribute name="title">
+             <string>Pedal Map</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="tab_7">
+            <attribute name="title">
+             <string>Max Acc</string>
+            </attribute>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+        <zorder>Cal_Result_tabWidget</zorder>
+        <zorder>splitter</zorder>
+        <zorder>Cal_Result_tabWidget</zorder>
        </widget>
        <widget class="QWidget" name="Compare_Result_page">
         <layout class="QGridLayout" name="gridLayout_17">
@@ -775,7 +1002,7 @@ p, li { white-space: pre-wrap; }
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>952</width>
+                   <width>951</width>
                    <height>2510</height>
                   </rect>
                  </property>
@@ -897,6 +1124,72 @@ p, li { white-space: pre-wrap; }
          </item>
         </layout>
        </widget>
+       <widget class="QWidget" name="Data_Base_page">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QLabel" name="Data_Base_table_label">
+           <property name="font">
+            <font>
+             <family>微软雅黑</family>
+             <pointsize>10</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>数据库页面</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="lineEdit"/>
+           </item>
+           <item row="0" column="3">
+            <widget class="QPushButton" name="pushButton">
+             <property name="text">
+              <string>PushButton</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>TextLabel</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QComboBox" name="comboBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QTableWidget" name="Data_Base_tableWidget"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="Cal_Setting_page">
+        <widget class="QPlainTextEdit" name="plainTextEdit">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>250</y>
+           <width>481</width>
+           <height>71</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>22</pointsize>
+          </font>
+         </property>
+         <property name="plainText">
+          <string>Settings！</string>
+         </property>
+        </widget>
+       </widget>
       </widget>
       <widget class="QListWidget" name="InfoWidget"/>
      </widget>
@@ -908,7 +1201,7 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1011</width>
+     <width>1010</width>
      <height>23</height>
     </rect>
    </property>
@@ -955,7 +1248,7 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="iconSize">
     <size>
-     <width>30</width>
+     <width>32</width>
      <height>24</height>
     </size>
    </property>
@@ -970,7 +1263,10 @@ p, li { white-space: pre-wrap; }
    </attribute>
    <addaction name="action_Data_Viewer"/>
    <addaction name="action_System_Gain"/>
+   <addaction name="action_Cal_Result"/>
    <addaction name="action_Compare_Result"/>
+   <addaction name="action_Data_Base"/>
+   <addaction name="action_Cal_Setting"/>
    <addaction name="separator"/>
    <addaction name="separator"/>
   </widget>
@@ -1082,6 +1378,33 @@ p, li { white-space: pre-wrap; }
   <action name="menu_Output_Report">
    <property name="text">
     <string>导出计算报告 Output Report</string>
+   </property>
+  </action>
+  <action name="action_Cal_Setting">
+   <property name="icon">
+    <iconset resource="Icon.qrc">
+     <normaloff>:/Image/Icon/setting.png</normaloff>:/Image/Icon/setting.png</iconset>
+   </property>
+   <property name="text">
+    <string>Cal Settings</string>
+   </property>
+  </action>
+  <action name="action_Data_Base">
+   <property name="icon">
+    <iconset resource="Icon.qrc">
+     <normaloff>:/Image/Icon/database.png</normaloff>:/Image/Icon/database.png</iconset>
+   </property>
+   <property name="text">
+    <string>Data Base</string>
+   </property>
+  </action>
+  <action name="action_Cal_Result">
+   <property name="icon">
+    <iconset resource="Icon.qrc">
+     <normaloff>:/Image/Icon/result.png</normaloff>:/Image/Icon/result.png</iconset>
+   </property>
+   <property name="text">
+    <string>Cal Result</string>
    </property>
   </action>
  </widget>
