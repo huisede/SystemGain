@@ -32,7 +32,7 @@
       </property>
       <widget class="QStackedWidget" name="MainStackedWidget">
        <property name="currentIndex">
-        <number>1</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="Data_Viewer_page">
         <layout class="QHBoxLayout" name="horizontalLayout">
@@ -56,8 +56,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>959</width>
-               <height>730</height>
+               <width>98</width>
+               <height>51</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout">
@@ -890,9 +890,6 @@ p, li { white-space: pre-wrap; }
           </widget>
          </item>
         </layout>
-        <zorder>Cal_Result_tabWidget</zorder>
-        <zorder>splitter</zorder>
-        <zorder>Cal_Result_tabWidget</zorder>
        </widget>
        <widget class="QWidget" name="Compare_Result_page">
         <layout class="QGridLayout" name="gridLayout_17">
@@ -1002,8 +999,8 @@ p, li { white-space: pre-wrap; }
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>951</width>
-                   <height>2510</height>
+                   <width>968</width>
+                   <height>672</height>
                   </rect>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_4">
@@ -1022,97 +1019,6 @@ p, li { white-space: pre-wrap; }
                   <property name="spacing">
                    <number>0</number>
                   </property>
-                  <item row="7" column="0" colspan="4">
-                   <widget class="QGraphicsView" name="History_Data_Comp_graphicsView_5">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>500</height>
-                     </size>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="0">
-                   <layout class="QGridLayout" name="History_Data_Comp_graphicsView_LayG1"/>
-                  </item>
-                  <item row="1" column="0">
-                   <widget class="QGraphicsView" name="History_Data_Comp_graphicsView_1">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>500</height>
-                     </size>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="1">
-                   <layout class="QGridLayout" name="History_Data_Comp_graphicsView_LayG2"/>
-                  </item>
-                  <item row="6" column="0" colspan="4">
-                   <layout class="QGridLayout" name="History_Data_Comp_graphicsView_LayG5"/>
-                  </item>
-                  <item row="4" column="0" colspan="4">
-                   <layout class="QGridLayout" name="History_Data_Comp_graphicsView_LayG4"/>
-                  </item>
-                  <item row="9" column="0" colspan="4">
-                   <widget class="QGraphicsView" name="History_Data_Comp_graphicsView_6">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>500</height>
-                     </size>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="5" column="0" colspan="4">
-                   <widget class="QGraphicsView" name="History_Data_Comp_graphicsView_4">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>500</height>
-                     </size>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="3">
-                   <layout class="QGridLayout" name="History_Data_Comp_graphicsView_LayG3"/>
-                  </item>
-                  <item row="10" column="0" colspan="4">
-                   <layout class="QGridLayout" name="History_Data_Comp_graphicsView_LayG7"/>
-                  </item>
-                  <item row="8" column="0" colspan="4">
-                   <layout class="QGridLayout" name="History_Data_Comp_graphicsView_LayG6"/>
-                  </item>
-                  <item row="11" column="0" colspan="4">
-                   <widget class="QGraphicsView" name="History_Data_Comp_graphicsView_7">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>500</height>
-                     </size>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <widget class="QGraphicsView" name="History_Data_Comp_graphicsView_2">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>500</height>
-                     </size>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="3">
-                   <widget class="QGraphicsView" name="History_Data_Comp_graphicsView_3">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>500</height>
-                     </size>
-                    </property>
-                   </widget>
-                  </item>
                  </layout>
                 </widget>
                </widget>

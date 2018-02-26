@@ -37,7 +37,6 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.SysGain_Cal.clicked.connect(self.cal_sys_gain_data_pre)
         self.History_Data_Choose_PushButton.clicked.connect(self.history_data_reload)
 
-
         self.menu_Engine_Working_Dist.triggered.connect(self.data_view_check_box_list)
         self.menu_Shifting_Strategy.triggered.connect(self.resize_figs)
 
@@ -152,7 +151,8 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.MainProcess_thread_rd.Message_Finish.connect(self.initial_data_edit)
         # self.MainProcess_thread_rd.Message_Finish.connect(
         #     lambda: self.combobox_index_initial(self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig))
-        self.MainProcess_thread_rd.Message_Finish.connect(self.combobox_index_features_initial)
+
+        # self.MainProcess_thread_rd.Message_Finish.connect(self.combobox_index_features_initial)
         self.MainProcess_thread_rd.start()
         message_str = 'Message: Importing ' + file_path + ' ...'
         self.info_widget_update(message_str)
@@ -217,6 +217,8 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         message_str = 'Message: Finished data import!'
         self.info_widget_update(message_str)
 
+        self.combobox_index_features_initial()
+
     def data_view_check_box_list(self):
         checked_list = []
         for i in range(self.verticalLayout.count()):
@@ -250,17 +252,25 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
     # -----|--|System Gain
     def combobox_index_features_initial(self):  # 将字段规则导入
         try:
+            self.System_Gain_AT_DCT_Index_comboBox.activated.disconnect(self.combobox_index_features_initial_callback)
+            # 1、防止多次连接导致的提示信息重复 2、先行断开作为双保险，防止第一遍连接时留下的触发开关由clear()等动作带来的误触发跳转
+        except TypeError:
+            pass
+
+        try:
             self.slfi = SaveAndLoad()
             self.history_index = self.slfi.reload_feature_index()
-            self.System_Gain_AT_DCT_Index_comboBox.clear()
+            self.System_Gain_AT_DCT_Index_comboBox.clear()  # ????第二次导入数据时运行报错   问题已解决 20180226
             self.System_Gain_AT_DCT_Index_comboBox.addItem('请选择')
             for i in self.history_index:
                 self.System_Gain_AT_DCT_Index_comboBox.addItem(i)  # 配合下面的注释
         except Exception:
             message_str = 'Error: from combobox_index_features_initial!'
             self.info_widget_update(message_str)
-        self.System_Gain_AT_DCT_Index_comboBox.currentIndexChanged.connect(
+
+        self.System_Gain_AT_DCT_Index_comboBox.activated.connect(
             self.combobox_index_features_initial_callback)    # 写在这里是为了防止上面addItem改变了currentIndex导致误触发
+        # 20180226 交互类性的触发请选择activated而不是currentIndexChanged!!!!!!
         self.combobox_index_initial(self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig)
 
     def combobox_index_features_initial_callback(self):
@@ -394,148 +404,70 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             print(e)
 
     def history_data_plot(self):
+        while self.gridLayout_4.itemAt(0) is not None:  # 删除当前Lay中的元素
+            try:
+                self.gridLayout_4.itemAt(0).widget().setParent(None)  # 删除当前Lay中widget元素，在此为CheckBox
+                self.gridLayout_4.itemAt(0).widget().deleteLater()
+                self.gridLayout_4.removeWidget(self.gridLayout_4.itemAt(0).widget())
+            except AttributeError:
+                self.gridLayout_4.removeItem(self.gridLayout_4.itemAt(0))  # 删除当前Lay中spacer元素
 
         dr_history_sg_curve = MyFigureCanvas(width=6, height=4, plot_type='2d')
         for i in range(len(self.history_data)):  # 将每次画一根线
             dr_history_sg_curve.plot_systemgain_curve(vehspd_sg=self.history_data[i].sysGain_class.systemgain.vehspd_sg,
                                                       acc_sg=self.history_data[i].sysGain_class.systemgain.acc_sg)
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(dr_history_sg_curve)
-        try:
-            if self.History_Data_Comp_graphicsView_LayG1.itemAt(0):  # 如果已经有NVbar,删掉后重新捆绑
-                self.History_Data_Comp_graphicsView_LayG1.itemAt(0).widget().deleteLater()
-                self.History_Data_Comp_graphicsView_LayG1.removeWidget(
-                    self.History_Data_Comp_graphicsView_LayG1.itemAt(0).widget())
-            else:
-                # self.createContextMenu_sg_fig_view()  # 第一次初始化右键菜单，一次把两个canvas的菜单都初始化了  ！！！
-                pass
-            self.PicToolBar_history1 = NavigationBar(dr_history_sg_curve, self)
-            self.History_Data_Comp_graphicsView_LayG1.addWidget(self.PicToolBar_history1)
-            self.History_Data_Comp_graphicsView_1.setScene(self.scene)
-            self.History_Data_Comp_graphicsView_1.show()
-        except Exception as e:
-            print(e)
+        self.PicToolBar_history1 = NavigationBar(dr_history_sg_curve, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history1,0,0,1,1)
+        self.gridLayout_4.addWidget(dr_history_sg_curve,1,0,1,1)
+        dr_history_sg_curve.setMinimumSize(QtCore.QSize(0, 600))
 
         dr_history_cons_spd = MyFigureCanvas(width=6, height=4, plot_type='2d')
         for i in range(len(self.history_data)):  # 将每次画一根线
             dr_history_cons_spd.plot_constant_speed(vehspd_cs=self.history_data[i].sysGain_class.systemgain.vehspd_cs,
                                                     pedal_cs=self.history_data[i].sysGain_class.systemgain.pedal_cs)
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(dr_history_cons_spd)
-        try:
-            if self.History_Data_Comp_graphicsView_LayG2.itemAt(0):  # 如果已经有NVbar,删掉后重新捆绑
-                self.History_Data_Comp_graphicsView_LayG2.itemAt(0).widget().deleteLater()
-                self.History_Data_Comp_graphicsView_LayG2.removeWidget(
-                    self.History_Data_Comp_graphicsView_LayG2.itemAt(0).widget())
-            else:
-                # self.createContextMenu_sg_fig_view()  # 第一次初始化右键菜单，一次把两个canvas的菜单都初始化了  ！！！
-                pass
-            self.PicToolBar_history2 = NavigationBar(dr_history_cons_spd, self)
-            self.History_Data_Comp_graphicsView_LayG2.addWidget(self.PicToolBar_history2)
-            self.History_Data_Comp_graphicsView_2.setScene(self.scene)
-            self.History_Data_Comp_graphicsView_2.show()
-        except Exception as e:
-            print(e)
+        self.PicToolBar_history2 = NavigationBar(dr_history_cons_spd, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history2,0,1,1,1)
+        self.gridLayout_4.addWidget(dr_history_cons_spd,1,1,1,1)
+        dr_history_cons_spd.setMinimumSize(QtCore.QSize(0, 600))
 
         dr_history_max_acc = MyFigureCanvas(width=6, height=4, plot_type='2d')
         for i in range(len(self.history_data)):  # 将每次画一根线
             dr_history_max_acc.plot_max_acc(data=self.history_data[i].sysGain_class.maxacc.data)
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(dr_history_max_acc)
-        try:
-            if self.History_Data_Comp_graphicsView_LayG3.itemAt(0):  # 如果已经有NVbar,删掉后重新捆绑
-                self.History_Data_Comp_graphicsView_LayG3.itemAt(0).widget().deleteLater()
-                self.History_Data_Comp_graphicsView_LayG3.removeWidget(
-                    self.History_Data_Comp_graphicsView_LayG3.itemAt(0).widget())
-            else:
-                # self.createContextMenu_sg_fig_view()  # 第一次初始化右键菜单，一次把两个canvas的菜单都初始化了  ！！！
-                pass
-            self.PicToolBar_history3 = NavigationBar(dr_history_cons_spd, self)
-            self.History_Data_Comp_graphicsView_LayG3.addWidget(self.PicToolBar_history3)
-            self.History_Data_Comp_graphicsView_3.setScene(self.scene)
-            self.History_Data_Comp_graphicsView_3.show()
-        except Exception as e:
-            print(e)
+        self.PicToolBar_history3 = NavigationBar(dr_history_max_acc, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history3,0,2,1,1)
+        self.gridLayout_4.addWidget(dr_history_max_acc,1,2,1,1)
+        dr_history_max_acc.setMinimumSize(QtCore.QSize(0, 600))
 
         dr_history_acc_curve = MyFigureCanvas(width=18, height=5, plot_type='3d-subplot')
         dr_history_acc_curve.plot_acc_response_subplot(history_data=self.history_data)
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(dr_history_acc_curve)
-        try:
-            if self.History_Data_Comp_graphicsView_LayG4.itemAt(0):  # 如果已经有NVbar,删掉后重新捆绑
-                self.History_Data_Comp_graphicsView_LayG4.itemAt(0).widget().deleteLater()
-                self.History_Data_Comp_graphicsView_LayG4.removeWidget(
-                    self.History_Data_Comp_graphicsView_LayG4.itemAt(0).widget())
-            else:
-                # self.createContextMenu_sg_fig_view()  # 第一次初始化右键菜单，一次把两个canvas的菜单都初始化了  ！！！
-                pass
-            self.PicToolBar_history4 = NavigationBar(dr_history_acc_curve, self)
-            self.History_Data_Comp_graphicsView_LayG4.addWidget(self.PicToolBar_history4)
-            self.History_Data_Comp_graphicsView_4.setScene(self.scene)
-            self.History_Data_Comp_graphicsView_4.show()
-        except Exception as e:
-            print('From dr_history_acc_curve')
-            print(e)
+        self.PicToolBar_history4 = NavigationBar(dr_history_acc_curve, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history4,2,0,1,3)
+        self.gridLayout_4.addWidget(dr_history_acc_curve,3,0,1,3)
+        dr_history_acc_curve.setMinimumSize(QtCore.QSize(0, 600))
 
         dr_history_launch = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
         dr_history_launch.plot_launch_subplot(history_data=self.history_data)
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(dr_history_launch)
-        try:
-            if self.History_Data_Comp_graphicsView_LayG5.itemAt(0):  # 如果已经有NVbar,删掉后重新捆绑
-                self.History_Data_Comp_graphicsView_LayG5.itemAt(0).widget().deleteLater()
-                self.History_Data_Comp_graphicsView_LayG5.removeWidget(
-                    self.History_Data_Comp_graphicsView_LayG5.itemAt(0).widget())
-            else:
-                # self.createContextMenu_sg_fig_view()  # 第一次初始化右键菜单，一次把两个canvas的菜单都初始化了  ！！！
-                pass
-            self.PicToolBar_history5 = NavigationBar(dr_history_launch, self)
-            self.History_Data_Comp_graphicsView_LayG5.addWidget(self.PicToolBar_history5)
-            self.History_Data_Comp_graphicsView_5.setScene(self.scene)
-            self.History_Data_Comp_graphicsView_5.show()
-        except Exception as e:
-            print('From dr_history_launch')
-            print(e)
+        self.PicToolBar_history5 = NavigationBar(dr_history_launch, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history5,4,0,1,3)
+        self.gridLayout_4.addWidget(dr_history_launch,5,0,1,3)
+        dr_history_launch.setMinimumSize(QtCore.QSize(0, 600))
+
 
         dr_history_shift_map = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
         dr_history_shift_map.plot_shift_map_subplot(history_data=self.history_data)
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(dr_history_shift_map)
-        try:
-            if self.History_Data_Comp_graphicsView_LayG6.itemAt(0):  # 如果已经有NVbar,删掉后重新捆绑
-                self.History_Data_Comp_graphicsView_LayG6.itemAt(0).widget().deleteLater()
-                self.History_Data_Comp_graphicsView_LayG6.removeWidget(
-                    self.History_Data_Comp_graphicsView_LayG6.itemAt(0).widget())
-            else:
-                # self.createContextMenu_sg_fig_view()  # 第一次初始化右键菜单，一次把两个canvas的菜单都初始化了  ！！！
-                pass
-            self.PicToolBar_history6 = NavigationBar(dr_history_shift_map, self)
-            self.History_Data_Comp_graphicsView_LayG6.addWidget(self.PicToolBar_history6)
-            self.History_Data_Comp_graphicsView_6.setScene(self.scene)
-            self.History_Data_Comp_graphicsView_6.show()
-        except Exception as e:
-            print('From dr_history_shift_map')
-            print(e)
+        self.PicToolBar_history6 = NavigationBar(dr_history_shift_map, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history6,6,0,1,3)
+        self.gridLayout_4.addWidget(dr_history_shift_map,7,0,1,3)
+        dr_history_shift_map.setMinimumSize(QtCore.QSize(0, 600))
+
 
         dr_history_pedal_map = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
         dr_history_pedal_map.plot_pedal_map_subplot(history_data=self.history_data)
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(dr_history_pedal_map)
-        try:
-            if self.History_Data_Comp_graphicsView_LayG7.itemAt(0):  # 如果已经有NVbar,删掉后重新捆绑
-                self.History_Data_Comp_graphicsView_LayG7.itemAt(0).widget().deleteLater()
-                self.History_Data_Comp_graphicsView_LayG7.removeWidget(
-                    self.History_Data_Comp_graphicsView_LayG7.itemAt(0).widget())
-            else:
-                # self.createContextMenu_sg_fig_view()  # 第一次初始化右键菜单，一次把两个canvas的菜单都初始化了  ！！！
-                pass
-            self.PicToolBar_history7 = NavigationBar(dr_history_pedal_map, self)
-            self.History_Data_Comp_graphicsView_LayG7.addWidget(self.PicToolBar_history7)
-            self.History_Data_Comp_graphicsView_7.setScene(self.scene)
-            self.History_Data_Comp_graphicsView_7.show()
-        except Exception as e:
-            print('From dr_history_pedal_map')
-            print(e)
+        self.PicToolBar_history7 = NavigationBar(dr_history_pedal_map, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history7,8,0,1,3)
+        self.gridLayout_4.addWidget(dr_history_pedal_map,9,0,1,3)
+        dr_history_pedal_map.setMinimumSize(QtCore.QSize(0, 600))
+
 
     def datatableview_show(self, data_list):
         """
