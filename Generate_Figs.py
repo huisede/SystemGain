@@ -59,10 +59,10 @@ class MyFigureCanvas(FigureCanvas):
         for i in range(0, len(data[1])):
             self.axes.plot(data[1][i], data[0][i], data[2][i], label=int(round(ped_avg[i] / 5) * 5))
             self.axes.legend(bbox_to_anchor=(0.65, 1.05), ncol=4, loc=2, borderaxespad=0, fontsize=6)
-            self.axes.set_xlabel('Velocity (kph)', fontsize=12)
-            self.axes.set_ylabel('Pedal (%)', fontsize=12)
-            self.axes.set_zlabel('Acc (g) ', fontsize=12)
-            # self.axes.set_title('Acc-3D Map', fontsize=12)  # 画出来title在中间……
+        self.axes.set_xlabel('Velocity (kph)', fontsize=12)
+        self.axes.set_ylabel('Pedal (%)', fontsize=12)
+        self.axes.set_zlabel('Acc (g) ', fontsize=12)
+        # self.axes.set_title('Acc-3D Map', fontsize=12)  # 画出来title在中间……
 
     def plot_launch(self, data):
 
@@ -94,19 +94,27 @@ class MyFigureCanvas(FigureCanvas):
         self.axes.set_ylabel('Torque (Nm)', fontsize=12)
         self.axes.set_title('PedalMap', fontsize=12)
 
-    def plot_shift_map(self, data):
-
-        str_label = ['1->2', '2->3', '3->4', '4->5', '5->6', '6->7', '7->8', '8->9', '9->10']
-        for i in range(1, int(max(data[0])) + 1):
-            # 选择当前Gear, color=colour[i]
-            self.axes.plot(data[2][np.where(data[0] == i)], data[1][np.where(data[0] == i)]
-                           , marker='o', linestyle='-', linewidth=3, markerfacecolor='blue', markersize=4
-                           , label=str_label[i - 1])
-            self.axes.legend()
-        self.axes.grid(True, linestyle="--", color="k", linewidth="0.4")
-        self.axes.set_xlabel('Vehicle Speed (kph)', fontsize=12)
-        self.axes.set_ylabel('Pedal (%)', fontsize=12)
-        self.axes.set_title('Shift Map', fontsize=12)
+    def plot_shift_map(self, data, kind, **kwargs):
+        if kind == 'AT/DCT':
+            str_label = ['1->2', '2->3', '3->4', '4->5', '5->6', '6->7', '7->8', '8->9', '9->10']
+            for i in range(1, int(max(data[0])) + 1):
+                # 选择当前Gear, color=colour[i]
+                self.axes.plot(data[2][np.where(data[0] == i)], data[1][np.where(data[0] == i)]
+                               , marker='o', linestyle='-', linewidth=3, markerfacecolor='blue', markersize=4
+                               , label=str_label[i - 1])
+                self.axes.legend()
+            self.axes.grid(True, linestyle="--", color="k", linewidth="0.4")
+            self.axes.set_xlabel('Vehicle Speed (kph)', fontsize=12)
+            self.axes.set_ylabel('Pedal (%)', fontsize=12)
+            self.axes.set_title('Shift Map', fontsize=12)
+        elif kind == 'CVT':
+            for i in range(0, len(data[1])):
+                self.axes.plot(data[2][i], data[0][i], color='r')
+                self.axes.annotate(str(int(kwargs['pedal_avg'][i])), xy=(data[2][i][-100], data[0][i][-100]),
+                                   xycoords='data', xytext=(+2, +2), textcoords='offset points')
+                self.axes.plot(data[2][i], data[1][i], color='b')
+            self.axes.set_xlabel('Velocity (kph)', fontsize=12)
+            self.axes.set_ylabel('Engine/Turbine Speed (rpm)', fontsize=12)
 
     def plot_systemgain_curve(self, vehspd_sg, acc_sg):
         speedIndex = np.arange(10, 170, 10)

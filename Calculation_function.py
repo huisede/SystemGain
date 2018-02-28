@@ -35,7 +35,7 @@ class SystemGain(object):
     fun plot_shift_map————Plotting method of generating shift map fig. NEED TO BE REWRITE IN Generate_Figs.py
     """
 
-    def __init__(self, raw_data, feature_array):
+    def __init__(self, raw_data, feature_array, pt_type):
         """
         Initial function of system gain.
 
@@ -43,6 +43,7 @@ class SystemGain(object):
         """
         self.raw_data = raw_data
         self.feature_array = feature_array
+        self.pt_type = pt_type
         self.sysGain_class = {}
 
     def sg_main(self):
@@ -59,7 +60,7 @@ class SystemGain(object):
         # 获取列号，标准变量及面板输入，数据预处理
         SG_csv_Data_Selc = SG_csv_Data_ful.loc[:, self.feature_array]
         # SG_csv_Data = SG_csv_Data_Selc.drop_duplicates()    # 先不去重
-        SG_csv_Data = SG_csv_Data_Selc   # 选到重复的会报错 ！！！！！所以修改了以下索引格式
+        SG_csv_Data = SG_csv_Data_Selc  # 选到重复的会报错 ！！！！！所以修改了以下索引格式
         time_Data = SG_csv_Data.iloc[:, 0].tolist()
         vehSpd_Data = SG_csv_Data.iloc[:, 1].tolist()
         pedal_Data = SG_csv_Data.iloc[:, 2].tolist()
@@ -91,7 +92,8 @@ class SystemGain(object):
         obj_PedalMap = self.pedal_map(pedal_Data, enSpd_Data, torq_Data, pedal_cut_index, pedal_avg, colour_Bar)
         # obj_PedalMap.plot_pedal_map()
         # fig5 ShiftMap
-        obj_ShiftMap = self.shift_map(pedal_Data, gear_Data, vehSpd_Data, pedal_cut_index, pedal_avg, colour_Bar)
+        obj_ShiftMap = self.shift_map(pedal_Data, gear_Data, vehSpd_Data, pedal_cut_index, pedal_avg, colour_Bar,
+                                      enSpd_Data, turbSpd_Data, kind=self.pt_type)
         # obj_ShiftMap.plot_shift_map()
         obj_SystemGain = self.systemgain_curve(pedal_Data, vehSpd_Data, acc_Data, pedal_cut_index, pedal_avg)
         self.sysGain_class = self.SystemGainDocker(obj_AccResponse, obj_Launch, obj_MaxAcc, obj_PedalMap, obj_ShiftMap,
@@ -108,7 +110,7 @@ class SystemGain(object):
             data_len = len(iAcc)
             j = 0
             while j < data_len:
-                if iAcc[j] < 0.0:   # 20180211 0.05->0.0
+                if iAcc[j] < 0.0:  # 20180211 0.05->0.0
                     del iVehSpd[j]
                     del iPed[j]
                     del iAcc[j]
@@ -160,21 +162,31 @@ class SystemGain(object):
         obj = self.PedalMap(pedal_map)
         return obj
 
-    def shift_map(self, pedal_data, gear_data, vehspd_data, pedal_cut_index, pedal_avg, colour):
+    def shift_map(self, pedal_data, gear_data, vehspd_data, pedal_cut_index, pedal_avg, colour,
+                  enSpd_Data, turbSpd_Data, kind):
         shiftMap = [[], [], []]
-        for i in range(1, max(gear_data)):
-            # Gear上升沿下降沿
-            for j in range(1, len(gear_data) - 1):
-                if gear_data[j - 1] == i and gear_data[j] == i + 1:
-                    for k in range(0, len(pedal_avg)):
-                        if j > pedal_cut_index[0][k] and j < pedal_cut_index[1][k]:
-                            shiftMap[0].append(gear_data[j - 1])
-                            shiftMap[1].append(pedal_data[j - 1])
-                            shiftMap[2].append(vehspd_data[j - 1])
-        # 按档位油门车速排序
-        shiftMap_Sort = sorted(np.transpose(shiftMap), key=lambda x: [x[0], x[1], x[2]])
-        shiftMap_Data = np.transpose(shiftMap_Sort)
-        obj = self.ShiftMap(shiftMap_Data)
+        if kind == 'AT/DCT':
+            for i in range(1, max(gear_data)):
+                # Gear上升沿下降沿
+                for j in range(1, len(gear_data) - 1):
+                    if gear_data[j - 1] == i and gear_data[j] == i + 1:
+                        for k in range(0, len(pedal_avg)):
+                            if j > pedal_cut_index[0][k] and j < pedal_cut_index[1][k]:
+                                shiftMap[0].append(gear_data[j - 1])
+                                shiftMap[1].append(pedal_data[j - 1])
+                                shiftMap[2].append(vehspd_data[j - 1])
+            # 按档位油门车速排序
+            shiftMap_Sort = sorted(np.transpose(shiftMap), key=lambda x: [x[0], x[1], x[2]])
+            shiftMap_Data = np.transpose(shiftMap_Sort)
+            obj = self.ShiftMap(shiftMap_Data)
+        elif kind == 'CVT':
+            for i in range(len(pedal_avg)):
+                shiftMap[0].append(enSpd_Data[pedal_cut_index[0][i]:pedal_cut_index[1][i]])
+                shiftMap[1].append(turbSpd_Data[pedal_cut_index[0][i]:pedal_cut_index[1][i]])
+                shiftMap[2].append(vehspd_data[pedal_cut_index[0][i]:pedal_cut_index[1][i]])
+            obj = self.ShiftMap(shiftMap, pedal_avg=pedal_avg)
+        elif kind == 'AT':
+            pass
         return obj
 
     def systemgain_curve(self, pedal_data, vehspd_data, acc_data, pedal_cut_index, pedal_avg):
@@ -232,7 +244,7 @@ class SystemGain(object):
         vehspd_data[0], vehspd_data[-1] = 0, 0
         # end of edges detection initialize
 
-        for i in range(len(vehspd_data)):   # GPS 车速置零   20180213 LuChao
+        for i in range(len(vehspd_data)):  # GPS 车速置零   20180213 LuChao
             if vehspd_data[i] < 0.5:
                 vehspd_data[i] = 0
 
@@ -256,18 +268,18 @@ class SystemGain(object):
         # creep auto detection
         for j in range(0, len(t_edge_vehspd)):
             if (t_edge_vehspd[j] - r_edge_vehspd[j] > 500) & (
-                    3.5 < np.average(vehspd_data[r_edge_vehspd[j] + 200:t_edge_vehspd[j] - 200]) < 8.5) & (
+                            3.5 < np.average(vehspd_data[r_edge_vehspd[j] + 200:t_edge_vehspd[j] - 200]) < 8.5) & (
                         np.average(pedal_data[r_edge_vehspd[j]:t_edge_vehspd[j]]) < 0.01):
                 pedal_cut_index[0].append(r_edge_vehspd[j] - 40)  # 车速信号相对于加速度信号有迟滞
                 pedal_cut_index[1].append(t_edge_vehspd[j] - 40)
                 pedal_avg.append(np.mean(pedal_data[r_edge_vehspd[j]:t_edge_vehspd[j]]))
 
         for j in range(0, len(r_edge_pedal)):
-                if t_edge_pedal[j] - r_edge_pedal[j] > 400:   # 时间长度
-                    if np.cov(pedal_data[r_edge_pedal[j] + 20:t_edge_pedal[j] - 20]) < 3:
-                        pedal_cut_index[0].append(r_edge_pedal[j])
-                        pedal_cut_index[1].append(t_edge_pedal[j])
-                        pedal_avg.append(np.mean(pedal_data[r_edge_pedal[j]:t_edge_pedal[j]]))
+            if t_edge_pedal[j] - r_edge_pedal[j] > 400:  # 时间长度
+                if np.cov(pedal_data[r_edge_pedal[j] + 20:t_edge_pedal[j] - 20]) < 3:
+                    pedal_cut_index[0].append(r_edge_pedal[j])
+                    pedal_cut_index[1].append(t_edge_pedal[j])
+                    pedal_avg.append(np.mean(pedal_data[r_edge_pedal[j]:t_edge_pedal[j]]))
 
         return pedal_cut_index, pedal_avg
 
@@ -300,11 +312,12 @@ class SystemGain(object):
             self.data = matrix
 
     class ShiftMap:
-        def __init__(self, matrix):
+        def __init__(self, matrix, **kwargs):
             self.xdata = matrix[2]
             self.ydata = matrix[1]
             self.gear = matrix[0]
             self.data = matrix
+            self.kwargs = kwargs
 
     class SystemGainCurve:
         def __init__(self, vehspd_sg, acc_sg, vehspd_cs, pedal_cs):
@@ -361,7 +374,6 @@ class ReadFile(object):
                 back_up_counter += 1
                 self.file_columns.append('signal' + str(back_up_counter) + '_with_known_char')
 
-
     def pre_select_features(self):
         # return [0,3,1,2,17,6,10,5,11]
         return [0, 2, 3, 1, 6, 5, 0, 4, 0]
@@ -373,7 +385,6 @@ class SaveAndLoad(object):
 
     @staticmethod
     def store_result(file_path, store_data):
-        # os.chdir(file_path)
         output_file = open(file_path, 'wb')
         pickle.dump(store_data, output_file)
         output_file.close()
@@ -381,8 +392,6 @@ class SaveAndLoad(object):
 
     @staticmethod
     def reload_result(file_path_list):
-        # if len(file_path) > 2:
-        # os.chdir(file_path)
         data_reload = []
         for i in file_path_list:
             input_file = open(i, 'rb')

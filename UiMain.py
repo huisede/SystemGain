@@ -330,7 +330,8 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
         self.MainProcess_thread_cal = ThreadProcess(method='sg_cal_thread',
                                                     raw_data=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful,
-                                                    feature_array=feature_array)
+                                                    feature_array=feature_array,
+                                                    pt_type=self.buttonGroup.checkedButton().text())
         self.MainProcess_thread_cal.Message_Finish.connect(self.show_ax_pictures_sg)
         self.MainProcess_thread_cal.start()
 
@@ -367,7 +368,15 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.PicToolBar_3.dynamic_update()
 
         self.dr_shift_map.axes.clear()
-        self.dr_shift_map.plot_shift_map(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.shiftmap.data)
+        if self.System_Gain_AT_DCT.isChecked():
+            self.dr_shift_map.plot_shift_map(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.shiftmap.data,
+                                             kind='AT/DCT')
+        elif self.System_Gain_CVT.isChecked():
+            self.dr_shift_map.plot_shift_map(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.shiftmap.data,
+                                             kind='CVT',
+                                             pedal_avg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.shiftmap.kwargs['pedal_avg'])
+        elif self.System_Gain_MT.isChecked():
+            pass
         self.PicToolBar_4.press(self.PicToolBar_4.home())
         self.PicToolBar_4.dynamic_update()
 
@@ -508,7 +517,8 @@ class ThreadProcess(QtCore.QThread):
         self.Message_Finish.emit("计算完成！")
 
     def sg_cal_thread(self):
-        self.ax_holder_SG = SystemGain(raw_data=self.kwargs['raw_data'], feature_array=self.kwargs['feature_array'])
+        self.ax_holder_SG = SystemGain(raw_data=self.kwargs['raw_data'], feature_array=self.kwargs['feature_array'],
+                                       pt_type=self.kwargs['pt_type'])
         self.ax_holder_SG.sg_main()
         self.Message_Finish.emit("计算完成！")
 
