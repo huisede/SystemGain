@@ -101,27 +101,32 @@ class SystemGain(object):
 
     def acc_response(self, vehspd_data, acc_data, pedal_cut_index, pedal_avg):
         acc_ped_map = [[], [], []]
-        for i in range(0, len(pedal_avg)):
-            iVehSpd = vehspd_data[pedal_cut_index[0][i]:pedal_cut_index[1][i]]
-            iPed = [pedal_avg[i] * ix / ix for ix in range(pedal_cut_index[0][i], pedal_cut_index[1][i])]
-            iAcc = acc_data[pedal_cut_index[0][i]:pedal_cut_index[1][i]]
+        try:
+            for i in range(0, len(pedal_avg)):
+                iVehSpd = vehspd_data[pedal_cut_index[0][i]:pedal_cut_index[1][i]]
+                iPed = [pedal_avg[i] * ix / ix for ix in range(pedal_cut_index[0][i], pedal_cut_index[1][i])]
+                iAcc = acc_data[pedal_cut_index[0][i]:pedal_cut_index[1][i]]
 
-            # 删除加速度小于0.05g的数据，认为是踩了制动
-            data_len = len(iAcc)
-            j = 0
-            while j < data_len:
-                if iAcc[j] < 0.0:  # 20180211 0.05->0.0
-                    del iVehSpd[j]
-                    del iPed[j]
-                    del iAcc[j]
-                    data_len = data_len - 1
-                    j = j - 1
-                j = j + 1
+                # 删除加速度小于0.05g的数据，认为是踩了制动
+                data_len = len(iAcc)
+                j = 0
+                while j < data_len:
+                    if iAcc[j] < 0.0:  # 20180211 0.05->0.0
+                        del iVehSpd[j]
+                        del iPed[j]
+                        del iAcc[j]
+                        data_len = data_len - 1
+                        j = j - 1
+                    j = j + 1
 
-            acc_ped_map[0].append(iPed)
-            acc_ped_map[1].append(iVehSpd)
-            acc_ped_map[2].append(iAcc)
-        obj = self.AccResponse(acc_ped_map, pedal_avg)
+                acc_ped_map[0].append(iPed)
+                acc_ped_map[1].append(iVehSpd)
+                acc_ped_map[2].append(iAcc)
+            obj = self.AccResponse(acc_ped_map, pedal_avg)
+        except Exception :
+            acc_ped_map = [[], [], []]
+            print('Error From acc_response Cal!')
+            obj = self.AccResponse(acc_ped_map, pedal_avg)
         return obj
 
     def launch(self, acc_data, pedal_data, pedal_cut_index, pedal_avg):

@@ -8,7 +8,6 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm
 
-
 # import warnings
 # warnings.filterwarnings("ignore")
 
@@ -211,19 +210,29 @@ class MyFigureCanvas(FigureCanvas):
 
     def plot_raw_data(self, time, df, **kwargs):
 
-        pos = [0.02, 0.1, 0.8, 0.8]
-        colors = ['r', 'b', 'g', 'y', 'orchid', 'orange', 'navy']
-        font_size = 10
+        signal_num = df.shape[1]
+        if signal_num < 3:
+            font_size = 12
+        elif signal_num < 5:
+            font_size = 10
+        else:
+            font_size = 8
 
-        for i in range(df.shape[1]):
+        pos = [0.02, 0.1, 1.0-signal_num*font_size/160, 0.8]
+
+        colors = ['r', 'b', 'g', 'm', 'darkgray', 'orchid', 'orange', 'navy', 'purple', 'crimson', 'steelblue',
+                  'sage', 'gold', 'tomato', 'brown']
+
+        for i in range(signal_num):
             if i == 0:
                 self.axes = self.fig.add_axes(pos, axisbg='w', label=str(df.columns[i]))  # 设置初始的图层底色为白色
                 self.axes.tick_params(axis='x', colors='black', labelsize=10)
                 self.axes.set_xlabel('time (s)', fontsize=12)
             else:
                 self.axes = self.fig.add_axes(pos, axisbg='none', label=str(df.columns[i]))  # 设置随后的图层底色为透明
+                self.axes.get_xaxis().set_visible(False)
 
-            self.axes.spines['right'].set_position(('outward', 60 * i))  # 图的右侧边框向外移动
+            self.axes.spines['right'].set_position(('outward', font_size/10*70 * i))  # 图的右侧边框向外移动
             self.axes.spines['right'].set_color(colors[i])
             self.axes.spines['right'].set_linewidth(2)
             self.axes.plot(time, df.iloc[:, i], linewidth=1, color=colors[i])

@@ -37,8 +37,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.SysGain_Cal.clicked.connect(self.cal_sys_gain_data_pre)
         self.History_Data_Choose_PushButton.clicked.connect(self.history_data_reload)
 
-        self.menu_Engine_Working_Dist.triggered.connect(self.data_view_check_box_list)
-        self.menu_Shifting_Strategy.triggered.connect(self.resize_figs)
+        # self.menu_Engine_Working_Dist.triggered.connect(self.data_view_check_box_list)
 
         self.info_list = []
         self.MainProcess_thread = []
@@ -210,6 +209,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             eval('self.verticalLayout.addWidget(self.checkBox' + ch + ')')
             eval('self.checkBox' + ch + '.setText("' + self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig[
                 i] + '")')
+            eval('self.checkBox' + ch + '.clicked.connect(self.data_view_check_box_list)')  # 捆绑点击触发绘图
 
         spacer_item = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacer_item)  # 添加新spacer排版占位
@@ -228,12 +228,24 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                 print('Error From data_view_check_box_list!')
         self.data_view_signal_plot(checked_list)
 
-    def data_view_signal_plot(self, signal_list):
+    def data_view_signal_plot(self, signal_list):  # 时间序列不一定是第一列！！！后续修改
 
         self.dr_raw.fig.clear()
-        self.dr_raw.plot_raw_data(time=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.iloc[:, 0],
-                                  # 时间序列不一定是第一列！！！后续修改
-                                  df=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.iloc[:, signal_list])
+        try:
+            if self.DataViewer_setting_Time_axis_Dots_RB.isChecked():
+                self.dr_raw.plot_raw_data(time=range(self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.shape[0]),
+                                          df=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.iloc[:, signal_list])
+            elif self.DataViewer_setting_Time_axis_Samples_RB.isChecked():
+                self.dr_raw.plot_raw_data(time=[x/float(self.DataViewer_setting_Time_axis_Samples_TE.toPlainText()) for x in
+                                                range(self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.shape[0])],
+                                          df=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.iloc[:, signal_list])
+            elif self.DataViewer_setting_Time_axis_Signal_RB.isChecked():
+                self.dr_raw.plot_raw_data(time=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.iloc[:, self.DataViewer_setting_Time_axis_Samples_comboBox.currentIndex()],
+                                          df=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.iloc[:, signal_list])
+        except Exception:
+            message_str = 'Error: Wrong Signal TYPE! Please Check!'
+            self.info_widget_update(message_str)
+
         self.PicToolBar_raw.press(self.PicToolBar_raw.home())
         self.PicToolBar_raw.dynamic_update()
 
@@ -273,6 +285,16 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         # 20180226 交互类性的触发请选择activated而不是currentIndexChanged!!!!!!
         self.combobox_index_initial(self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig)
 
+    def combobox_index_initial(self, item_list):  # 将文件中的所有字段写入列表
+        for i in self.combo_box_names:  # 编号
+            eval('self.' + i + '.clear()')  # 清空当前列表
+            for j in item_list:
+                eval('self.' + i + ".addItem('" + j + "')")
+                # self.combobox_index_pre_select(self.MainProcess_thread_rd.ax_holder_rd.pre_select_features())
+
+        for i in item_list:  # Setting页面的初始化暂时写在这里!!后续需要挪位置到initial_setting_value()
+            self.DataViewer_setting_Time_axis_Samples_comboBox.addItem(i)
+
     def combobox_index_features_initial_callback(self):
         columns = self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig.tolist()
         columns_to_pre_select = []
@@ -290,13 +312,6 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         else:
             message_str = 'Error: Signal not in Current data!'
         self.info_widget_update(message_str)
-
-    def combobox_index_initial(self, item_list):  # 将文件中的所有字段写入列表
-        for i in self.combo_box_names:  # 编号
-            eval('self.' + i + '.clear()')  # 清空当前列表
-            for j in item_list:
-                eval('self.' + i + ".addItem('" + j + "')")
-        # self.combobox_index_pre_select(self.MainProcess_thread_rd.ax_holder_rd.pre_select_features())
 
     def combobox_index_pre_select(self, pre_select_item_index_list):  # 自动预选字段
         for i in range(self.combo_box_names.__len__()):  # 编号
@@ -331,7 +346,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.MainProcess_thread_cal = ThreadProcess(method='sg_cal_thread',
                                                     raw_data=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful,
                                                     feature_array=feature_array,
-                                                    pt_type=self.buttonGroup.checkedButton().text())
+                                                    pt_type=self.buttonGroup_PT_Type.checkedButton().text())
         self.MainProcess_thread_cal.Message_Finish.connect(self.show_ax_pictures_sg)
         self.MainProcess_thread_cal.start()
 
@@ -477,8 +492,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.gridLayout_4.addWidget(dr_history_pedal_map,9,0,1,3)
         dr_history_pedal_map.setMinimumSize(QtCore.QSize(0, 600))
 
-
-    def datatableview_show(self, data_list):
+    def data_table_view_show(self, data_list):
         """
         Function of showing calculation results in data_table
 
@@ -496,6 +510,10 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.DatatableView.setModel(self.model)
         self.DatatableView.resizeColumnsToContents()
 
+    # -----|--|Setting 页面
+    def initial_setting_value(self):
+
+        pass
 
 class ThreadProcess(QtCore.QThread):
     Message_Finish = QtCore.pyqtSignal(str)
