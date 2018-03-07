@@ -36,7 +36,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.action_Cal_Setting.triggered.connect(lambda: self.change_main_page(5))
         self.SysGain_Cal.clicked.connect(self.cal_sys_gain_data_pre)
         self.History_Data_Choose_PushButton.clicked.connect(self.history_data_reload)
-
+        self.Constant_Speed_Input_button.clicked.connect(self.constant_speed_input_callback)
         # self.menu_Engine_Working_Dist.triggered.connect(self.data_view_check_box_list)
 
         self.info_list = []
@@ -51,6 +51,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                                 'System_Gain_AT_DCT_Fuel',
                                 'System_Gain_AT_DCT_EnSpd',
                                 'System_Gain_AT_DCT_TbSpd']
+        self.replace_cs_content = False
 
         # self.buttonGroup_data_viewer = QtWidgets.QButtonGroup(self.verticalLayout)
 
@@ -156,6 +157,10 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         message_str = 'Message: Importing ' + file_path + ' ...'
         self.info_widget_update(message_str)
 
+        self.refresh_raw_data_pic()
+        self.refresh_cs_data()  # 新导入数据后清空Constant Speed数据
+        self.refresh_sg_pics()
+
     def save_sys_gain_data(self):
         file = QFileDialog.getSaveFileName(self, filter='.pkl')
         file_path = file[0] + file[1]
@@ -214,7 +219,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         spacer_item = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacer_item)  # 添加新spacer排版占位
 
-        message_str = 'Message: Finished data import!'
+        message_str = 'Message: Finish data import!'
         self.info_widget_update(message_str)
 
         self.combobox_index_features_initial()
@@ -228,20 +233,20 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                 print('Error From data_view_check_box_list!')
         self.data_view_signal_plot(checked_list)
 
-    def data_view_signal_plot(self, signal_list):  # 时间序列不一定是第一列！！！后续修改
+    def data_view_signal_plot(self, signal_list):  # 时间序列不一定是第一列！！！后续修改      ---已换成3种选项
 
         self.dr_raw.fig.clear()
         try:
             if self.DataViewer_setting_Time_axis_Dots_RB.isChecked():
-                self.dr_raw.plot_raw_data(time=range(self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.shape[0]),
-                                          df=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.iloc[:, signal_list])
+                self.dr_raw.plot_raw_data(time=range(self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.shape[0]),
+                                          df=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.iloc[:, signal_list])
             elif self.DataViewer_setting_Time_axis_Samples_RB.isChecked():
                 self.dr_raw.plot_raw_data(time=[x/float(self.DataViewer_setting_Time_axis_Samples_TE.toPlainText()) for x in
-                                                range(self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.shape[0])],
-                                          df=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.iloc[:, signal_list])
+                                                range(self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.shape[0])],
+                                          df=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.iloc[:, signal_list])
             elif self.DataViewer_setting_Time_axis_Signal_RB.isChecked():
-                self.dr_raw.plot_raw_data(time=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.iloc[:, self.DataViewer_setting_Time_axis_Samples_comboBox.currentIndex()],
-                                          df=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.iloc[:, signal_list])
+                self.dr_raw.plot_raw_data(time=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.iloc[:, self.DataViewer_setting_Time_axis_Samples_comboBox.currentIndex()],
+                                          df=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.iloc[:, signal_list])
         except Exception:
             message_str = 'Error: Wrong Signal TYPE! Please Check!'
             self.info_widget_update(message_str)
@@ -260,6 +265,10 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
     def get_mouse_xy_plot(self, event):
         self.xyCoordinates = [event.xdata, event.ydata]  # 捕捉鼠标点击的坐标
         print(self.xyCoordinates)
+
+    def refresh_raw_data_pic(self):
+        self.dr_raw.fig.clear()
+        self.PicToolBar_raw.dynamic_update()
 
     # -----|--|System Gain
     def combobox_index_features_initial(self):  # 将字段规则导入
@@ -290,7 +299,6 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             eval('self.' + i + '.clear()')  # 清空当前列表
             for j in item_list:
                 eval('self.' + i + ".addItem('" + j + "')")
-                # self.combobox_index_pre_select(self.MainProcess_thread_rd.ax_holder_rd.pre_select_features())
 
         for i in item_list:  # Setting页面的初始化暂时写在这里!!后续需要挪位置到initial_setting_value()
             self.DataViewer_setting_Time_axis_Samples_comboBox.addItem(i)
@@ -338,15 +346,54 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         message_str = 'Message: Feature index ' + feature_save_name + ' added!'
         self.info_widget_update(message_str)
 
+    def constant_speed_input_callback(self):
+        file = QFileDialog.getOpenFileName(self, filter='*.csv')
+        file_path = file[0]
+
+        self.MainProcess_thread_cs = ThreadProcess(method='cs_read_thread', filepath=file_path)
+        self.MainProcess_thread_cs.Message_Finish.connect(self.constant_speed_cal)
+        self.MainProcess_thread_cs.start()
+
+        message_str = 'Message: Importing ' + file_path + ' ...'
+        self.info_widget_update(message_str)
+
+    def constant_speed_cal(self):
+        feature_array = []
+        for i in self.combo_box_names:  # 编号
+            eval('feature_array.append(self.' + i + '.currentText())')
+
+        self.MainProcess_thread_cs_cal = ThreadProcess(method='cs_cal_thread',
+                                                       raw_data=self.MainProcess_thread_cs.ax_holder_cs.csv_data_ful,
+                                                       feature_list=feature_array)
+        self.MainProcess_thread_cs_cal.Message_Finish.connect(self.constant_speed_replace)
+        self.MainProcess_thread_cs_cal.start()
+
+    def constant_speed_replace(self):
+        self.replace_cs_content = True
+        self.Constant_Speed_Show_Speed_text.setText(str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table[:, 1].round(0))[1:-1])
+        self.Constant_Speed_Show_Speed_text.setFontPointSize(5)
+        self.Constant_Speed_Show_Ped_text.setText(str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table[:, 2].round(0))[1:-1])
+        print(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table)
+
     def cal_sys_gain_data(self):
         feature_array = []
         for i in self.combo_box_names:  # 编号
             eval('feature_array.append(self.' + i + '.currentText())')
 
-        self.MainProcess_thread_cal = ThreadProcess(method='sg_cal_thread',
-                                                    raw_data=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful,
-                                                    feature_array=feature_array,
-                                                    pt_type=self.buttonGroup_PT_Type.checkedButton().text())
+        if self.replace_cs_content:
+            self.MainProcess_thread_cal = ThreadProcess(method='sg_cal_thread',
+                                                        raw_data=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful,
+                                                        feature_array=feature_array,
+                                                        pt_type=self.buttonGroup_PT_Type.checkedButton().text(),
+                                                        replace=True,
+                                                        cs_table=self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table)
+        else:
+            self.MainProcess_thread_cal = ThreadProcess(method='sg_cal_thread',
+                                                        raw_data=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful,
+                                                        feature_array=feature_array,
+                                                        pt_type=self.buttonGroup_PT_Type.checkedButton().text(),
+                                                        replace=False)
+
         self.MainProcess_thread_cal.Message_Finish.connect(self.show_ax_pictures_sg)
         self.MainProcess_thread_cal.start()
 
@@ -413,14 +460,35 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         message_str = 'Message: System gain calculation finished!'
         self.info_widget_update(message_str)
 
+    def refresh_cs_data(self):
+        self.replace_cs_content = False
+        self.Constant_Speed_Show_Speed_text.setText('----')
+        self.Constant_Speed_Show_Ped_text.setText('----')
+
+    def refresh_sg_pics(self):
+        self.dr_acc_curve.axes.clear()
+        self.PicToolBar_1.dynamic_update()
+        self.dr_sg_curve.axes.clear()
+        self.PicToolBar_2.dynamic_update()
+        self.dr_cons_spd.axes.clear()
+        self.PicToolBar_3.dynamic_update()
+        self.dr_shift_map.axes.clear()
+        self.PicToolBar_4.dynamic_update()
+        self.dr_launch.axes.clear()
+        self.PicToolBar_5.dynamic_update()
+        self.dr_ped_map.axes.clear()
+        self.PicToolBar_6.dynamic_update()
+        self.dr_max_acc.axes.clear()
+        self.PicToolBar_7.dynamic_update()
+
     # -----|--|Comparison 页面
     def history_data_reload(self):
         file = QFileDialog.getOpenFileNames(self, filter='*.pkl')
-        file_path_list = file[0]
+        self.history_file_path_list = file[0]
         try:
             self.sl = SaveAndLoad()
-            self.history_data = self.sl.reload_result(file_path_list=file_path_list)
-            message_str = 'Message: History data --' + str(file_path_list) + ' import finished!'
+            self.history_data = self.sl.reload_result(file_path_list=self.history_file_path_list)
+            message_str = 'Message: History data --' + str(self.history_file_path_list) + ' import finished!'
             self.info_widget_update(message_str)
             self.history_data_plot()
         except Exception as e:
@@ -428,6 +496,11 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             print(e)
 
     def history_data_plot(self):
+        legend_list = []
+        for i in self.history_file_path_list:
+            file_name = re.match(r'^([0-9a-zA-Z/:_.%\u4e00-\u9fa5\-]+)(/)([0-9a-zA-Z/:_.%\u4e00-\u9fa5\-]+)(.pkl)$', i)
+            legend_list.append(file_name.group(3))
+
         while self.gridLayout_4.itemAt(0) is not None:  # 删除当前Lay中的元素
             try:
                 self.gridLayout_4.itemAt(0).widget().setParent(None)  # 删除当前Lay中widget元素，在此为CheckBox
@@ -437,9 +510,12 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                 self.gridLayout_4.removeItem(self.gridLayout_4.itemAt(0))  # 删除当前Lay中spacer元素
 
         dr_history_sg_curve = MyFigureCanvas(width=6, height=4, plot_type='2d')
+        curve_list = []
         for i in range(len(self.history_data)):  # 将每次画一根线
             dr_history_sg_curve.plot_systemgain_curve(vehspd_sg=self.history_data[i].sysGain_class.systemgain.vehspd_sg,
                                                       acc_sg=self.history_data[i].sysGain_class.systemgain.acc_sg)
+            curve_list.append(dr_history_sg_curve.axes.get_lines()[i*7])
+        dr_history_sg_curve.axes.legend(curve_list, legend_list)  # 第1、8、15……为需求的SG Curve
         self.PicToolBar_history1 = NavigationBar(dr_history_sg_curve, self)
         self.gridLayout_4.addWidget(self.PicToolBar_history1,0,0,1,1)
         self.gridLayout_4.addWidget(dr_history_sg_curve,1,0,1,1)
@@ -449,6 +525,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         for i in range(len(self.history_data)):  # 将每次画一根线
             dr_history_cons_spd.plot_constant_speed(vehspd_cs=self.history_data[i].sysGain_class.systemgain.vehspd_cs,
                                                     pedal_cs=self.history_data[i].sysGain_class.systemgain.pedal_cs)
+        dr_history_cons_spd.axes.legend(legend_list)
         self.PicToolBar_history2 = NavigationBar(dr_history_cons_spd, self)
         self.gridLayout_4.addWidget(self.PicToolBar_history2,0,1,1,1)
         self.gridLayout_4.addWidget(dr_history_cons_spd,1,1,1,1)
@@ -457,6 +534,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         dr_history_max_acc = MyFigureCanvas(width=6, height=4, plot_type='2d')
         for i in range(len(self.history_data)):  # 将每次画一根线
             dr_history_max_acc.plot_max_acc(data=self.history_data[i].sysGain_class.maxacc.data)
+        dr_history_max_acc.axes.legend(legend_list)
         self.PicToolBar_history3 = NavigationBar(dr_history_max_acc, self)
         self.gridLayout_4.addWidget(self.PicToolBar_history3,0,2,1,1)
         self.gridLayout_4.addWidget(dr_history_max_acc,1,2,1,1)
@@ -512,12 +590,11 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
     # -----|--|Setting 页面
     def initial_setting_value(self):
-
         pass
+
 
 class ThreadProcess(QtCore.QThread):
     Message_Finish = QtCore.pyqtSignal(str)
-    Message_Finish_2 = QtCore.pyqtSignal(str)
 
     def __init__(self, method, **kwargs):
         super(ThreadProcess, self).__init__()
@@ -529,15 +606,31 @@ class ThreadProcess(QtCore.QThread):
             getattr(self, self.method, 'nothing')()
         except BaseException as e:
             print(e)
+            message_str = 'Error: Error occurred in calculating SG data!'
+            self.info_widget_update(message_str)
 
     def sg_read_thread(self):
         self.ax_holder_rd = ReadFile(file_path=self.kwargs['filepath'])
         self.Message_Finish.emit("计算完成！")
 
     def sg_cal_thread(self):
-        self.ax_holder_SG = SystemGain(raw_data=self.kwargs['raw_data'], feature_array=self.kwargs['feature_array'],
-                                       pt_type=self.kwargs['pt_type'])
+        if self.kwargs['replace']:
+            self.ax_holder_SG = SystemGain(raw_data=self.kwargs['raw_data'], feature_array=self.kwargs['feature_array'],
+                                           pt_type=self.kwargs['pt_type'], replace=True, cs_table=self.kwargs['cs_table'])
+        else:
+            self.ax_holder_SG = SystemGain(raw_data=self.kwargs['raw_data'], feature_array=self.kwargs['feature_array'],
+                                           pt_type=self.kwargs['pt_type'])
         self.ax_holder_SG.sg_main()
+        self.Message_Finish.emit("计算完成！")
+
+    def cs_read_thread(self):
+        self.ax_holder_cs = ReadFile(file_path=self.kwargs['filepath'])
+        self.Message_Finish.emit("计算完成！")
+
+    def cs_cal_thread(self):
+        self.ax_holder_cs_cal = ConstantSpeed(raw_data=self.kwargs['raw_data'],
+                                              feature_list=self.kwargs['feature_list'])
+        self.ax_holder_cs_cal.cs_main()
         self.Message_Finish.emit("计算完成！")
 
     def show_raw_data(self):
