@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
+from numpy import average, transpose, zeros, array, linspace, mean, cov, convolve, arange, cumsum, concatenate, abs, \
+    mod, std, ones
 from pandas import read_csv, read_excel
 from scipy import interpolate
 import matplotlib.pyplot as plt
-import re
-import pickle
+from re import match
+from pickle import dump, load
+from mdfreader import mdfreader
 
 
 class SystemGain(object):
@@ -60,49 +62,75 @@ class SystemGain(object):
         # *******1-GetSysGainData******
         # 获取数据，判断数据类型，不同读取，获取文件名信息，
         # SG_csv_Data_ful = read_csv(file_path)
-        SG_csv_Data_ful = self.raw_data
+        self.SG_csv_Data_ful = self.raw_data
         # *******2-GetSGColumn*********
         # 获取列号，标准变量及面板输入，数据预处理
-        SG_csv_Data_Selc = SG_csv_Data_ful.loc[:, self.feature_array]
+        self.SG_csv_Data_Selc = self.SG_csv_Data_ful.loc[:, self.feature_array]
         # SG_csv_Data = SG_csv_Data_Selc.drop_duplicates()    # 先不去重
-        SG_csv_Data = SG_csv_Data_Selc  # 选到重复的会报错 ！！！！！所以修改了以下索引格式
-        time_Data = SG_csv_Data.iloc[:, 0].tolist()
-        vehSpd_Data = SG_csv_Data.iloc[:, 1].tolist()
-        pedal_Data = SG_csv_Data.iloc[:, 2].tolist()
-        acc_Data = SG_csv_Data.iloc[:, 3].tolist()
-        gear_Data = SG_csv_Data.iloc[:, 4].tolist()
-        torq_Data = SG_csv_Data.iloc[:, 5].tolist()
-        fuel_Data = SG_csv_Data.iloc[:, 6].tolist()
-        enSpd_Data = SG_csv_Data.iloc[:, 7].tolist()
-        turbSpd_Data = SG_csv_Data.iloc[:, 8].tolist()
+        SG_csv_Data = self.SG_csv_Data_Selc  # 选到重复的会报错 ！！！！！所以修改了以下索引格式
+        self.time_Data = SG_csv_Data.iloc[:, 0].tolist()
+        self.vehSpd_Data = SG_csv_Data.iloc[:, 1].tolist()
+        self.pedal_Data = SG_csv_Data.iloc[:, 2].tolist()
+        self.acc_Data = SG_csv_Data.iloc[:, 3].tolist()
+        self.gear_Data = SG_csv_Data.iloc[:, 4].tolist()
+        self.torq_Data = SG_csv_Data.iloc[:, 5].tolist()
+        self.fuel_Data = SG_csv_Data.iloc[:, 6].tolist()
+        self.enSpd_Data = SG_csv_Data.iloc[:, 7].tolist()
+        self.turbSpd_Data = SG_csv_Data.iloc[:, 8].tolist()
 
-        colour_Bar = ['orange', 'lightgreen', 'c', 'royalblue', 'lightcoral', 'yellow', 'red', 'brown',
-                      'teal', 'blue', 'coral', 'gold', 'lime', 'olive']
+        self.colour_Bar = ['orange', 'lightgreen', 'c', 'royalblue', 'lightcoral', 'yellow', 'red', 'brown',
+                           'teal', 'blue', 'coral', 'gold', 'lime', 'olive']
         # 加速度修正
-        acc_offset = ((vehSpd_Data[-1] - vehSpd_Data[0]) / 3.6 / (time_Data[-1] - time_Data[0]) - np.average(
-            acc_Data[:]) * 9.8) / 9.8
-        acc_Data = [x + acc_offset for x in acc_Data]
-        # acc_check = (vehSpd_Data[-1]-vehSpd_Data[0])/3.6-np.average(acc_Data)*9.8*(time_Data[-1]-time_Data[0])
-        # 数据切分
-        pedal_cut_index, pedal_avg = self.cut_sg_data_pedal(pedal_Data, vehSpd_Data)
-        # fig1三维图，增加最大加速度连线以及稳态车速线
-        obj_AccResponse = self.acc_response(vehSpd_Data, acc_Data, pedal_cut_index, pedal_avg)  # 数据封装
-        # # obj_AccResponse.plot_acc_response()
+        self.acc_offset = ((self.vehSpd_Data[-1] - self.vehSpd_Data[0]) / 3.6 / (self.time_Data[-1] - self.time_Data[0])
+                           - average(self.acc_Data[:]) * 9.8) / 9.8
+        self.acc_Data = [x + self.acc_offset for x in self.acc_Data]
+        self.pedal_cut_index, self.pedal_avg = self.cut_sg_data_pedal(self.pedal_Data, self.vehSpd_Data)
+
+        last_item = -10
+        trigger = False
+        for item in self.pedal_avg:
+            if abs(last_item - item) < 3:
+                trigger = True
+            last_item = item
+
+        if trigger:  # 挂起线程，等待eliminate_duplicate_ped()被触发
+            return 'eliminate_duplicate_ped'
+        else:
+            self.sg_obj_cal()
+
+    def eliminate_duplicate_ped(self, remove_ped_list):
+        ped_h_index = []
+        ped_t_index = []
+        ped_re = []
+        for i, checked in enumerate(remove_ped_list):
+            if not checked:
+                ped_h_index.append(self.pedal_cut_index[0][i])
+                ped_t_index.append(self.pedal_cut_index[1][i])
+                ped_re.append(self.pedal_avg[i])
+        self.pedal_cut_index = [ped_h_index, ped_t_index]
+        self.pedal_avg = ped_re
+        self.sg_obj_cal()
+
+    def sg_obj_cal(self):
+        obj_AccResponse = self.acc_response(self.vehSpd_Data, self.acc_Data, self.pedal_cut_index, self.pedal_avg)
+
         # # fig2起步图，[5,10,20,30,40,50,100],后续补充判断大油门不是100也画出来,粗细
-        obj_Launch = self.launch(acc_Data, pedal_Data, pedal_cut_index, pedal_avg)
-        # # obj_Launch.plot_launch()
-        obj_MaxAcc = self.max_acc(acc_Data, pedal_cut_index, pedal_avg)
-        # obj_MaxAcc.plot_maxacc()
-        # fig4 PedalMap-Gear
-        obj_PedalMap = self.pedal_map(pedal_Data, enSpd_Data, torq_Data, pedal_cut_index, pedal_avg, colour_Bar)
-        # obj_PedalMap.plot_pedal_map()
-        # fig5 ShiftMap
-        obj_ShiftMap = self.shift_map(pedal_Data, gear_Data, vehSpd_Data, pedal_cut_index, pedal_avg, colour_Bar,
-                                      enSpd_Data, turbSpd_Data, kind=self.pt_type)
-        # obj_ShiftMap.plot_shift_map()
-        obj_SystemGain = self.systemgain_curve(pedal_Data, vehSpd_Data, acc_Data, pedal_cut_index, pedal_avg)
+        obj_Launch = self.launch(self.acc_Data, self.pedal_Data, self.pedal_cut_index, self.pedal_avg)
+
+        obj_MaxAcc = self.max_acc(self.acc_Data, self.pedal_cut_index, self.pedal_avg)
+
+        obj_PedalMap = self.pedal_map(self.pedal_Data, self.enSpd_Data, self.torq_Data, self.pedal_cut_index,
+                                      self.pedal_avg, self.colour_Bar)
+
+        obj_ShiftMap = self.shift_map(self.pedal_Data, self.gear_Data, self.vehSpd_Data, self.pedal_cut_index,
+                                      self.pedal_avg, self.colour_Bar,
+                                      self.enSpd_Data, self.turbSpd_Data, kind=self.pt_type)
+
+        obj_SystemGain = self.systemgain_curve(self.pedal_Data, self.vehSpd_Data, self.acc_Data, self.pedal_cut_index,
+                                               self.pedal_avg)
         self.sysGain_class = self.SystemGainDocker(self.pt_type, obj_AccResponse, obj_Launch, obj_MaxAcc, obj_PedalMap,
-                                                   obj_ShiftMap, SG_csv_Data_ful, obj_SystemGain)
+                                                   obj_ShiftMap, self.SG_csv_Data_ful, obj_SystemGain)
+        return
 
     def acc_response(self, vehspd_data, acc_data, pedal_cut_index, pedal_avg):
         try:
@@ -202,8 +230,8 @@ class SystemGain(object):
                                     shiftMap[1].append(pedal_data[j - 1])
                                     shiftMap[2].append(vehspd_data[j - 1])
                 # 按档位油门车速排序
-                shiftMap_Sort = sorted(np.transpose(shiftMap), key=lambda x: [x[0], x[1], x[2]])
-                shiftMap_Data = np.transpose(shiftMap_Sort)
+                shiftMap_Sort = sorted(transpose(shiftMap), key=lambda x: [x[0], x[1], x[2]])
+                shiftMap_Data = transpose(shiftMap_Sort)
                 obj = self.ShiftMap(shiftMap_Data)
             elif kind == 'CVT':
                 for i in range(len(pedal_avg)):
@@ -255,35 +283,35 @@ class SystemGain(object):
             else:
                 vehspd_steady_for_inter = vehspd_sg_for_inter
 
-            points_for_inter = np.zeros((len(acc), 2))
+            points_for_inter = zeros((len(acc), 2))
             points_for_inter[:, 0] = vehspd
             points_for_inter[:, 1] = ped
             points_for_inter[:, 1] = points_for_inter[:, 1] / 100 * 51
-            acc_for_inter = np.array(acc)
+            acc_for_inter = array(acc)
 
             pedal_steady_for_inter = [x / 100 * 51 + 12.7 for x in pedal_avg]
-            vehspd_steady_tb_inter = np.linspace(min(vehspd_steady_for_inter), 120, 200)
+            vehspd_steady_tb_inter = linspace(min(vehspd_steady_for_inter), 120, 200)
             pedal_steady_function = interpolate.interp1d(vehspd_steady_for_inter, pedal_steady_for_inter)
             pedal_steady_tb_inter = pedal_steady_function(vehspd_steady_tb_inter)
-            points_tb_inter = np.zeros((len(pedal_steady_tb_inter), 2))
+            points_tb_inter = zeros((len(pedal_steady_tb_inter), 2))
             points_tb_inter[:, 0] = vehspd_steady_tb_inter
             points_tb_inter[:, 1] = pedal_steady_tb_inter
 
             '# steady velocity & pedal checked: same with matlab'
-            # np.savetxt('vehspd_steady_for_inter.csv', vehspd_steady_for_inter, delimiter=',')
-            # np.savetxt('pedal_steady_for_inter.csv', pedal_steady_for_inter, delimiter=',')
-            # np.savetxt('pedal_steady_tb_inter.csv', pedal_steady_tb_inter, delimiter=',')
-            # np.savetxt('vehspd_steady_tb_inter.csv', vehspd_steady_tb_inter, delimiter=',')
+            # savetxt('vehspd_steady_for_inter.csv', vehspd_steady_for_inter, delimiter=',')
+            # savetxt('pedal_steady_for_inter.csv', pedal_steady_for_inter, delimiter=',')
+            # savetxt('pedal_steady_tb_inter.csv', pedal_steady_tb_inter, delimiter=',')
+            # savetxt('vehspd_steady_tb_inter.csv', vehspd_steady_tb_inter, delimiter=',')
 
             grid_z1 = interpolate.griddata(points_for_inter, acc_for_inter, points_tb_inter, method='linear')
             grid_z1 = grid_z1 / 12.7
             grid_z1 = self.smooth(grid_z1, 5)
 
             '#  function "griddata" checked: same with matlab'
-            # np.savetxt('points_for_inter.csv', points_for_inter, delimiter=',')
-            # np.savetxt('acc_for_inter.csv', acc_for_inter, delimiter=',')
-            # np.savetxt('points_tb_inter.csv', points_tb_inter, delimiter=',')
-            # np.savetxt('grid_z1.csv', points_tb_inter, delimiter=',')
+            # savetxt('points_for_inter.csv', points_for_inter, delimiter=',')
+            # savetxt('acc_for_inter.csv', acc_for_inter, delimiter=',')
+            # savetxt('points_tb_inter.csv', points_tb_inter, delimiter=',')
+            # savetxt('grid_z1.csv', points_tb_inter, delimiter=',')
 
             # obj = SystemGainPlot()
             obj = self.SystemGainCurve(vehspd_steady_tb_inter, grid_z1, vehspd_steady_for_inter, pedal_avg)
@@ -323,19 +351,19 @@ class SystemGain(object):
 
         # creep auto detection
         for j in range(0, len(t_edge_vehspd)):
-            if (t_edge_vehspd[j] - r_edge_vehspd[j] > 500) & (
-                            3.5 < np.average(vehspd_data[r_edge_vehspd[j] + 200:t_edge_vehspd[j] - 200]) < 8.5) & (
-                        np.average(pedal_data[r_edge_vehspd[j]:t_edge_vehspd[j]]) < 0.01):
+            if (t_edge_vehspd[j] - r_edge_vehspd[j] > 500) and (
+                            3.5 < average(vehspd_data[r_edge_vehspd[j] + 200:t_edge_vehspd[j] - 200]) < 8.5) and (
+                        average(pedal_data[r_edge_vehspd[j]:t_edge_vehspd[j]]) < 0.01):
                 pedal_cut_index[0].append(r_edge_vehspd[j] - 40)  # 车速信号相对于加速度信号有迟滞
                 pedal_cut_index[1].append(t_edge_vehspd[j] - 40)
-                pedal_avg.append(np.mean(pedal_data[r_edge_vehspd[j]:t_edge_vehspd[j]]))
+                pedal_avg.append(mean(pedal_data[r_edge_vehspd[j]:t_edge_vehspd[j]]))
 
         for j in range(0, len(r_edge_pedal)):
             if t_edge_pedal[j] - r_edge_pedal[j] > 400:  # 时间长度
-                if np.cov(pedal_data[r_edge_pedal[j] + 20:t_edge_pedal[j] - 20]) < 3:
+                if cov(pedal_data[r_edge_pedal[j] + 20:t_edge_pedal[j] - 20]) < 3:
                     pedal_cut_index[0].append(r_edge_pedal[j])
                     pedal_cut_index[1].append(t_edge_pedal[j])
-                    pedal_avg.append(np.mean(pedal_data[r_edge_pedal[j]:t_edge_pedal[j]]))
+                    pedal_avg.append(mean(pedal_data[r_edge_pedal[j]:t_edge_pedal[j]]))
 
         return pedal_cut_index, pedal_avg
 
@@ -398,38 +426,52 @@ class SystemGain(object):
     def smooth(data, window):
         # a: 1-D array containing the data to be smoothed by sliding method
         # WSZ: smoothing window size
-        out0 = np.convolve(data, np.ones(window, dtype=int), 'valid') / window
-        r = np.arange(1, window - 1, 2)
-        start = np.cumsum(data[:window - 1])[::2] / r
-        stop = (np.cumsum(data[:-window:-1])[::2] / r)[::-1]
-        return np.concatenate((start, out0, stop))
+        out0 = convolve(data, ones(window, dtype=int), 'valid') / window
+        r = arange(1, window - 1, 2)
+        start = cumsum(data[:window - 1])[::2] / r
+        stop = (cumsum(data[:-window:-1])[::2] / r)[::-1]
+        return concatenate((start, out0, stop))
 
 
 class ReadFile(object):
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, resample_rate):
         """
         Initial function of Read File.
 
         :param file_path: path of system gain file in local disc
         """
         self.file_path = file_path
+        self.resample_rate = 1/int(resample_rate)
         self.file_columns_orig = []
         self.file_columns = []
         self.csv_data_ful = []
-        self.start_read()
+        self.mdf_data = []
+        try:
+            self.start_read()
+        except AttributeError as e:
+            print(e)
 
     def start_read(self):
-        try:
-            self.csv_data_ful = read_csv(self.file_path, low_memory=False)  # utf-8默认编码
-        except UnicodeDecodeError:
-            self.csv_data_ful = read_csv(self.file_path, encoding='gb18030')  # gb18030中文编码
+        file_type_match = match(r'^(.+)(\.)(\w*)$', self.file_path)
+        file_type = file_type_match.group(3)
+        if file_type == 'csv':
+            try:
+                self.csv_data_ful = read_csv(self.file_path, low_memory=False)  # utf-8默认编码
+            except UnicodeDecodeError:
+                self.csv_data_ful = read_csv(self.file_path, encoding='gb18030')  # gb18030中文编码
+        elif file_type == 'xls' or file_type == 'xlsx':
+            self.csv_data_ful = read_excel(self.file_path)
+        elif file_type == 'mdf' or file_type == 'dat':
+            self.mdf_data = mdfreader.mdf(self.file_path)
+            self.mdf_data.convertToPandas(self.resample_rate)
+            self.csv_data_ful = self.mdf_data['master_group']
 
         self.file_columns_orig = self.csv_data_ful.columns
         back_up_counter = 0
         for i in self.csv_data_ful.columns:  # 去除'[]'号，防止控件命名问题
             try:
-                ma = re.match(r'^([0-9a-zA-Z/:_.%\u4e00-\u9fa5\-]+)(\[?)([0-9a-zA-Z/:_.%\u4e00-\u9fa5\[\]\-]*)$', i)
+                ma = match(r'^([0-9a-zA-Z/:_.%\u4e00-\u9fa5\-]+)(\[?)([0-9a-zA-Z/:_.%\u4e00-\u9fa5\[\]\-]*)$', i)
                 self.file_columns.append(ma.group(1))
             except AttributeError:
                 back_up_counter += 1
@@ -443,7 +485,7 @@ class SaveAndLoad(object):
     @staticmethod
     def store_result(file_path, store_data):
         output_file = open(file_path, 'wb')
-        pickle.dump(store_data, output_file)
+        dump(store_data, output_file)
         output_file.close()
         return
 
@@ -452,21 +494,21 @@ class SaveAndLoad(object):
         data_reload = []
         for i in file_path_list:
             input_file = open(i, 'rb')
-            data_reload.append(pickle.load(input_file))
+            data_reload.append(load(input_file))
             input_file.close()
         return data_reload
 
     @staticmethod
     def store_feature_index(store_index):
         output_file = open('./bin/feature_index.pkl', 'wb')
-        pickle.dump(store_index, output_file)
+        dump(store_index, output_file)
         output_file.close()
         return
 
     @staticmethod
     def reload_feature_index():
         input_file = open('./bin/feature_index.pkl', 'rb')
-        data_reload = pickle.load(input_file)
+        data_reload = load(input_file)
         input_file.close()
         return data_reload
 
@@ -504,7 +546,7 @@ class ConstantSpeed(object):
                                               self.gear[i],
                                               self.veh_std_cal(i)])
                         k = k + 1
-                    elif self.veh_std_cal(i) < self.cs_table[k][5] and np.abs(
+                    elif self.veh_std_cal(i) < self.cs_table[k][5] and abs(
                                     self.mean_speed_cal(i) - self.cs_table[k][1]) < 5:
                         self.cs_table[k] = [i,
                                             self.mean_speed_cal(i),
@@ -514,7 +556,7 @@ class ConstantSpeed(object):
                                             self.mean_rpm_cal(i),
                                             self.gear[i],
                                             self.veh_std_cal(i)]
-                    elif np.abs(self.mean_speed_cal(i) - self.cs_table[k][1]) >= 5:
+                    elif abs(self.mean_speed_cal(i) - self.cs_table[k][1]) >= 5:
                         k = k + 1
                         self.cs_table.append([i,
                                               self.mean_speed_cal(i),
@@ -524,7 +566,7 @@ class ConstantSpeed(object):
                                               self.mean_rpm_cal(i),
                                               self.gear[i],
                                               self.veh_std_cal(i)])
-            self.cs_table = np.array(self.cs_table)
+            self.cs_table = array(self.cs_table)
         except Exception as e:
             print('From cs_main')
             print(e)
@@ -535,36 +577,36 @@ class ConstantSpeed(object):
         # WSZ: smoothing window size
         if not isinstance(window, int):
             window = int(window)
-        if np.mod(window, 2) == 0:
-            window = window+1
+        if mod(window, 2) == 0:
+            window = window + 1
 
-        out0 = np.convolve(data, np.ones(window, dtype=int), 'valid') / window
-        r = np.arange(1, window - 1, 2)
-        start = np.cumsum(data[:window - 1])[::2] / r
-        stop = (np.cumsum(data[:-window:-1])[::2] / r)[::-1]
-        return np.concatenate((start, out0, stop))
+        out0 = convolve(data, ones(window, dtype=int), 'valid') / window
+        r = arange(1, window - 1, 2)
+        start = cumsum(data[:window - 1])[::2] / r
+        stop = (cumsum(data[:-window:-1])[::2] / r)[::-1]
+        return concatenate((start, out0, stop))
 
     def veh_std_cal(self, i):
-        return np.std(self.veh_spd[i:i + self.frequency * self.time_block])
+        return std(self.veh_spd[i:i + self.frequency * self.time_block])
 
     def gear_std_cal(self, i):
-        return np.std(self.gear[i:i + self.frequency * self.time_block])
+        return std(self.gear[i:i + self.frequency * self.time_block])
 
     def acc_smooth_rate_std_cal(self, i):
-        return np.std(self.acc[i:i + self.frequency * self.time_block] -
-                      self.acc_smo[i:i + self.frequency * self.time_block])
+        return std(self.acc[i:i + self.frequency * self.time_block] -
+                   self.acc_smo[i:i + self.frequency * self.time_block])
 
     def mean_speed_cal(self, i):
-        return np.mean(self.veh_spd[i:i + self.frequency * self.time_block])
+        return mean(self.veh_spd[i:i + self.frequency * self.time_block])
 
     def mean_ped_cal(self, i):
-        return np.mean(self.pedal[i:i + self.frequency * self.time_block])
+        return mean(self.pedal[i:i + self.frequency * self.time_block])
 
     def mean_acc_cal(self, i):
-        return np.mean(self.acc[i:i + self.frequency * self.time_block])
+        return mean(self.acc[i:i + self.frequency * self.time_block])
 
     def mean_rpm_cal(self, i):
-        return np.mean(self.en_spd[i:i + self.frequency * self.time_block])
+        return mean(self.en_spd[i:i + self.frequency * self.time_block])
 
 
 if __name__ == '__main__':

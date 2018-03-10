@@ -6,17 +6,18 @@ from SystemGainUi import Ui_MainWindow  # 界面源码
 from Generate_Figs import *  # 绘图函数
 from Calculation_function import *  # 计算函数
 from re import match  # 正则表达式
-from ctypes import windll
+# from ctypes import windll
 from UiSetIndexName import UiSetIndexName
+from UI_eliminate_duplicate_ped import UiEliminateDuplicatePed
 
-try:
-    temp1 = windll.LoadLibrary('DLL\\Qt5Core.dll')
-    temp2 = windll.LoadLibrary('DLL\\Qt5Gui.dll')
-    temp3 = windll.LoadLibrary('DLL\\Qt5Widgets.dll')
-    temp4 = windll.LoadLibrary('DLL\\msvcp140.dll')
-    temp5 = windll.LoadLibrary('DLL\\Qt5PrintSupport.dll')
-except OSError as e:
-    pass
+# try:
+#     temp1 = windll.LoadLibrary('DLL\\Qt5Core.dll')
+#     temp2 = windll.LoadLibrary('DLL\\Qt5Gui.dll')
+#     temp3 = windll.LoadLibrary('DLL\\Qt5Widgets.dll')
+#     temp4 = windll.LoadLibrary('DLL\\msvcp140.dll')
+#     temp5 = windll.LoadLibrary('DLL\\Qt5PrintSupport.dll')
+# except OSError as e:
+#     pass
 
 
 class MainUiWindow(QMainWindow, Ui_MainWindow):
@@ -145,21 +146,24 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
     # -----|主菜单
 
     def load_sys_gain_data(self):
-        file = QFileDialog.getOpenFileName(self, filter='*.csv')
+        file = QFileDialog.getOpenFileName(self, filter='*.csv *.xls *.xlsx *.mdf *.dat')
         file_path = file[0]
-        self.MainProcess_thread_rd = ThreadProcess(method='sg_read_thread', filepath=file_path)
-        self.MainProcess_thread_rd.Message_Finish.connect(self.initial_data_edit)
-        # self.MainProcess_thread_rd.Message_Finish.connect(
-        #     lambda: self.combobox_index_initial(self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig))
+        if file_path != '':
+            self.MainProcess_thread_rd = ThreadProcess(method='sg_read_thread',
+                                                       filepath=file_path ,
+                                                       resample_rate=self.DataViewer_setting_Rawdata_mdf_res_TE.toPlainText())
+            self.MainProcess_thread_rd.Message_Finish.connect(self.initial_data_edit)
+            # self.MainProcess_thread_rd.Message_Finish.connect(
+            #     lambda: self.combobox_index_initial(self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig))
 
-        # self.MainProcess_thread_rd.Message_Finish.connect(self.combobox_index_features_initial)
-        self.MainProcess_thread_rd.start()
-        message_str = 'Message: Importing ' + file_path + ' ...'
-        self.info_widget_update(message_str)
+            # self.MainProcess_thread_rd.Message_Finish.connect(self.combobox_index_features_initial)
+            self.MainProcess_thread_rd.start()
+            message_str = 'Message: Importing ' + file_path + ' ...'
+            self.info_widget_update(message_str)
 
-        self.refresh_raw_data_pic()
-        self.refresh_cs_data()  # 新导入数据后清空Constant Speed数据
-        self.refresh_sg_pics()
+            self.refresh_raw_data_pic()
+            self.refresh_cs_data()  # 新导入数据后清空Constant Speed数据
+            self.refresh_sg_pics()
 
     def save_sys_gain_data(self):
         file = QFileDialog.getSaveFileName(self, filter='.pkl')
@@ -230,7 +234,8 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             try:
                 checked_list.append(self.verticalLayout.itemAt(i).widget().isChecked())
             except AttributeError as e:
-                print('Error From data_view_check_box_list!')
+                # print('Error From data_view_check_box_list!')
+                pass
         self.data_view_signal_plot(checked_list)
 
     def data_view_signal_plot(self, signal_list):  # 时间序列不一定是第一列！！！后续修改      ---已换成3种选项
@@ -347,15 +352,17 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.info_widget_update(message_str)
 
     def constant_speed_input_callback(self):
-        file = QFileDialog.getOpenFileName(self, filter='*.csv')
+        file = QFileDialog.getOpenFileName(self, filter='*.csv *.xls *.xlsx *.mdf *.dat')
         file_path = file[0]
+        if file_path != '':
+            self.MainProcess_thread_cs = ThreadProcess(method='cs_read_thread',
+                                                       filepath=file_path,
+                                                       resample_rate=self.DataViewer_setting_Rawdata_mdf_res_TE.toPlainText())
+            self.MainProcess_thread_cs.Message_Finish.connect(self.constant_speed_cal)
+            self.MainProcess_thread_cs.start()
 
-        self.MainProcess_thread_cs = ThreadProcess(method='cs_read_thread', filepath=file_path)
-        self.MainProcess_thread_cs.Message_Finish.connect(self.constant_speed_cal)
-        self.MainProcess_thread_cs.start()
-
-        message_str = 'Message: Importing ' + file_path + ' ...'
-        self.info_widget_update(message_str)
+            message_str = 'Message: Importing ' + file_path + ' ...'
+            self.info_widget_update(message_str)
 
     def constant_speed_cal(self):
         feature_array = []
@@ -394,19 +401,31 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                                                         pt_type=self.buttonGroup_PT_Type.checkedButton().text(),
                                                         replace=False)
 
-        self.MainProcess_thread_cal.Message_Finish.connect(self.show_ax_pictures_sg)
+        self.MainProcess_thread_cal.Message_Finish.connect(self.show_ax_pictures_sg_del_du)
         self.MainProcess_thread_cal.start()
 
         message_str = 'Message: Start calculating system gain data ...'
         self.info_widget_update(message_str)
+
+    def show_ax_pictures_sg_del_du(self, message):
+        if message == '计算完成':
+            self.show_ax_pictures_sg()
+        elif message == '删除重复':
+            eli_du_ped = UiEliminateDuplicatePed(ped_array=self.MainProcess_thread_cal.ax_holder_SG.pedal_avg,
+                                                 rawdata=self.MainProcess_thread_cal.ax_holder_SG.SG_csv_Data_Selc.iloc[:, 1:3])  # 展现给用户的是车速和Pedal
+            eli_du_ped.setModal(True)  # 模态显示窗口，即先处理后方可返回主窗体
+            eli_du_ped.show()
+            eli_du_ped.message.connect(self.sg_cal_thread_edp)
+
+    def sg_cal_thread_edp(self, remove_list):
+        self.MainProcess_thread_cal.ax_holder_SG.eliminate_duplicate_ped(remove_list)
+        self.show_ax_pictures_sg()
 
     def show_ax_pictures_sg(self):  # System Gain 绘图函数
         """
 
         :return:
         """
-
-        # self.createContextMenu_sg_fig_view()
 
         self.dr_acc_curve.axes.clear()
         self.dr_acc_curve.plot_acc_response(
@@ -498,7 +517,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
     def history_data_plot(self):
         legend_list = []
         for i in self.history_file_path_list:
-            file_name = re.match(r'^([0-9a-zA-Z/:_.%\u4e00-\u9fa5\-]+)(/)([0-9a-zA-Z/:_.%\u4e00-\u9fa5\-]+)(.pkl)$', i)
+            file_name = match(r'^([0-9a-zA-Z/:_.%\u4e00-\u9fa5\-]+)(/)([0-9a-zA-Z/:_.%\u4e00-\u9fa5\-]+)(.pkl)$', i)
             legend_list.append(file_name.group(3))
 
         while self.gridLayout_4.itemAt(0) is not None:  # 删除当前Lay中的元素
@@ -610,7 +629,7 @@ class ThreadProcess(QtCore.QThread):
             self.info_widget_update(message_str)
 
     def sg_read_thread(self):
-        self.ax_holder_rd = ReadFile(file_path=self.kwargs['filepath'])
+        self.ax_holder_rd = ReadFile(file_path=self.kwargs['filepath'], resample_rate=self.kwargs['resample_rate'])
         self.Message_Finish.emit("计算完成！")
 
     def sg_cal_thread(self):
@@ -620,11 +639,14 @@ class ThreadProcess(QtCore.QThread):
         else:
             self.ax_holder_SG = SystemGain(raw_data=self.kwargs['raw_data'], feature_array=self.kwargs['feature_array'],
                                            pt_type=self.kwargs['pt_type'])
-        self.ax_holder_SG.sg_main()
-        self.Message_Finish.emit("计算完成！")
+        ret = self.ax_holder_SG.sg_main()
+        if ret == 'eliminate_duplicate_ped':
+            self.Message_Finish.emit("删除重复")
+        else:
+            self.Message_Finish.emit("计算完成")
 
     def cs_read_thread(self):
-        self.ax_holder_cs = ReadFile(file_path=self.kwargs['filepath'])
+        self.ax_holder_cs = ReadFile(file_path=self.kwargs['filepath'], resample_rate=self.kwargs['resample_rate'])
         self.Message_Finish.emit("计算完成！")
 
     def cs_cal_thread(self):

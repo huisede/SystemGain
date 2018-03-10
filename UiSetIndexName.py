@@ -1,6 +1,6 @@
-import sys
+from sys import argv, exit
 from PyQt5.QtWidgets import QDialog, QApplication
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore
 from SetIndexName import Ui_Dialog
 
 
@@ -22,7 +22,7 @@ class UiSetIndexName(QDialog, Ui_Dialog):
 
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
+    app = QApplication(argv)
     dlg = UiSetIndexName()
     dlg.show()
-    sys.exit(app.exec())
+    exit(app.exec())

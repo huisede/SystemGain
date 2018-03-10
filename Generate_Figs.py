@@ -1,16 +1,11 @@
 from matplotlib import use
-import numpy as np
-
+from numpy import zeros, array, mean, arange, where, pi
 use("Qt5Agg")
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationBar
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm
-
-# import warnings
-# warnings.filterwarnings("ignore")
-
 
 # ----------------------------
 # class definition
@@ -66,7 +61,7 @@ class MyFigureCanvas(FigureCanvas):
     def plot_launch(self, data):
 
         for i in range(0, len(data[2])):
-            self.axes.plot(data[2][i], data[1][i], label=int(round(np.mean(data[0][i]) / 5) * 5))
+            self.axes.plot(data[2][i], data[1][i], label=int(round(mean(data[0][i]) / 5) * 5))
             self.axes.legend()
             self.axes.grid(True, linestyle="--", color="k", linewidth="0.4")
         self.axes.set_xlabel('Time (s)', fontsize=12)
@@ -79,7 +74,6 @@ class MyFigureCanvas(FigureCanvas):
         #                markersize=8)
         self.axes.plot(data[0], data[1], linestyle='dashed', marker='o', markersize=8)
         self.axes.grid(True, linestyle="--", color="k", linewidth="0.4")
-        self.axes.legend()
         self.axes.set_xlabel('Pedal (%)', fontsize=12)
         self.axes.set_ylabel('Acc (g)', fontsize=12)
         self.axes.set_title('Max Acc', fontsize=12)
@@ -98,7 +92,7 @@ class MyFigureCanvas(FigureCanvas):
             str_label = ['1->2', '2->3', '3->4', '4->5', '5->6', '6->7', '7->8', '8->9', '9->10']
             for i in range(1, int(max(data[0])) + 1):
                 # 选择当前Gear, color=colour[i]
-                self.axes.plot(data[2][np.where(data[0] == i)], data[1][np.where(data[0] == i)]
+                self.axes.plot(data[2][where(data[0] == i)], data[1][where(data[0] == i)]
                                , marker='o', linestyle='-', linewidth=3, markerfacecolor='blue', markersize=4
                                , label=str_label[i - 1])
                 self.axes.legend()
@@ -116,9 +110,9 @@ class MyFigureCanvas(FigureCanvas):
             self.axes.set_ylabel('Engine/Turbine Speed (rpm)', fontsize=12)
 
     def plot_systemgain_curve(self, vehspd_sg, acc_sg):
-        speedIndex = np.arange(10, 170, 10)
+        speedIndex = arange(10, 170, 10)
         speedIndex = speedIndex.tolist()
-        acc_banana = np.zeros((5, len(speedIndex)))
+        acc_banana = zeros((5, len(speedIndex)))
         acc_banana[0, :] = [0.0144, 0.0126, 0.0111, 0.0097, 0.0084, 0.0073, 0.0064, 0.0056, 0.0048,
                             0.0042, 0.0037, 0.0032, 0.0028, 0.0024, 0.0021, 0.0018]
         acc_banana[1, :] = [0.0172, 0.0152, 0.0134, 0.0119, 0.0104, 0.0092, 0.0081, 0.0071, 0.0063,
@@ -151,7 +145,6 @@ class MyFigureCanvas(FigureCanvas):
                        # markersize=8)
         self.axes.plot(vehspd_cs, pedal_cs, linestyle='dashed', marker='o', markersize=8)
         self.axes.grid(True, linestyle="--", color="k", linewidth="0.4")
-        self.axes.legend()
         self.axes.set_xlabel('Vehicle Speed (kph)', fontsize=12)
         self.axes.set_ylabel('Pedal (%)', fontsize=12)
         self.axes.set_title('Constant Speed', fontsize=12)
@@ -179,7 +172,7 @@ class MyFigureCanvas(FigureCanvas):
         self.ydata = self.kwargs['data'][1]
         self.pedal = self.kwargs['data'][0]
         for i in range(0, len(self.xdata)):
-            self.axes.plot(self.xdata[i], self.ydata[i], label=int(round(np.mean(self.pedal[i]) / 5) * 5))
+            self.axes.plot(self.xdata[i], self.ydata[i], label=int(round(mean(self.pedal[i]) / 5) * 5))
             self.axes.legend()
         self.axes.grid(True, linestyle="--", color="k", linewidth="0.4")
         self.axes.set_xlabel('Time (s)', fontsize=12)
@@ -225,11 +218,11 @@ class MyFigureCanvas(FigureCanvas):
 
         for i in range(signal_num):
             if i == 0:
-                self.axes = self.fig.add_axes(pos, axisbg='w', label=str(df.columns[i]))  # 设置初始的图层底色为白色
+                self.axes = self.fig.add_axes(pos, facecolor='w', label=str(df.columns[i]))  # 设置初始的图层底色为白色
                 self.axes.tick_params(axis='x', colors='black', labelsize=10)
                 self.axes.set_xlabel('time (s)', fontsize=12)
             else:
-                self.axes = self.fig.add_axes(pos, axisbg='none', label=str(df.columns[i]))  # 设置随后的图层底色为透明
+                self.axes = self.fig.add_axes(pos, facecolor='none', label=str(df.columns[i]))  # 设置随后的图层底色为透明
                 self.axes.get_xaxis().set_visible(False)
 
             self.axes.spines['right'].set_position(('outward', font_size/10*70 * i))  # 图的右侧边框向外移动
@@ -245,7 +238,7 @@ class MyFigureCanvas(FigureCanvas):
         self.theta = self.kwargs['theta']
         self.data = self.kwargs['data']
         self.legends = self.kwargs['legends']
-        # plt.thetagrids(theta*(180/np.pi), labels=labels, fontproperties=myfont)
+        # plt.thetagrids(theta*(180/pi), labels=labels, fontproperties=myfont)
         self.axes.set_ylim(0, 100)
         colour_Bar = ['blue', 'red', 'c', 'royalblue', 'lightcoral', 'yellow', 'lightgreen', 'brown',
                       'teal', 'orange', 'coral', 'gold', 'lime', 'olive']
@@ -253,15 +246,15 @@ class MyFigureCanvas(FigureCanvas):
             # 画雷达图,并填充雷达图内部区域
             self.axes.plot(self.theta, self.data, "o-", color='blue', linewidth=2)
             self.axes.fill(self.theta, self.data, color="blue", alpha=0.25)
-            self.axes.set_rgrids(np.arange(20, 100, 20), labels=np.arange(20, 100, 20), angle=0)
-            self.axes.set_thetagrids(self.theta * (180 / np.pi), labels=np.array(["A", "B", "C", "D", "E", "F"]))
+            self.axes.set_rgrids(arange(20, 100, 20), labels=arange(20, 100, 20), angle=0)
+            self.axes.set_thetagrids(self.theta * (180 / pi), labels=array(["A", "B", "C", "D", "E", "F"]))
             self.axes.set_title("Rating")
         else:
             for i in range(self.data.size // 7):
                 self.axes.plot(self.theta, self.data[i], 'o-', color=colour_Bar[i], linewidth=2)
                 self.axes.fill(self.theta, self.data[i], color=colour_Bar[i], alpha=0.25)
-            self.axes.set_rgrids(np.arange(20, 100, 20), labels=np.arange(20, 100, 20), angle=0)
-            self.axes.set_thetagrids(self.theta * (180 / np.pi), labels=np.array(["A", "B", "C", "D", "E", "F"]))
+            self.axes.set_rgrids(arange(20, 100, 20), labels=arange(20, 100, 20), angle=0)
+            self.axes.set_thetagrids(self.theta * (180 / pi), labels=array(["A", "B", "C", "D", "E", "F"]))
             self.axes.set_title("Rating Comparison")
         self.axes.legend(self.legends)
 
@@ -276,9 +269,9 @@ class MyFigureCanvas(FigureCanvas):
         self.axes.plot(time_data, sr_x_data, color='black')
         self.axes.plot(time_data, sr_y_data, color='red')
         self.axes.plot(time_data, sr_z_data, color='blue')
-        exam_x = np.where(sr_x_data > 10)
-        exam_y = np.where(sr_y_data > 10)
-        exam_z = np.where(sr_z_data > 10)
+        exam_x = where(sr_x_data > 10)
+        exam_y = where(sr_y_data > 10)
+        exam_z = where(sr_z_data > 10)
 
         if exam_x[0].shape[0] > 0:
             for nn in exam_x:
@@ -369,7 +362,7 @@ class MyFigureCanvas(FigureCanvas):
             data = history_data[m].sysGain_class.launch.data
 
             for i in range(0, len(data[2])):
-                self.axes.plot(data[2][i], data[1][i], label=int(round(np.mean(data[0][i]) / 5) * 5))
+                self.axes.plot(data[2][i], data[1][i], label=int(round(mean(data[0][i]) / 5) * 5))
                 self.axes.legend()
                 self.axes.grid(True, linestyle="--", color="k", linewidth="0.4")
             self.axes.set_xlabel('Time (s)', fontsize=12)
@@ -387,7 +380,7 @@ class MyFigureCanvas(FigureCanvas):
                 str_label = ['1->2', '2->3', '3->4', '4->5', '5->6', '6->7', '7->8', '8->9', '9->10']
                 for i in range(1, int(max(data[0])) + 1):
                     # 选择当前Gear, color=colour[i]
-                    self.axes.plot(data[2][np.where(data[0] == i)], data[1][np.where(data[0] == i)]
+                    self.axes.plot(data[2][where(data[0] == i)], data[1][where(data[0] == i)]
                                    , marker='o', linestyle='-', linewidth=3, markerfacecolor='blue', markersize=4
                                    , label=str_label[i - 1])
                     self.axes.legend()
