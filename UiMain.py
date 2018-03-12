@@ -6,17 +6,18 @@ from SystemGainUi import Ui_MainWindow  # 界面源码
 from Generate_Figs import *  # 绘图函数
 from Calculation_function import *  # 计算函数
 from re import match  # 正则表达式
-from ctypes import windll
+# from ctypes import windll
 from UiSetIndexName import UiSetIndexName
+from UI_eliminate_duplicate_ped import UiEliminateDuplicatePed
 
-try:
-    temp1 = windll.LoadLibrary('DLL\\Qt5Core.dll')
-    temp2 = windll.LoadLibrary('DLL\\Qt5Gui.dll')
-    temp3 = windll.LoadLibrary('DLL\\Qt5Widgets.dll')
-    temp4 = windll.LoadLibrary('DLL\\msvcp140.dll')
-    temp5 = windll.LoadLibrary('DLL\\Qt5PrintSupport.dll')
-except OSError as e:
-    pass
+# try:
+#     temp1 = windll.LoadLibrary('DLL\\Qt5Core.dll')
+#     temp2 = windll.LoadLibrary('DLL\\Qt5Gui.dll')
+#     temp3 = windll.LoadLibrary('DLL\\Qt5Widgets.dll')
+#     temp4 = windll.LoadLibrary('DLL\\msvcp140.dll')
+#     temp5 = windll.LoadLibrary('DLL\\Qt5PrintSupport.dll')
+# except OSError as e:
+#     pass
 
 
 class MainUiWindow(QMainWindow, Ui_MainWindow):
@@ -36,10 +37,8 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.action_Cal_Setting.triggered.connect(lambda: self.change_main_page(5))
         self.SysGain_Cal.clicked.connect(self.cal_sys_gain_data_pre)
         self.History_Data_Choose_PushButton.clicked.connect(self.history_data_reload)
-
-
-        self.menu_Engine_Working_Dist.triggered.connect(self.data_view_check_box_list)
-        self.menu_Shifting_Strategy.triggered.connect(self.resize_figs)
+        self.Constant_Speed_Input_button.clicked.connect(self.constant_speed_input_callback)
+        # self.menu_Engine_Working_Dist.triggered.connect(self.data_view_check_box_list)
 
         self.info_list = []
         self.MainProcess_thread = []
@@ -53,6 +52,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                                 'System_Gain_AT_DCT_Fuel',
                                 'System_Gain_AT_DCT_EnSpd',
                                 'System_Gain_AT_DCT_TbSpd']
+        self.replace_cs_content = False
 
         # self.buttonGroup_data_viewer = QtWidgets.QButtonGroup(self.verticalLayout)
 
@@ -146,16 +146,24 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
     # -----|主菜单
 
     def load_sys_gain_data(self):
-        file = QFileDialog.getOpenFileName(self, filter='*.csv')
+        file = QFileDialog.getOpenFileName(self, filter='*.csv *.xls *.xlsx *.mdf *.dat')
         file_path = file[0]
-        self.MainProcess_thread_rd = ThreadProcess(method='sg_read_thread', filepath=file_path)
-        self.MainProcess_thread_rd.Message_Finish.connect(self.initial_data_edit)
-        # self.MainProcess_thread_rd.Message_Finish.connect(
-        #     lambda: self.combobox_index_initial(self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig))
-        self.MainProcess_thread_rd.Message_Finish.connect(self.combobox_index_features_initial)
-        self.MainProcess_thread_rd.start()
-        message_str = 'Message: Importing ' + file_path + ' ...'
-        self.info_widget_update(message_str)
+        if file_path != '':
+            self.MainProcess_thread_rd = ThreadProcess(method='sg_read_thread',
+                                                       filepath=file_path ,
+                                                       resample_rate=self.DataViewer_setting_Rawdata_mdf_res_TE.toPlainText())
+            self.MainProcess_thread_rd.Message_Finish.connect(self.initial_data_edit)
+            # self.MainProcess_thread_rd.Message_Finish.connect(
+            #     lambda: self.combobox_index_initial(self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig))
+
+            # self.MainProcess_thread_rd.Message_Finish.connect(self.combobox_index_features_initial)
+            self.MainProcess_thread_rd.start()
+            message_str = 'Message: Importing ' + file_path + ' ...'
+            self.info_widget_update(message_str)
+
+            self.refresh_raw_data_pic()
+            self.refresh_cs_data()  # 新导入数据后清空Constant Speed数据
+            self.refresh_sg_pics()
 
     def save_sys_gain_data(self):
         file = QFileDialog.getSaveFileName(self, filter='.pkl')
@@ -210,12 +218,15 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             eval('self.verticalLayout.addWidget(self.checkBox' + ch + ')')
             eval('self.checkBox' + ch + '.setText("' + self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig[
                 i] + '")')
+            eval('self.checkBox' + ch + '.clicked.connect(self.data_view_check_box_list)')  # 捆绑点击触发绘图
 
         spacer_item = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacer_item)  # 添加新spacer排版占位
 
-        message_str = 'Message: Finished data import!'
+        message_str = 'Message: Finish data import!'
         self.info_widget_update(message_str)
+
+        self.combobox_index_features_initial()
 
     def data_view_check_box_list(self):
         checked_list = []
@@ -223,15 +234,28 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             try:
                 checked_list.append(self.verticalLayout.itemAt(i).widget().isChecked())
             except AttributeError as e:
-                print('Error From data_view_check_box_list!')
+                # print('Error From data_view_check_box_list!')
+                pass
         self.data_view_signal_plot(checked_list)
 
-    def data_view_signal_plot(self, signal_list):
+    def data_view_signal_plot(self, signal_list):  # 时间序列不一定是第一列！！！后续修改      ---已换成3种选项
 
         self.dr_raw.fig.clear()
-        self.dr_raw.plot_raw_data(time=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.iloc[:, 0],
-                                  # 时间序列不一定是第一列！！！后续修改
-                                  df=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful.iloc[:, signal_list])
+        try:
+            if self.DataViewer_setting_Time_axis_Dots_RB.isChecked():
+                self.dr_raw.plot_raw_data(time=range(self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.shape[0]),
+                                          df=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.iloc[:, signal_list])
+            elif self.DataViewer_setting_Time_axis_Samples_RB.isChecked():
+                self.dr_raw.plot_raw_data(time=[x/float(self.DataViewer_setting_Time_axis_Samples_TE.toPlainText()) for x in
+                                                range(self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.shape[0])],
+                                          df=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.iloc[:, signal_list])
+            elif self.DataViewer_setting_Time_axis_Signal_RB.isChecked():
+                self.dr_raw.plot_raw_data(time=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.iloc[:, self.DataViewer_setting_Time_axis_Samples_comboBox.currentIndex()],
+                                          df=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.iloc[:, signal_list])
+        except Exception:
+            message_str = 'Error: Wrong Signal TYPE! Please Check!'
+            self.info_widget_update(message_str)
+
         self.PicToolBar_raw.press(self.PicToolBar_raw.home())
         self.PicToolBar_raw.dynamic_update()
 
@@ -247,21 +271,42 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.xyCoordinates = [event.xdata, event.ydata]  # 捕捉鼠标点击的坐标
         print(self.xyCoordinates)
 
+    def refresh_raw_data_pic(self):
+        self.dr_raw.fig.clear()
+        self.PicToolBar_raw.dynamic_update()
+
     # -----|--|System Gain
     def combobox_index_features_initial(self):  # 将字段规则导入
         try:
+            self.System_Gain_AT_DCT_Index_comboBox.activated.disconnect(self.combobox_index_features_initial_callback)
+            # 1、防止多次连接导致的提示信息重复 2、先行断开作为双保险，防止第一遍连接时留下的触发开关由clear()等动作带来的误触发跳转
+        except TypeError:
+            pass
+
+        try:
             self.slfi = SaveAndLoad()
             self.history_index = self.slfi.reload_feature_index()
-            self.System_Gain_AT_DCT_Index_comboBox.clear()
+            self.System_Gain_AT_DCT_Index_comboBox.clear()  # ????第二次导入数据时运行报错   问题已解决 20180226
             self.System_Gain_AT_DCT_Index_comboBox.addItem('请选择')
             for i in self.history_index:
                 self.System_Gain_AT_DCT_Index_comboBox.addItem(i)  # 配合下面的注释
         except Exception:
             message_str = 'Error: from combobox_index_features_initial!'
             self.info_widget_update(message_str)
-        self.System_Gain_AT_DCT_Index_comboBox.currentIndexChanged.connect(
+
+        self.System_Gain_AT_DCT_Index_comboBox.activated.connect(
             self.combobox_index_features_initial_callback)    # 写在这里是为了防止上面addItem改变了currentIndex导致误触发
+        # 20180226 交互类性的触发请选择activated而不是currentIndexChanged!!!!!!
         self.combobox_index_initial(self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig)
+
+    def combobox_index_initial(self, item_list):  # 将文件中的所有字段写入列表
+        for i in self.combo_box_names:  # 编号
+            eval('self.' + i + '.clear()')  # 清空当前列表
+            for j in item_list:
+                eval('self.' + i + ".addItem('" + j + "')")
+
+        for i in item_list:  # Setting页面的初始化暂时写在这里!!后续需要挪位置到initial_setting_value()
+            self.DataViewer_setting_Time_axis_Samples_comboBox.addItem(i)
 
     def combobox_index_features_initial_callback(self):
         columns = self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig.tolist()
@@ -280,13 +325,6 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         else:
             message_str = 'Error: Signal not in Current data!'
         self.info_widget_update(message_str)
-
-    def combobox_index_initial(self, item_list):  # 将文件中的所有字段写入列表
-        for i in self.combo_box_names:  # 编号
-            eval('self.' + i + '.clear()')  # 清空当前列表
-            for j in item_list:
-                eval('self.' + i + ".addItem('" + j + "')")
-        # self.combobox_index_pre_select(self.MainProcess_thread_rd.ax_holder_rd.pre_select_features())
 
     def combobox_index_pre_select(self, pre_select_item_index_list):  # 自动预选字段
         for i in range(self.combo_box_names.__len__()):  # 编号
@@ -313,27 +351,81 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         message_str = 'Message: Feature index ' + feature_save_name + ' added!'
         self.info_widget_update(message_str)
 
+    def constant_speed_input_callback(self):
+        file = QFileDialog.getOpenFileName(self, filter='*.csv *.xls *.xlsx *.mdf *.dat')
+        file_path = file[0]
+        if file_path != '':
+            self.MainProcess_thread_cs = ThreadProcess(method='cs_read_thread',
+                                                       filepath=file_path,
+                                                       resample_rate=self.DataViewer_setting_Rawdata_mdf_res_TE.toPlainText())
+            self.MainProcess_thread_cs.Message_Finish.connect(self.constant_speed_cal)
+            self.MainProcess_thread_cs.start()
+
+            message_str = 'Message: Importing ' + file_path + ' ...'
+            self.info_widget_update(message_str)
+
+    def constant_speed_cal(self):
+        feature_array = []
+        for i in self.combo_box_names:  # 编号
+            eval('feature_array.append(self.' + i + '.currentText())')
+
+        self.MainProcess_thread_cs_cal = ThreadProcess(method='cs_cal_thread',
+                                                       raw_data=self.MainProcess_thread_cs.ax_holder_cs.csv_data_ful,
+                                                       feature_list=feature_array)
+        self.MainProcess_thread_cs_cal.Message_Finish.connect(self.constant_speed_replace)
+        self.MainProcess_thread_cs_cal.start()
+
+    def constant_speed_replace(self):
+        self.replace_cs_content = True
+        self.Constant_Speed_Show_Speed_text.setText(str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table[:, 1].round(0))[1:-1])
+        self.Constant_Speed_Show_Speed_text.setFontPointSize(5)
+        self.Constant_Speed_Show_Ped_text.setText(str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table[:, 2].round(0))[1:-1])
+        print(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table)
+
     def cal_sys_gain_data(self):
         feature_array = []
         for i in self.combo_box_names:  # 编号
             eval('feature_array.append(self.' + i + '.currentText())')
 
-        self.MainProcess_thread_cal = ThreadProcess(method='sg_cal_thread',
-                                                    raw_data=self.MainProcess_thread_rd.ax_holder_rd.sg_csv_data_ful,
-                                                    feature_array=feature_array)
-        self.MainProcess_thread_cal.Message_Finish.connect(self.show_ax_pictures_sg)
+        if self.replace_cs_content:
+            self.MainProcess_thread_cal = ThreadProcess(method='sg_cal_thread',
+                                                        raw_data=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful,
+                                                        feature_array=feature_array,
+                                                        pt_type=self.buttonGroup_PT_Type.checkedButton().text(),
+                                                        replace=True,
+                                                        cs_table=self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table)
+        else:
+            self.MainProcess_thread_cal = ThreadProcess(method='sg_cal_thread',
+                                                        raw_data=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful,
+                                                        feature_array=feature_array,
+                                                        pt_type=self.buttonGroup_PT_Type.checkedButton().text(),
+                                                        replace=False)
+
+        self.MainProcess_thread_cal.Message_Finish.connect(self.show_ax_pictures_sg_del_du)
         self.MainProcess_thread_cal.start()
 
         message_str = 'Message: Start calculating system gain data ...'
         self.info_widget_update(message_str)
+
+    def show_ax_pictures_sg_del_du(self, message):
+        if message == '计算完成':
+            self.show_ax_pictures_sg()
+        elif message == '删除重复':
+            eli_du_ped = UiEliminateDuplicatePed(ped_array=self.MainProcess_thread_cal.ax_holder_SG.pedal_avg,
+                                                 rawdata=self.MainProcess_thread_cal.ax_holder_SG.SG_csv_Data_Selc.iloc[:, 1:3])  # 展现给用户的是车速和Pedal
+            eli_du_ped.setModal(True)  # 模态显示窗口，即先处理后方可返回主窗体
+            eli_du_ped.show()
+            eli_du_ped.message.connect(self.sg_cal_thread_edp)
+
+    def sg_cal_thread_edp(self, remove_list):
+        self.MainProcess_thread_cal.ax_holder_SG.eliminate_duplicate_ped(remove_list)
+        self.show_ax_pictures_sg()
 
     def show_ax_pictures_sg(self):  # System Gain 绘图函数
         """
 
         :return:
         """
-
-        # self.createContextMenu_sg_fig_view()
 
         self.dr_acc_curve.axes.clear()
         self.dr_acc_curve.plot_acc_response(
@@ -357,7 +449,15 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.PicToolBar_3.dynamic_update()
 
         self.dr_shift_map.axes.clear()
-        self.dr_shift_map.plot_shift_map(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.shiftmap.data)
+        if self.System_Gain_AT_DCT.isChecked():
+            self.dr_shift_map.plot_shift_map(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.shiftmap.data,
+                                             kind='AT/DCT')
+        elif self.System_Gain_CVT.isChecked():
+            self.dr_shift_map.plot_shift_map(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.shiftmap.data,
+                                             kind='CVT',
+                                             pedal_avg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.shiftmap.kwargs['pedal_avg'])
+        elif self.System_Gain_MT.isChecked():
+            pass
         self.PicToolBar_4.press(self.PicToolBar_4.home())
         self.PicToolBar_4.dynamic_update()
 
@@ -379,14 +479,35 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         message_str = 'Message: System gain calculation finished!'
         self.info_widget_update(message_str)
 
+    def refresh_cs_data(self):
+        self.replace_cs_content = False
+        self.Constant_Speed_Show_Speed_text.setText('----')
+        self.Constant_Speed_Show_Ped_text.setText('----')
+
+    def refresh_sg_pics(self):
+        self.dr_acc_curve.axes.clear()
+        self.PicToolBar_1.dynamic_update()
+        self.dr_sg_curve.axes.clear()
+        self.PicToolBar_2.dynamic_update()
+        self.dr_cons_spd.axes.clear()
+        self.PicToolBar_3.dynamic_update()
+        self.dr_shift_map.axes.clear()
+        self.PicToolBar_4.dynamic_update()
+        self.dr_launch.axes.clear()
+        self.PicToolBar_5.dynamic_update()
+        self.dr_ped_map.axes.clear()
+        self.PicToolBar_6.dynamic_update()
+        self.dr_max_acc.axes.clear()
+        self.PicToolBar_7.dynamic_update()
+
     # -----|--|Comparison 页面
     def history_data_reload(self):
         file = QFileDialog.getOpenFileNames(self, filter='*.pkl')
-        file_path_list = file[0]
+        self.history_file_path_list = file[0]
         try:
             self.sl = SaveAndLoad()
-            self.history_data = self.sl.reload_result(file_path_list=file_path_list)
-            message_str = 'Message: History data --' + str(file_path_list) + ' import finished!'
+            self.history_data = self.sl.reload_result(file_path_list=self.history_file_path_list)
+            message_str = 'Message: History data --' + str(self.history_file_path_list) + ' import finished!'
             self.info_widget_update(message_str)
             self.history_data_plot()
         except Exception as e:
@@ -394,150 +515,81 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             print(e)
 
     def history_data_plot(self):
+        legend_list = []
+        for i in self.history_file_path_list:
+            file_name = match(r'^([0-9a-zA-Z/:_.%\u4e00-\u9fa5\-]+)(/)([0-9a-zA-Z/:_.%\u4e00-\u9fa5\-]+)(.pkl)$', i)
+            legend_list.append(file_name.group(3))
+
+        while self.gridLayout_4.itemAt(0) is not None:  # 删除当前Lay中的元素
+            try:
+                self.gridLayout_4.itemAt(0).widget().setParent(None)  # 删除当前Lay中widget元素，在此为CheckBox
+                self.gridLayout_4.itemAt(0).widget().deleteLater()
+                self.gridLayout_4.removeWidget(self.gridLayout_4.itemAt(0).widget())
+            except AttributeError:
+                self.gridLayout_4.removeItem(self.gridLayout_4.itemAt(0))  # 删除当前Lay中spacer元素
 
         dr_history_sg_curve = MyFigureCanvas(width=6, height=4, plot_type='2d')
+        curve_list = []
         for i in range(len(self.history_data)):  # 将每次画一根线
             dr_history_sg_curve.plot_systemgain_curve(vehspd_sg=self.history_data[i].sysGain_class.systemgain.vehspd_sg,
                                                       acc_sg=self.history_data[i].sysGain_class.systemgain.acc_sg)
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(dr_history_sg_curve)
-        try:
-            if self.History_Data_Comp_graphicsView_LayG1.itemAt(0):  # 如果已经有NVbar,删掉后重新捆绑
-                self.History_Data_Comp_graphicsView_LayG1.itemAt(0).widget().deleteLater()
-                self.History_Data_Comp_graphicsView_LayG1.removeWidget(
-                    self.History_Data_Comp_graphicsView_LayG1.itemAt(0).widget())
-            else:
-                # self.createContextMenu_sg_fig_view()  # 第一次初始化右键菜单，一次把两个canvas的菜单都初始化了  ！！！
-                pass
-            self.PicToolBar_history1 = NavigationBar(dr_history_sg_curve, self)
-            self.History_Data_Comp_graphicsView_LayG1.addWidget(self.PicToolBar_history1)
-            self.History_Data_Comp_graphicsView_1.setScene(self.scene)
-            self.History_Data_Comp_graphicsView_1.show()
-        except Exception as e:
-            print(e)
+            curve_list.append(dr_history_sg_curve.axes.get_lines()[i*7])
+        dr_history_sg_curve.axes.legend(curve_list, legend_list)  # 第1、8、15……为需求的SG Curve
+        self.PicToolBar_history1 = NavigationBar(dr_history_sg_curve, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history1,0,0,1,1)
+        self.gridLayout_4.addWidget(dr_history_sg_curve,1,0,1,1)
+        dr_history_sg_curve.setMinimumSize(QtCore.QSize(0, 600))
 
         dr_history_cons_spd = MyFigureCanvas(width=6, height=4, plot_type='2d')
         for i in range(len(self.history_data)):  # 将每次画一根线
             dr_history_cons_spd.plot_constant_speed(vehspd_cs=self.history_data[i].sysGain_class.systemgain.vehspd_cs,
                                                     pedal_cs=self.history_data[i].sysGain_class.systemgain.pedal_cs)
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(dr_history_cons_spd)
-        try:
-            if self.History_Data_Comp_graphicsView_LayG2.itemAt(0):  # 如果已经有NVbar,删掉后重新捆绑
-                self.History_Data_Comp_graphicsView_LayG2.itemAt(0).widget().deleteLater()
-                self.History_Data_Comp_graphicsView_LayG2.removeWidget(
-                    self.History_Data_Comp_graphicsView_LayG2.itemAt(0).widget())
-            else:
-                # self.createContextMenu_sg_fig_view()  # 第一次初始化右键菜单，一次把两个canvas的菜单都初始化了  ！！！
-                pass
-            self.PicToolBar_history2 = NavigationBar(dr_history_cons_spd, self)
-            self.History_Data_Comp_graphicsView_LayG2.addWidget(self.PicToolBar_history2)
-            self.History_Data_Comp_graphicsView_2.setScene(self.scene)
-            self.History_Data_Comp_graphicsView_2.show()
-        except Exception as e:
-            print(e)
+        dr_history_cons_spd.axes.legend(legend_list)
+        self.PicToolBar_history2 = NavigationBar(dr_history_cons_spd, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history2,0,1,1,1)
+        self.gridLayout_4.addWidget(dr_history_cons_spd,1,1,1,1)
+        dr_history_cons_spd.setMinimumSize(QtCore.QSize(0, 600))
 
         dr_history_max_acc = MyFigureCanvas(width=6, height=4, plot_type='2d')
         for i in range(len(self.history_data)):  # 将每次画一根线
             dr_history_max_acc.plot_max_acc(data=self.history_data[i].sysGain_class.maxacc.data)
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(dr_history_max_acc)
-        try:
-            if self.History_Data_Comp_graphicsView_LayG3.itemAt(0):  # 如果已经有NVbar,删掉后重新捆绑
-                self.History_Data_Comp_graphicsView_LayG3.itemAt(0).widget().deleteLater()
-                self.History_Data_Comp_graphicsView_LayG3.removeWidget(
-                    self.History_Data_Comp_graphicsView_LayG3.itemAt(0).widget())
-            else:
-                # self.createContextMenu_sg_fig_view()  # 第一次初始化右键菜单，一次把两个canvas的菜单都初始化了  ！！！
-                pass
-            self.PicToolBar_history3 = NavigationBar(dr_history_cons_spd, self)
-            self.History_Data_Comp_graphicsView_LayG3.addWidget(self.PicToolBar_history3)
-            self.History_Data_Comp_graphicsView_3.setScene(self.scene)
-            self.History_Data_Comp_graphicsView_3.show()
-        except Exception as e:
-            print(e)
+        dr_history_max_acc.axes.legend(legend_list)
+        self.PicToolBar_history3 = NavigationBar(dr_history_max_acc, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history3,0,2,1,1)
+        self.gridLayout_4.addWidget(dr_history_max_acc,1,2,1,1)
+        dr_history_max_acc.setMinimumSize(QtCore.QSize(0, 600))
 
         dr_history_acc_curve = MyFigureCanvas(width=18, height=5, plot_type='3d-subplot')
         dr_history_acc_curve.plot_acc_response_subplot(history_data=self.history_data)
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(dr_history_acc_curve)
-        try:
-            if self.History_Data_Comp_graphicsView_LayG4.itemAt(0):  # 如果已经有NVbar,删掉后重新捆绑
-                self.History_Data_Comp_graphicsView_LayG4.itemAt(0).widget().deleteLater()
-                self.History_Data_Comp_graphicsView_LayG4.removeWidget(
-                    self.History_Data_Comp_graphicsView_LayG4.itemAt(0).widget())
-            else:
-                # self.createContextMenu_sg_fig_view()  # 第一次初始化右键菜单，一次把两个canvas的菜单都初始化了  ！！！
-                pass
-            self.PicToolBar_history4 = NavigationBar(dr_history_acc_curve, self)
-            self.History_Data_Comp_graphicsView_LayG4.addWidget(self.PicToolBar_history4)
-            self.History_Data_Comp_graphicsView_4.setScene(self.scene)
-            self.History_Data_Comp_graphicsView_4.show()
-        except Exception as e:
-            print('From dr_history_acc_curve')
-            print(e)
+        self.PicToolBar_history4 = NavigationBar(dr_history_acc_curve, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history4,2,0,1,3)
+        self.gridLayout_4.addWidget(dr_history_acc_curve,3,0,1,3)
+        dr_history_acc_curve.setMinimumSize(QtCore.QSize(0, 600))
 
         dr_history_launch = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
         dr_history_launch.plot_launch_subplot(history_data=self.history_data)
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(dr_history_launch)
-        try:
-            if self.History_Data_Comp_graphicsView_LayG5.itemAt(0):  # 如果已经有NVbar,删掉后重新捆绑
-                self.History_Data_Comp_graphicsView_LayG5.itemAt(0).widget().deleteLater()
-                self.History_Data_Comp_graphicsView_LayG5.removeWidget(
-                    self.History_Data_Comp_graphicsView_LayG5.itemAt(0).widget())
-            else:
-                # self.createContextMenu_sg_fig_view()  # 第一次初始化右键菜单，一次把两个canvas的菜单都初始化了  ！！！
-                pass
-            self.PicToolBar_history5 = NavigationBar(dr_history_launch, self)
-            self.History_Data_Comp_graphicsView_LayG5.addWidget(self.PicToolBar_history5)
-            self.History_Data_Comp_graphicsView_5.setScene(self.scene)
-            self.History_Data_Comp_graphicsView_5.show()
-        except Exception as e:
-            print('From dr_history_launch')
-            print(e)
+        self.PicToolBar_history5 = NavigationBar(dr_history_launch, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history5,4,0,1,3)
+        self.gridLayout_4.addWidget(dr_history_launch,5,0,1,3)
+        dr_history_launch.setMinimumSize(QtCore.QSize(0, 600))
+
 
         dr_history_shift_map = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
         dr_history_shift_map.plot_shift_map_subplot(history_data=self.history_data)
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(dr_history_shift_map)
-        try:
-            if self.History_Data_Comp_graphicsView_LayG6.itemAt(0):  # 如果已经有NVbar,删掉后重新捆绑
-                self.History_Data_Comp_graphicsView_LayG6.itemAt(0).widget().deleteLater()
-                self.History_Data_Comp_graphicsView_LayG6.removeWidget(
-                    self.History_Data_Comp_graphicsView_LayG6.itemAt(0).widget())
-            else:
-                # self.createContextMenu_sg_fig_view()  # 第一次初始化右键菜单，一次把两个canvas的菜单都初始化了  ！！！
-                pass
-            self.PicToolBar_history6 = NavigationBar(dr_history_shift_map, self)
-            self.History_Data_Comp_graphicsView_LayG6.addWidget(self.PicToolBar_history6)
-            self.History_Data_Comp_graphicsView_6.setScene(self.scene)
-            self.History_Data_Comp_graphicsView_6.show()
-        except Exception as e:
-            print('From dr_history_shift_map')
-            print(e)
+        self.PicToolBar_history6 = NavigationBar(dr_history_shift_map, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history6,6,0,1,3)
+        self.gridLayout_4.addWidget(dr_history_shift_map,7,0,1,3)
+        dr_history_shift_map.setMinimumSize(QtCore.QSize(0, 600))
+
 
         dr_history_pedal_map = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
         dr_history_pedal_map.plot_pedal_map_subplot(history_data=self.history_data)
-        self.scene = QtWidgets.QGraphicsScene()
-        self.scene.addWidget(dr_history_pedal_map)
-        try:
-            if self.History_Data_Comp_graphicsView_LayG7.itemAt(0):  # 如果已经有NVbar,删掉后重新捆绑
-                self.History_Data_Comp_graphicsView_LayG7.itemAt(0).widget().deleteLater()
-                self.History_Data_Comp_graphicsView_LayG7.removeWidget(
-                    self.History_Data_Comp_graphicsView_LayG7.itemAt(0).widget())
-            else:
-                # self.createContextMenu_sg_fig_view()  # 第一次初始化右键菜单，一次把两个canvas的菜单都初始化了  ！！！
-                pass
-            self.PicToolBar_history7 = NavigationBar(dr_history_pedal_map, self)
-            self.History_Data_Comp_graphicsView_LayG7.addWidget(self.PicToolBar_history7)
-            self.History_Data_Comp_graphicsView_7.setScene(self.scene)
-            self.History_Data_Comp_graphicsView_7.show()
-        except Exception as e:
-            print('From dr_history_pedal_map')
-            print(e)
+        self.PicToolBar_history7 = NavigationBar(dr_history_pedal_map, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history7,8,0,1,3)
+        self.gridLayout_4.addWidget(dr_history_pedal_map,9,0,1,3)
+        dr_history_pedal_map.setMinimumSize(QtCore.QSize(0, 600))
 
-    def datatableview_show(self, data_list):
+    def data_table_view_show(self, data_list):
         """
         Function of showing calculation results in data_table
 
@@ -555,10 +607,13 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.DatatableView.setModel(self.model)
         self.DatatableView.resizeColumnsToContents()
 
+    # -----|--|Setting 页面
+    def initial_setting_value(self):
+        pass
+
 
 class ThreadProcess(QtCore.QThread):
     Message_Finish = QtCore.pyqtSignal(str)
-    Message_Finish_2 = QtCore.pyqtSignal(str)
 
     def __init__(self, method, **kwargs):
         super(ThreadProcess, self).__init__()
@@ -570,14 +625,34 @@ class ThreadProcess(QtCore.QThread):
             getattr(self, self.method, 'nothing')()
         except BaseException as e:
             print(e)
+            message_str = 'Error: Error occurred in calculating SG data!'
+            self.info_widget_update(message_str)
 
     def sg_read_thread(self):
-        self.ax_holder_rd = ReadFile(file_path=self.kwargs['filepath'])
+        self.ax_holder_rd = ReadFile(file_path=self.kwargs['filepath'], resample_rate=self.kwargs['resample_rate'])
         self.Message_Finish.emit("计算完成！")
 
     def sg_cal_thread(self):
-        self.ax_holder_SG = SystemGain(raw_data=self.kwargs['raw_data'], feature_array=self.kwargs['feature_array'])
-        self.ax_holder_SG.sg_main()
+        if self.kwargs['replace']:
+            self.ax_holder_SG = SystemGain(raw_data=self.kwargs['raw_data'], feature_array=self.kwargs['feature_array'],
+                                           pt_type=self.kwargs['pt_type'], replace=True, cs_table=self.kwargs['cs_table'])
+        else:
+            self.ax_holder_SG = SystemGain(raw_data=self.kwargs['raw_data'], feature_array=self.kwargs['feature_array'],
+                                           pt_type=self.kwargs['pt_type'])
+        ret = self.ax_holder_SG.sg_main()
+        if ret == 'eliminate_duplicate_ped':
+            self.Message_Finish.emit("删除重复")
+        else:
+            self.Message_Finish.emit("计算完成")
+
+    def cs_read_thread(self):
+        self.ax_holder_cs = ReadFile(file_path=self.kwargs['filepath'], resample_rate=self.kwargs['resample_rate'])
+        self.Message_Finish.emit("计算完成！")
+
+    def cs_cal_thread(self):
+        self.ax_holder_cs_cal = ConstantSpeed(raw_data=self.kwargs['raw_data'],
+                                              feature_list=self.kwargs['feature_list'])
+        self.ax_holder_cs_cal.cs_main()
         self.Message_Finish.emit("计算完成！")
 
     def show_raw_data(self):
