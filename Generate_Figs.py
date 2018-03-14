@@ -1,17 +1,11 @@
 from matplotlib import use
-import numpy as np
-
+from numpy import zeros, array, mean, arange, where, pi
 use("Qt5Agg")
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationBar
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm
-
-
-# import warnings
-# warnings.filterwarnings("ignore")
-
 
 # ----------------------------
 # class definition
@@ -41,7 +35,7 @@ class MyFigureCanvas(FigureCanvas):
         # FigureCanvas.__init__(self, fig)  # 初始化父类   堆栈溢出问题！
         # self.setParent(parent)
         if plot_type == '2d':
-            self.axes = self.fig.add_axes([0.1, 0.1, 0.8, 0.8])
+            self.axes = self.fig.add_axes([0.15, 0.1, 0.75, 0.8])
         elif plot_type == '3d':
             self.fig.subplots_adjust(left=0.08, top=0.92, right=0.95, bottom=0.1)
             self.axes = self.fig.add_subplot(111, projection='3d')
@@ -54,19 +48,22 @@ class MyFigureCanvas(FigureCanvas):
         elif plot_type == '2d-subplot':
             pass
 
-    def plot_acc_response(self, data, ped_avg):  # 目前做不到先画图，后统一输出，只能在主线程里面同步画
+    def plot_acc_response(self, data, ped_avg, ped_maxacc, vehspd_cs, pedal_cs):  # 目前做不到先画图，后统一输出，只能在主线程里面同步画
 
         for i in range(0, len(data[1])):
             self.axes.plot(data[1][i], data[0][i], data[2][i], label=int(round(ped_avg[i] / 5) * 5))
-            self.axes.legend(bbox_to_anchor=(1.02, 1), loc=1, borderaxespad=0)
-            self.axes.set_xlabel('Velocity (kph)', fontsize=12)
-            self.axes.set_ylabel('Pedal (%)', fontsize=12)
-            self.axes.set_zlabel('Acc (g) ', fontsize=12)
+            self.axes.legend(bbox_to_anchor=(0.65, 1.05), ncol=4, loc=2, borderaxespad=0, fontsize=6)
+        self.axes.plot(ped_maxacc[1], ped_maxacc[0], ped_maxacc[2], 'ko--', markersize=4, alpha=.65)
+        self.axes.plot(vehspd_cs, pedal_cs, zeros(len(pedal_cs)), 'ko--', markersize=4, alpha=.65)
+        self.axes.set_xlabel('Velocity (kph)', fontsize=12)
+        self.axes.set_ylabel('Pedal (%)', fontsize=12)
+        self.axes.set_zlabel('Acc (g) ', fontsize=12)
+        # self.axes.set_title('Acc-3D Map', fontsize=12)  # 画出来title在中间……
 
     def plot_launch(self, data):
 
         for i in range(0, len(data[2])):
-            self.axes.plot(data[2][i], data[1][i], label=int(round(np.mean(data[0][i]) / 5) * 5))
+            self.axes.plot(data[2][i], data[1][i], label=int(round(mean(data[0][i]) / 5) * 5))
             self.axes.legend()
             self.axes.grid(True, linestyle="--", color="k", linewidth="0.4")
         self.axes.set_xlabel('Time (s)', fontsize=12)
@@ -79,10 +76,9 @@ class MyFigureCanvas(FigureCanvas):
         #                markersize=8)
         self.axes.plot(data[0], data[1], linestyle='dashed', marker='o', markersize=8)
         self.axes.grid(True, linestyle="--", color="k", linewidth="0.4")
-        self.axes.legend()
         self.axes.set_xlabel('Pedal (%)', fontsize=12)
         self.axes.set_ylabel('Acc (g)', fontsize=12)
-        self.axes.set_title('Acc-Pedal', fontsize=12)
+        self.axes.set_title('Max Acc', fontsize=12)
 
     def plot_pedal_map(self, data):
 
@@ -93,24 +89,32 @@ class MyFigureCanvas(FigureCanvas):
         self.axes.set_ylabel('Torque (Nm)', fontsize=12)
         self.axes.set_title('PedalMap', fontsize=12)
 
-    def plot_shift_map(self, data):
-
-        str_label = ['1->2', '2->3', '3->4', '4->5', '5->6', '6->7', '7->8', '8->9', '9->10']
-        for i in range(1, int(max(data[0])) + 1):
-            # 选择当前Gear, color=colour[i]
-            self.axes.plot(data[2][np.where(data[0] == i)], data[1][np.where(data[0] == i)]
-                           , marker='o', linestyle='-', linewidth=3, markerfacecolor='blue', markersize=4
-                           , label=str_label[i - 1])
-            self.axes.legend()
-        self.axes.grid(True, linestyle="--", color="k", linewidth="0.4")
-        self.axes.set_xlabel('Vehicle Speed (km/h)', fontsize=12)
-        self.axes.set_ylabel('Pedal (%)', fontsize=12)
-        self.axes.set_title('ShiftMap', fontsize=12)
+    def plot_shift_map(self, data, kind, **kwargs):
+        if kind == 'AT/DCT':
+            str_label = ['1->2', '2->3', '3->4', '4->5', '5->6', '6->7', '7->8', '8->9', '9->10']
+            for i in range(1, int(max(data[0])) + 1):
+                # 选择当前Gear, color=colour[i]
+                self.axes.plot(data[2][where(data[0] == i)], data[1][where(data[0] == i)]
+                               , marker='o', linestyle='-', linewidth=3, markerfacecolor='blue', markersize=4
+                               , label=str_label[i - 1])
+                self.axes.legend()
+            self.axes.grid(True, linestyle="--", color="k", linewidth="0.4")
+            self.axes.set_xlabel('Vehicle Speed (kph)', fontsize=12)
+            self.axes.set_ylabel('Pedal (%)', fontsize=12)
+            self.axes.set_title('Shift Map', fontsize=12)
+        elif kind == 'CVT':
+            for i in range(0, len(data[1])):
+                self.axes.plot(data[2][i], data[0][i], color='r')
+                self.axes.annotate(str(int(kwargs['pedal_avg'][i])), xy=(data[2][i][-100], data[0][i][-100]),
+                                   xycoords='data', xytext=(+2, +2), textcoords='offset points')
+                self.axes.plot(data[2][i], data[1][i], color='b')
+            self.axes.set_xlabel('Velocity (kph)', fontsize=12)
+            self.axes.set_ylabel('Engine/Turbine Speed (rpm)', fontsize=12)
 
     def plot_systemgain_curve(self, vehspd_sg, acc_sg):
-        speedIndex = np.arange(10, 170, 10)
+        speedIndex = arange(10, 170, 10)
         speedIndex = speedIndex.tolist()
-        acc_banana = np.zeros((5, len(speedIndex)))
+        acc_banana = zeros((5, len(speedIndex)))
         acc_banana[0, :] = [0.0144, 0.0126, 0.0111, 0.0097, 0.0084, 0.0073, 0.0064, 0.0056, 0.0048,
                             0.0042, 0.0037, 0.0032, 0.0028, 0.0024, 0.0021, 0.0018]
         acc_banana[1, :] = [0.0172, 0.0152, 0.0134, 0.0119, 0.0104, 0.0092, 0.0081, 0.0071, 0.0063,
@@ -123,18 +127,19 @@ class MyFigureCanvas(FigureCanvas):
                             0.0096, 0.0086, 0.0077, 0.0069, 0.0062, 0.0055, 0.0049]
 
         # self.axes.plot(vehspd_sg, acc_sg, color='green', linestyle='-')
-        self.axes.plot(vehspd_sg, acc_sg, linestyle='-')
+        self.axes.plot(vehspd_sg, acc_sg, linestyle='-', label='sg_cr')
         self.axes.plot(speedIndex, acc_banana[0, :], color='blue', linestyle='--')
         self.axes.plot(speedIndex, acc_banana[1, :], color='red', linestyle='--')
         self.axes.plot(speedIndex, acc_banana[2, :], color='black', linestyle='--')
         self.axes.plot(speedIndex, acc_banana[3, :], color='blue', linestyle='--')
         self.axes.plot(speedIndex, acc_banana[4, :], color='red', linestyle='--')
         self.axes.plot([speedIndex[0]] * 5, acc_banana[:, 0], color='blue', linestyle='-')
-        self.axes.set_xlabel('velocity(km/h)')
-        self.axes.set_ylabel('acc(g/mm)')
+        self.axes.set_xlabel('Vehicle Speed(kph)', fontsize=12)
+        self.axes.set_ylabel('Acc(g/mm)', fontsize=12)
         self.axes.set_xlim(0, 120)
         self.axes.set_ylim(0, 0.03)
-        self.axes.grid(True, linestyle="-", color="grey", linewidth="0.4")
+        self.axes.grid(True, linestyle="--", color="grey", linewidth="0.4")
+        self.axes.set_title('System Gain Curve')
 
     def plot_constant_speed(self, vehspd_cs, pedal_cs):
 
@@ -142,9 +147,8 @@ class MyFigureCanvas(FigureCanvas):
                        # markersize=8)
         self.axes.plot(vehspd_cs, pedal_cs, linestyle='dashed', marker='o', markersize=8)
         self.axes.grid(True, linestyle="--", color="k", linewidth="0.4")
-        self.axes.legend()
-        self.axes.set_xlabel('velocity (kph)', fontsize=12)
-        self.axes.set_ylabel('pedal (%)', fontsize=12)
+        self.axes.set_xlabel('Vehicle Speed (kph)', fontsize=12)
+        self.axes.set_ylabel('Pedal (%)', fontsize=12)
         self.axes.set_title('Constant Speed', fontsize=12)
 
     def plot_acc_response_(self):
@@ -157,9 +161,11 @@ class MyFigureCanvas(FigureCanvas):
         self.ydata = self.kwargs['data'][0]
         self.zdata = self.kwargs['data'][2]
         self.pedal_avg = self.kwargs['pedal_avg']
+        # self.max_acc_ped = self.kwargs['max_acc_ped']
         for i in range(0, len(self.xdata)):
             self.axes.plot(self.xdata[i], self.ydata[i], self.zdata[i], label=int(round(self.pedal_avg[i] / 5) * 5))
             self.axes.legend(bbox_to_anchor=(1.02, 1), loc=1, borderaxespad=0)
+        self.axes.plot(self.max_acc_ped[1], self.max_acc_ped[0], self.max_acc_ped[2])
         self.axes.set_xlabel('Vehicle Speed (km/h)', fontsize=12)
         self.axes.set_ylabel('Pedal(%)', fontsize=12)
         self.axes.set_zlabel('Acc (g)', fontsize=12)
@@ -170,7 +176,7 @@ class MyFigureCanvas(FigureCanvas):
         self.ydata = self.kwargs['data'][1]
         self.pedal = self.kwargs['data'][0]
         for i in range(0, len(self.xdata)):
-            self.axes.plot(self.xdata[i], self.ydata[i], label=int(round(np.mean(self.pedal[i]) / 5) * 5))
+            self.axes.plot(self.xdata[i], self.ydata[i], label=int(round(mean(self.pedal[i]) / 5) * 5))
             self.axes.legend()
         self.axes.grid(True, linestyle="--", color="k", linewidth="0.4")
         self.axes.set_xlabel('Time (s)', fontsize=12)
@@ -201,19 +207,29 @@ class MyFigureCanvas(FigureCanvas):
 
     def plot_raw_data(self, time, df, **kwargs):
 
-        pos = [0.02, 0.1, 0.8, 0.8]
-        colors = ['r', 'b', 'g', 'y', 'orchid', 'orange', 'navy']
-        font_size = 10
+        signal_num = df.shape[1]
+        if signal_num < 3:
+            font_size = 12
+        elif signal_num < 5:
+            font_size = 10
+        else:
+            font_size = 8
 
-        for i in range(df.shape[1]):
+        pos = [0.02, 0.1, 1.0-signal_num*font_size/160, 0.8]
+
+        colors = ['r', 'b', 'g', 'm', 'darkgray', 'orchid', 'orange', 'navy', 'purple', 'crimson', 'steelblue',
+                  'sage', 'gold', 'tomato', 'brown']
+
+        for i in range(signal_num):
             if i == 0:
-                self.axes = self.fig.add_axes(pos, axisbg='w', label=str(df.columns[i]))  # 设置初始的图层底色为白色
+                self.axes = self.fig.add_axes(pos, facecolor='w', label=str(df.columns[i]))  # 设置初始的图层底色为白色
                 self.axes.tick_params(axis='x', colors='black', labelsize=10)
                 self.axes.set_xlabel('time (s)', fontsize=12)
             else:
-                self.axes = self.fig.add_axes(pos, axisbg='none', label=str(df.columns[i]))  # 设置随后的图层底色为透明
+                self.axes = self.fig.add_axes(pos, facecolor='none', label=str(df.columns[i]))  # 设置随后的图层底色为透明
+                self.axes.get_xaxis().set_visible(False)
 
-            self.axes.spines['right'].set_position(('outward', 60 * i))  # 图的右侧边框向外移动
+            self.axes.spines['right'].set_position(('outward', font_size/10*70 * i))  # 图的右侧边框向外移动
             self.axes.spines['right'].set_color(colors[i])
             self.axes.spines['right'].set_linewidth(2)
             self.axes.plot(time, df.iloc[:, i], linewidth=1, color=colors[i])
@@ -226,7 +242,7 @@ class MyFigureCanvas(FigureCanvas):
         self.theta = self.kwargs['theta']
         self.data = self.kwargs['data']
         self.legends = self.kwargs['legends']
-        # plt.thetagrids(theta*(180/np.pi), labels=labels, fontproperties=myfont)
+        # plt.thetagrids(theta*(180/pi), labels=labels, fontproperties=myfont)
         self.axes.set_ylim(0, 100)
         colour_Bar = ['blue', 'red', 'c', 'royalblue', 'lightcoral', 'yellow', 'lightgreen', 'brown',
                       'teal', 'orange', 'coral', 'gold', 'lime', 'olive']
@@ -234,15 +250,15 @@ class MyFigureCanvas(FigureCanvas):
             # 画雷达图,并填充雷达图内部区域
             self.axes.plot(self.theta, self.data, "o-", color='blue', linewidth=2)
             self.axes.fill(self.theta, self.data, color="blue", alpha=0.25)
-            self.axes.set_rgrids(np.arange(20, 100, 20), labels=np.arange(20, 100, 20), angle=0)
-            self.axes.set_thetagrids(self.theta * (180 / np.pi), labels=np.array(["A", "B", "C", "D", "E", "F"]))
+            self.axes.set_rgrids(arange(20, 100, 20), labels=arange(20, 100, 20), angle=0)
+            self.axes.set_thetagrids(self.theta * (180 / pi), labels=array(["A", "B", "C", "D", "E", "F"]))
             self.axes.set_title("Rating")
         else:
             for i in range(self.data.size // 7):
                 self.axes.plot(self.theta, self.data[i], 'o-', color=colour_Bar[i], linewidth=2)
                 self.axes.fill(self.theta, self.data[i], color=colour_Bar[i], alpha=0.25)
-            self.axes.set_rgrids(np.arange(20, 100, 20), labels=np.arange(20, 100, 20), angle=0)
-            self.axes.set_thetagrids(self.theta * (180 / np.pi), labels=np.array(["A", "B", "C", "D", "E", "F"]))
+            self.axes.set_rgrids(arange(20, 100, 20), labels=arange(20, 100, 20), angle=0)
+            self.axes.set_thetagrids(self.theta * (180 / pi), labels=array(["A", "B", "C", "D", "E", "F"]))
             self.axes.set_title("Rating Comparison")
         self.axes.legend(self.legends)
 
@@ -257,9 +273,9 @@ class MyFigureCanvas(FigureCanvas):
         self.axes.plot(time_data, sr_x_data, color='black')
         self.axes.plot(time_data, sr_y_data, color='red')
         self.axes.plot(time_data, sr_z_data, color='blue')
-        exam_x = np.where(sr_x_data > 10)
-        exam_y = np.where(sr_y_data > 10)
-        exam_z = np.where(sr_z_data > 10)
+        exam_x = where(sr_x_data > 10)
+        exam_y = where(sr_y_data > 10)
+        exam_z = where(sr_z_data > 10)
 
         if exam_x[0].shape[0] > 0:
             for nn in exam_x:
@@ -336,12 +352,17 @@ class MyFigureCanvas(FigureCanvas):
             self.axes = self.fig.add_subplot(1, pic_num, m+1, projection='3d')
             data = history_data[m].sysGain_class.accresponce.data
             ped_avg = history_data[m].sysGain_class.accresponce.pedal_avg
+            ped_maxacc = history_data[m].sysGain_class.accresponce.max_acc_ped
+            vehspd_cs = history_data[m].sysGain_class.systemgain.vehspd_cs
+            pedal_cs = history_data[m].sysGain_class.systemgain.pedal_cs
             for i in range(0, len(data[1])):
                 self.axes.plot(data[1][i], data[0][i], data[2][i], label=int(round(ped_avg[i] / 5) * 5))
                 self.axes.legend(bbox_to_anchor=(1.02, 1), loc=1, borderaxespad=0)
-                self.axes.set_xlabel('Velocity (kph)', fontsize=12)
-                self.axes.set_ylabel('Pedal (%)', fontsize=12)
-                self.axes.set_zlabel('Acc (g) ', fontsize=12)
+            self.axes.plot(ped_maxacc[1], ped_maxacc[0], ped_maxacc[2], 'ko--', markersize=4, alpha=.65)
+            self.axes.plot(vehspd_cs, pedal_cs, zeros(len(pedal_cs)), 'ko--', markersize=4, alpha=.65)
+            self.axes.set_xlabel('Vehicle Speed (kph)', fontsize=12)
+            self.axes.set_ylabel('Pedal (%)', fontsize=12)
+            self.axes.set_zlabel('Acc (g) ', fontsize=12)
 
     def plot_launch_subplot(self, history_data):
         pic_num = len(history_data)
@@ -350,7 +371,7 @@ class MyFigureCanvas(FigureCanvas):
             data = history_data[m].sysGain_class.launch.data
 
             for i in range(0, len(data[2])):
-                self.axes.plot(data[2][i], data[1][i], label=int(round(np.mean(data[0][i]) / 5) * 5))
+                self.axes.plot(data[2][i], data[1][i], label=int(round(mean(data[0][i]) / 5) * 5))
                 self.axes.legend()
                 self.axes.grid(True, linestyle="--", color="k", linewidth="0.4")
             self.axes.set_xlabel('Time (s)', fontsize=12)
@@ -362,18 +383,28 @@ class MyFigureCanvas(FigureCanvas):
         for m in range(pic_num):
             self.axes = self.fig.add_subplot(1, pic_num, m + 1)
             data = history_data[m].sysGain_class.shiftmap.data
-
-            str_label = ['1->2', '2->3', '3->4', '4->5', '5->6', '6->7', '7->8', '8->9', '9->10']
-            for i in range(1, int(max(data[0])) + 1):
-                # 选择当前Gear, color=colour[i]
-                self.axes.plot(data[2][np.where(data[0] == i)], data[1][np.where(data[0] == i)]
-                               , marker='o', linestyle='-', linewidth=3, markerfacecolor='blue', markersize=4
-                               , label=str_label[i - 1])
-                self.axes.legend()
-            self.axes.grid(True, linestyle="--", color="k", linewidth="0.4")
-            self.axes.set_xlabel('Vehicle Speed (km/h)', fontsize=12)
-            self.axes.set_ylabel('Pedal (%)', fontsize=12)
-            self.axes.set_title('ShiftMap', fontsize=12)
+            pt_type = history_data[m].sysGain_class.pt_type
+            kwargs = history_data[m].sysGain_class.shiftmap.kwargs
+            if pt_type == 'AT/DCT':
+                str_label = ['1->2', '2->3', '3->4', '4->5', '5->6', '6->7', '7->8', '8->9', '9->10']
+                for i in range(1, int(max(data[0])) + 1):
+                    # 选择当前Gear, color=colour[i]
+                    self.axes.plot(data[2][where(data[0] == i)], data[1][where(data[0] == i)]
+                                   , marker='o', linestyle='-', linewidth=3, markerfacecolor='blue', markersize=4
+                                   , label=str_label[i - 1])
+                    self.axes.legend()
+                self.axes.grid(True, linestyle="--", color="k", linewidth="0.4")
+                self.axes.set_xlabel('Vehicle Speed (kph)', fontsize=12)
+                self.axes.set_ylabel('Pedal (%)', fontsize=12)
+                self.axes.set_title('Shift Map', fontsize=12)
+            elif pt_type == 'CVT':
+                for i in range(0, len(data[1])):
+                    self.axes.plot(data[2][i], data[0][i], color='r')
+                    self.axes.annotate(str(int(kwargs['pedal_avg'][i])), xy=(data[2][i][-100], data[0][i][-100]),
+                                       xycoords='data', xytext=(+2, +2), textcoords='offset points')
+                    self.axes.plot(data[2][i], data[1][i], color='b')
+                self.axes.set_xlabel('Velocity (kph)', fontsize=12)
+                self.axes.set_ylabel('Engine/Turbine Speed (rpm)', fontsize=12)
 
     def plot_pedal_map_subplot(self, history_data):
         pic_num = len(history_data)
@@ -386,4 +417,4 @@ class MyFigureCanvas(FigureCanvas):
             self.axes.grid(True, linestyle="--", color="k", linewidth="0.4")
             self.axes.set_xlabel('Engine Speed (rpm)', fontsize=12)
             self.axes.set_ylabel('Torque (Nm)', fontsize=12)
-            self.axes.set_title('PedalMap', fontsize=12)
+            self.axes.set_title('Pedal Map', fontsize=12)
