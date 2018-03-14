@@ -8,10 +8,6 @@ from re import match  # 正则表达式
 # from ctypes import windll
 from UiSetIndexName import UiSetIndexName
 from UI_eliminate_duplicate_ped import UiEliminateDuplicatePed
-from pptx import Presentation
-from pptx.util import Inches
-from datetime import date
-
 
 # try:
 #     temp1 = windll.LoadLibrary('DLL\\Qt5Core.dll')
