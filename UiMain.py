@@ -1,7 +1,6 @@
 from sys import argv, exit
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 from SystemGainUi import Ui_MainWindow  # 界面源码
 from Generate_Figs import *  # 绘图函数
 from Calculation_function import *  # 计算函数
@@ -9,6 +8,10 @@ from re import match  # 正则表达式
 # from ctypes import windll
 from UiSetIndexName import UiSetIndexName
 from UI_eliminate_duplicate_ped import UiEliminateDuplicatePed
+from pptx import Presentation
+from pptx.util import Inches
+from datetime import date
+
 
 # try:
 #     temp1 = windll.LoadLibrary('DLL\\Qt5Core.dll')
@@ -29,6 +32,9 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
         self.menu_InputData.triggered.connect(self.load_sys_gain_data)
         self.menu_Save.triggered.connect(self.save_sys_gain_data)
+        # menu_Output_Report_ppt
+        self.menu_Output_Report.triggered.connect(lambda: self.output_data_ppt('analysis'))
+        # New Add ppt
         self.action_Data_Viewer.triggered.connect(lambda: self.change_main_page(0))
         self.action_System_Gain.triggered.connect(lambda: self.change_main_page(1))
         self.action_Cal_Result.triggered.connect(lambda: self.change_main_page(2))
@@ -86,11 +92,11 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.gridLayout_2.addWidget(self.dr_launch, 5, 0, 1, 1)
         self.dr_launch.setMinimumSize(QtCore.QSize(0, 600))
 
-        self.dr_ped_map = MyFigureCanvas(width=6, height=4, plot_type='2d')
-        self.PicToolBar_6 = NavigationBar(self.dr_ped_map, self)
+        self.dr_pedal_map = MyFigureCanvas(width=6, height=4, plot_type='2d')
+        self.PicToolBar_6 = NavigationBar(self.dr_pedal_map, self)
         self.gridLayout_2.addWidget(self.PicToolBar_6, 4, 1, 1, 1)
-        self.gridLayout_2.addWidget(self.dr_ped_map, 5, 1, 1, 1)
-        self.dr_ped_map.setMinimumSize(QtCore.QSize(0, 600))
+        self.gridLayout_2.addWidget(self.dr_pedal_map, 5, 1, 1, 1)
+        self.dr_pedal_map.setMinimumSize(QtCore.QSize(0, 600))
 
         self.dr_max_acc = MyFigureCanvas(width=6, height=4, plot_type='2d')
         self.PicToolBar_7 = NavigationBar(self.dr_max_acc, self)
@@ -147,10 +153,10 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
     def load_sys_gain_data(self):
         file = QFileDialog.getOpenFileName(self, filter='*.csv *.xls *.xlsx *.mdf *.dat')
-        file_path = file[0]
-        if file_path != '':
+        self.rawdata_filepath = file[0]
+        if self.rawdata_filepath != '':
             self.MainProcess_thread_rd = ThreadProcess(method='sg_read_thread',
-                                                       filepath=file_path ,
+                                                       filepath=self.rawdata_filepath,
                                                        resample_rate=self.DataViewer_setting_Rawdata_mdf_res_TE.toPlainText())
             self.MainProcess_thread_rd.Message_Finish.connect(self.initial_data_edit)
             # self.MainProcess_thread_rd.Message_Finish.connect(
@@ -158,7 +164,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
             # self.MainProcess_thread_rd.Message_Finish.connect(self.combobox_index_features_initial)
             self.MainProcess_thread_rd.start()
-            message_str = 'Message: Importing ' + file_path + ' ...'
+            message_str = 'Message: Importing ' + self.rawdata_filepath + ' ...'
             self.info_widget_update(message_str)
 
             self.refresh_raw_data_pic()
@@ -174,6 +180,27 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         except Exception:
             pass
 
+    # PPT
+    def output_data_ppt(self, ppt_type):
+
+        list_figs, rawdata_name, title_ppt = SaveAndLoad.get_fig_name(ppt_type)
+        pic_path = './bin/'  # 当前路径
+        for i in range(0, len(list_figs)):
+            # self.dr_acc_curve.fig.savefig(pic_path + 'Acc Response.png', dpi=200)
+            eval('self.' + list_figs[i][0] + ".fig.savefig('" + pic_path + list_figs[i][1] + "', dpi=200)")
+
+        prs = SaveAndLoad.save_pic_ppt(list_figs, rawdata_name, title_ppt, pic_path)
+        # Delete saved Pics
+        file_ppt = QFileDialog.getSaveFileName(self, filter='.pptx')
+        file_ppt_path = file_ppt[0] + file_ppt[1]
+
+        try:
+            prs.save(file_ppt_path)
+            message_str = 'Message: Saving PPT in ' + file_ppt_path + ' ...'
+            self.info_widget_update(message_str)
+        except Exception:
+            pass
+
     def resize_figs(self):
         self.dr_acc_curve.fig.set_size_inches(self.System_Gain_AT_DCT_Fig_1.size().width() / 100 * 0.9,
                                               self.System_Gain_AT_DCT_Fig_1.size().height() / 100 * 0.9)
@@ -185,7 +212,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                                               self.System_Gain_AT_DCT_Fig_4.size().height() / 100 * 0.9)
         self.dr_launch.fig.set_size_inches(self.System_Gain_AT_DCT_Fig_5.size().width() / 100 * 0.9,
                                            self.System_Gain_AT_DCT_Fig_5.size().height() / 100 * 0.9)
-        self.dr_ped_map.fig.set_size_inches(self.System_Gain_AT_DCT_Fig_6.size().width() / 100 * 0.9,
+        self.dr_pedal_map.fig.set_size_inches(self.System_Gain_AT_DCT_Fig_6.size().width() / 100 * 0.9,
                                             self.System_Gain_AT_DCT_Fig_6.size().height() / 100 * 0.9)
         self.dr_raw.fig.set_size_inches(self.Data_Viewer_page_graphicsView.size().width() / 100 * 0.9,
                                         self.Data_Viewer_page_graphicsView.size().height() / 100)
@@ -430,7 +457,10 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.dr_acc_curve.axes.clear()
         self.dr_acc_curve.plot_acc_response(
             data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.accresponce.data,
-            ped_avg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.accresponce.pedal_avg)
+            ped_avg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.accresponce.pedal_avg,
+            ped_maxacc=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.accresponce.max_acc_ped,
+            vehspd_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.vehspd_cs,
+            pedal_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.pedal_cs)
         self.PicToolBar_1.press(self.PicToolBar_1.home())
         self.PicToolBar_1.dynamic_update()
 
@@ -466,8 +496,8 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.PicToolBar_5.press(self.PicToolBar_5.home())
         self.PicToolBar_5.dynamic_update()
 
-        self.dr_ped_map.axes.clear()
-        self.dr_ped_map.plot_pedal_map(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.pedalmap.data)
+        self.dr_pedal_map.axes.clear()
+        self.dr_pedal_map.plot_pedal_map(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.pedalmap.data)
         self.PicToolBar_6.press(self.PicToolBar_6.home())
         self.PicToolBar_6.dynamic_update()
 
@@ -495,7 +525,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.PicToolBar_4.dynamic_update()
         self.dr_launch.axes.clear()
         self.PicToolBar_5.dynamic_update()
-        self.dr_ped_map.axes.clear()
+        self.dr_pedal_map.axes.clear()
         self.PicToolBar_6.dynamic_update()
         self.dr_max_acc.axes.clear()
         self.PicToolBar_7.dynamic_update()
@@ -528,66 +558,66 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             except AttributeError:
                 self.gridLayout_4.removeItem(self.gridLayout_4.itemAt(0))  # 删除当前Lay中spacer元素
 
-        dr_history_sg_curve = MyFigureCanvas(width=6, height=4, plot_type='2d')
+        self.dr_history_sg_curve = MyFigureCanvas(width=6, height=4, plot_type='2d')
         curve_list = []
         for i in range(len(self.history_data)):  # 将每次画一根线
-            dr_history_sg_curve.plot_systemgain_curve(vehspd_sg=self.history_data[i].sysGain_class.systemgain.vehspd_sg,
-                                                      acc_sg=self.history_data[i].sysGain_class.systemgain.acc_sg)
-            curve_list.append(dr_history_sg_curve.axes.get_lines()[i*7])
-        dr_history_sg_curve.axes.legend(curve_list, legend_list)  # 第1、8、15……为需求的SG Curve
-        self.PicToolBar_history1 = NavigationBar(dr_history_sg_curve, self)
-        self.gridLayout_4.addWidget(self.PicToolBar_history1,0,0,1,1)
-        self.gridLayout_4.addWidget(dr_history_sg_curve,1,0,1,1)
-        dr_history_sg_curve.setMinimumSize(QtCore.QSize(0, 600))
+            self.dr_history_sg_curve.plot_systemgain_curve(vehspd_sg=self.history_data[i].sysGain_class.systemgain.
+                                                           vehspd_sg,acc_sg=self.history_data[i].sysGain_class.
+                                                           systemgain.acc_sg)
+            curve_list.append(self.dr_history_sg_curve.axes.get_lines()[i*7])
+        self.dr_history_sg_curve.axes.legend(curve_list, legend_list)  # 第1、8、15……为需求的SG Curve
+        self.PicToolBar_history1 = NavigationBar(self.dr_history_sg_curve, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history1, 0, 0, 1, 1)
+        self.gridLayout_4.addWidget(self.dr_history_sg_curve, 1, 0, 1, 1)
+        self.dr_history_sg_curve.setMinimumSize(QtCore.QSize(0, 600))
 
-        dr_history_cons_spd = MyFigureCanvas(width=6, height=4, plot_type='2d')
+        self.dr_history_cons_spd = MyFigureCanvas(width=6, height=4, plot_type='2d')
         for i in range(len(self.history_data)):  # 将每次画一根线
-            dr_history_cons_spd.plot_constant_speed(vehspd_cs=self.history_data[i].sysGain_class.systemgain.vehspd_cs,
-                                                    pedal_cs=self.history_data[i].sysGain_class.systemgain.pedal_cs)
-        dr_history_cons_spd.axes.legend(legend_list)
-        self.PicToolBar_history2 = NavigationBar(dr_history_cons_spd, self)
-        self.gridLayout_4.addWidget(self.PicToolBar_history2,0,1,1,1)
-        self.gridLayout_4.addWidget(dr_history_cons_spd,1,1,1,1)
-        dr_history_cons_spd.setMinimumSize(QtCore.QSize(0, 600))
+            self.dr_history_cons_spd.plot_constant_speed(vehspd_cs=self.history_data[i].sysGain_class.systemgain.
+                                                         vehspd_cs, pedal_cs=self.history_data[i].sysGain_class.
+                                                         systemgain.pedal_cs)
+        self.dr_history_cons_spd.axes.legend(legend_list)
+        self.PicToolBar_history2 = NavigationBar(self.dr_history_cons_spd, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history2, 0, 1, 1, 1)
+        self.gridLayout_4.addWidget(self.dr_history_cons_spd, 1, 1, 1, 1)
+        self.dr_history_cons_spd.setMinimumSize(QtCore.QSize(0, 600))
 
-        dr_history_max_acc = MyFigureCanvas(width=6, height=4, plot_type='2d')
+        self.dr_history_max_acc = MyFigureCanvas(width=6, height=4, plot_type='2d')
         for i in range(len(self.history_data)):  # 将每次画一根线
-            dr_history_max_acc.plot_max_acc(data=self.history_data[i].sysGain_class.maxacc.data)
-        dr_history_max_acc.axes.legend(legend_list)
-        self.PicToolBar_history3 = NavigationBar(dr_history_max_acc, self)
-        self.gridLayout_4.addWidget(self.PicToolBar_history3,0,2,1,1)
-        self.gridLayout_4.addWidget(dr_history_max_acc,1,2,1,1)
-        dr_history_max_acc.setMinimumSize(QtCore.QSize(0, 600))
+            self.dr_history_max_acc.plot_max_acc(data=self.history_data[i].sysGain_class.maxacc.data)
+        self.dr_history_max_acc.axes.legend(legend_list)
+        self.PicToolBar_history3 = NavigationBar(self.dr_history_max_acc, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history3, 0, 2, 1, 1)
+        self.gridLayout_4.addWidget(self.dr_history_max_acc, 1, 2, 1, 1)
+        self.dr_history_max_acc.setMinimumSize(QtCore.QSize(0, 600))
 
-        dr_history_acc_curve = MyFigureCanvas(width=18, height=5, plot_type='3d-subplot')
-        dr_history_acc_curve.plot_acc_response_subplot(history_data=self.history_data)
-        self.PicToolBar_history4 = NavigationBar(dr_history_acc_curve, self)
-        self.gridLayout_4.addWidget(self.PicToolBar_history4,2,0,1,3)
-        self.gridLayout_4.addWidget(dr_history_acc_curve,3,0,1,3)
-        dr_history_acc_curve.setMinimumSize(QtCore.QSize(0, 600))
+        self.dr_history_acc_curve = MyFigureCanvas(width=18, height=5, plot_type='3d-subplot')
+        self.dr_history_acc_curve.plot_acc_response_subplot(history_data=self.history_data)
+        self.PicToolBar_history4 = NavigationBar(self.dr_history_acc_curve, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history4, 2, 0, 1, 3)
+        self.gridLayout_4.addWidget(self.dr_history_acc_curve, 3, 0, 1, 3)
+        self.dr_history_acc_curve.setMinimumSize(QtCore.QSize(0, 600))
 
-        dr_history_launch = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
-        dr_history_launch.plot_launch_subplot(history_data=self.history_data)
-        self.PicToolBar_history5 = NavigationBar(dr_history_launch, self)
-        self.gridLayout_4.addWidget(self.PicToolBar_history5,4,0,1,3)
-        self.gridLayout_4.addWidget(dr_history_launch,5,0,1,3)
-        dr_history_launch.setMinimumSize(QtCore.QSize(0, 600))
+        self.dr_history_launch = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
+        self.dr_history_launch.plot_launch_subplot(history_data=self.history_data)
+        self.PicToolBar_history5 = NavigationBar(self.dr_history_launch, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history5, 4, 0, 1, 3)
+        self.gridLayout_4.addWidget(self.dr_history_launch, 5, 0, 1, 3)
+        self.dr_history_launch.setMinimumSize(QtCore.QSize(0, 600))
 
+        self.dr_history_shift_map = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
+        self.dr_history_shift_map.plot_shift_map_subplot(history_data=self.history_data)
+        self.PicToolBar_history6 = NavigationBar(self.dr_history_shift_map, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history6, 6, 0, 1, 3)
+        self.gridLayout_4.addWidget(self.dr_history_shift_map, 7, 0, 1, 3)
+        self.dr_history_shift_map.setMinimumSize(QtCore.QSize(0, 600))
 
-        dr_history_shift_map = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
-        dr_history_shift_map.plot_shift_map_subplot(history_data=self.history_data)
-        self.PicToolBar_history6 = NavigationBar(dr_history_shift_map, self)
-        self.gridLayout_4.addWidget(self.PicToolBar_history6,6,0,1,3)
-        self.gridLayout_4.addWidget(dr_history_shift_map,7,0,1,3)
-        dr_history_shift_map.setMinimumSize(QtCore.QSize(0, 600))
-
-
-        dr_history_pedal_map = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
-        dr_history_pedal_map.plot_pedal_map_subplot(history_data=self.history_data)
-        self.PicToolBar_history7 = NavigationBar(dr_history_pedal_map, self)
-        self.gridLayout_4.addWidget(self.PicToolBar_history7,8,0,1,3)
-        self.gridLayout_4.addWidget(dr_history_pedal_map,9,0,1,3)
-        dr_history_pedal_map.setMinimumSize(QtCore.QSize(0, 600))
+        self.dr_history_pedal_map = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
+        self.dr_history_pedal_map.plot_pedal_map_subplot(history_data=self.history_data)
+        self.PicToolBar_history7 = NavigationBar(self.dr_history_pedal_map, self)
+        self.gridLayout_4.addWidget(self.PicToolBar_history7, 8, 0, 1, 3)
+        self.gridLayout_4.addWidget(self.dr_history_pedal_map, 9, 0, 1, 3)
+        self.dr_history_pedal_map.setMinimumSize(QtCore.QSize(0, 600))
 
     def data_table_view_show(self, data_list):
         """

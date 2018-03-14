@@ -48,11 +48,13 @@ class MyFigureCanvas(FigureCanvas):
         elif plot_type == '2d-subplot':
             pass
 
-    def plot_acc_response(self, data, ped_avg):  # 目前做不到先画图，后统一输出，只能在主线程里面同步画
+    def plot_acc_response(self, data, ped_avg, ped_maxacc, vehspd_cs, pedal_cs):  # 目前做不到先画图，后统一输出，只能在主线程里面同步画
 
         for i in range(0, len(data[1])):
             self.axes.plot(data[1][i], data[0][i], data[2][i], label=int(round(ped_avg[i] / 5) * 5))
             self.axes.legend(bbox_to_anchor=(0.65, 1.05), ncol=4, loc=2, borderaxespad=0, fontsize=6)
+        self.axes.plot(ped_maxacc[1], ped_maxacc[0], ped_maxacc[2], 'ko--', markersize=4, alpha=.65)
+        self.axes.plot(vehspd_cs, pedal_cs, zeros(len(pedal_cs)), 'ko--', markersize=4, alpha=.65)
         self.axes.set_xlabel('Velocity (kph)', fontsize=12)
         self.axes.set_ylabel('Pedal (%)', fontsize=12)
         self.axes.set_zlabel('Acc (g) ', fontsize=12)
@@ -159,9 +161,11 @@ class MyFigureCanvas(FigureCanvas):
         self.ydata = self.kwargs['data'][0]
         self.zdata = self.kwargs['data'][2]
         self.pedal_avg = self.kwargs['pedal_avg']
+        # self.max_acc_ped = self.kwargs['max_acc_ped']
         for i in range(0, len(self.xdata)):
             self.axes.plot(self.xdata[i], self.ydata[i], self.zdata[i], label=int(round(self.pedal_avg[i] / 5) * 5))
             self.axes.legend(bbox_to_anchor=(1.02, 1), loc=1, borderaxespad=0)
+        self.axes.plot(self.max_acc_ped[1], self.max_acc_ped[0], self.max_acc_ped[2])
         self.axes.set_xlabel('Vehicle Speed (km/h)', fontsize=12)
         self.axes.set_ylabel('Pedal(%)', fontsize=12)
         self.axes.set_zlabel('Acc (g)', fontsize=12)
@@ -348,12 +352,17 @@ class MyFigureCanvas(FigureCanvas):
             self.axes = self.fig.add_subplot(1, pic_num, m+1, projection='3d')
             data = history_data[m].sysGain_class.accresponce.data
             ped_avg = history_data[m].sysGain_class.accresponce.pedal_avg
+            ped_maxacc = history_data[m].sysGain_class.accresponce.max_acc_ped
+            vehspd_cs = history_data[m].sysGain_class.systemgain.vehspd_cs
+            pedal_cs = history_data[m].sysGain_class.systemgain.pedal_cs
             for i in range(0, len(data[1])):
                 self.axes.plot(data[1][i], data[0][i], data[2][i], label=int(round(ped_avg[i] / 5) * 5))
                 self.axes.legend(bbox_to_anchor=(1.02, 1), loc=1, borderaxespad=0)
-                self.axes.set_xlabel('Vehicle Speed (kph)', fontsize=12)
-                self.axes.set_ylabel('Pedal (%)', fontsize=12)
-                self.axes.set_zlabel('Acc (g) ', fontsize=12)
+            self.axes.plot(ped_maxacc[1], ped_maxacc[0], ped_maxacc[2], 'ko--', markersize=4, alpha=.65)
+            self.axes.plot(vehspd_cs, pedal_cs, zeros(len(pedal_cs)), 'ko--', markersize=4, alpha=.65)
+            self.axes.set_xlabel('Vehicle Speed (kph)', fontsize=12)
+            self.axes.set_ylabel('Pedal (%)', fontsize=12)
+            self.axes.set_zlabel('Acc (g) ', fontsize=12)
 
     def plot_launch_subplot(self, history_data):
         pic_num = len(history_data)

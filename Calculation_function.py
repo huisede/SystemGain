@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 from re import match
 from pickle import dump, load
 from mdfreader import mdfreader
+from pptx import Presentation
+from pptx.util import Inches
+from datetime import date
 
 
 class SystemGain(object):
@@ -16,6 +19,7 @@ class SystemGain(object):
 
     Created By Lvhuijia 20180202
     Edited By Luchao 20180204
+    Edited By ShenLiang 20180313
 
     Contains：
     ******
@@ -35,6 +39,10 @@ class SystemGain(object):
     fun plot_max_acc————Plotting method of generating maximum acceleration fig. NEED TO BE REWRITE IN Generate_Figs.py
     fun plot_pedal_map————Plotting method of generating pedal map fig. NEED TO BE REWRITE IN Generate_Figs.py
     fun plot_shift_map————Plotting method of generating shift map fig. NEED TO BE REWRITE IN Generate_Figs.py
+    ****** SL
+    Add constSpd IN class AccResponse————Wrapper class of the corresponding fig
+    Add MaxAcc and conSpd in plot_acc_response_
+    ******
     """
 
     def __init__(self, raw_data, feature_array, pt_type, **kwargs):
@@ -112,8 +120,6 @@ class SystemGain(object):
         self.sg_obj_cal()
 
     def sg_obj_cal(self):
-        obj_AccResponse = self.acc_response(self.vehSpd_Data, self.acc_Data, self.pedal_cut_index, self.pedal_avg)
-
         # # fig2起步图，[5,10,20,30,40,50,100],后续补充判断大油门不是100也画出来,粗细
         obj_Launch = self.launch(self.acc_Data, self.pedal_Data, self.pedal_cut_index, self.pedal_avg)
 
@@ -125,6 +131,8 @@ class SystemGain(object):
         obj_ShiftMap = self.shift_map(self.pedal_Data, self.gear_Data, self.vehSpd_Data, self.pedal_cut_index,
                                       self.pedal_avg, self.colour_Bar,
                                       self.enSpd_Data, self.turbSpd_Data, kind=self.pt_type)
+        # # 加速响应曲面增加加速度线及稳车速线
+        obj_AccResponse = self.acc_response(self.vehSpd_Data, self.acc_Data, self.pedal_cut_index, self.pedal_avg)
 
         obj_SystemGain = self.systemgain_curve(self.pedal_Data, self.vehSpd_Data, self.acc_Data, self.pedal_cut_index,
                                                self.pedal_avg)
@@ -135,31 +143,38 @@ class SystemGain(object):
     def acc_response(self, vehspd_data, acc_data, pedal_cut_index, pedal_avg):
         try:
             acc_ped_map = [[], [], []]
+            ped_maxacc = [[], [], []]
             for i in range(0, len(pedal_avg)):
-                iVehSpd = vehspd_data[pedal_cut_index[0][i]:pedal_cut_index[1][i]]
-                iPed = [pedal_avg[i] * ix / ix for ix in range(pedal_cut_index[0][i], pedal_cut_index[1][i])]
-                iAcc = acc_data[pedal_cut_index[0][i]:pedal_cut_index[1][i]]
+                ivehspd = vehspd_data[pedal_cut_index[0][i]:pedal_cut_index[1][i]]
+                iped = [pedal_avg[i] * ix / ix for ix in range(pedal_cut_index[0][i], pedal_cut_index[1][i])]
+                iacc = acc_data[pedal_cut_index[0][i]:pedal_cut_index[1][i]]
 
                 # 删除加速度小于0.05g的数据，认为是踩了制动
-                data_len = len(iAcc)
+                data_len = len(iacc)
                 j = 0
                 while j < data_len:
-                    if iAcc[j] < 0.0:  # 20180211 0.05->0.0
-                        del iVehSpd[j]
-                        del iPed[j]
-                        del iAcc[j]
+                    if iacc[j] < 0.0:  # 20180211 0.05->0.0
+                        del ivehspd[j]
+                        del iped[j]
+                        del iacc[j]
                         data_len = data_len - 1
                         j = j - 1
                     j = j + 1
 
-                acc_ped_map[0].append(iPed)
-                acc_ped_map[1].append(iVehSpd)
-                acc_ped_map[2].append(iAcc)
-            obj = self.AccResponse(acc_ped_map, pedal_avg)
+                acc_ped_map[0].append(iped)
+                acc_ped_map[1].append(ivehspd)
+                acc_ped_map[2].append(iacc)
+
+                ped_maxacc[0].append(pedal_avg[i])
+                ped_maxacc[1].append(ivehspd[iacc.index(max(iacc))])
+                ped_maxacc[2].append(max(iacc))
+
+            obj = self.AccResponse(acc_ped_map, pedal_avg, ped_maxacc)
         except Exception:
             acc_ped_map = [[], [], []]
+            ped_maxacc = [[], [], []]
             print('Error From acc_response Cal!')
-            obj = self.AccResponse(acc_ped_map, pedal_avg)
+            obj = self.AccResponse(acc_ped_map, pedal_avg, ped_maxacc)
         return obj
 
     def launch(self, acc_data, pedal_data, pedal_cut_index, pedal_avg):
@@ -368,12 +383,15 @@ class SystemGain(object):
         return pedal_cut_index, pedal_avg
 
     class AccResponse:
-        def __init__(self, matrix, para1):
+        def __init__(self, matrix, para1, matrix_max_acc):
             self.xdata = matrix[1]
             self.ydata = matrix[0]
             self.zdata = matrix[2]
             self.data = matrix
             self.pedal_avg = para1
+            self.max_acc_ped = matrix_max_acc
+            # self.ped_const = pedal_const
+            # self.velo_const = velocity_const
 
     class Launch:
         def __init__(self, matrix):
@@ -512,6 +530,81 @@ class SaveAndLoad(object):
         input_file.close()
         return data_reload
 
+    @staticmethod
+    def get_fig_name(type):
+        if type == "init":
+            # if self.rawdata_filepath != '':
+            list_figs = [['dr_sg_curve', 'System Gain Curve.png'], ['dr_max_acc', 'Max Acc.png'],
+                         ['dr_cons_spd', 'Constant Speed.png'], ['dr_acc_curve', 'Acc Response.png'],
+                         ['dr_launch', 'Launch.png'], ['dr_shift_map', 'Shift Map.png'],
+                         ['dr_pedal_map', 'PedalMap.png']]
+            rawdata_name = ''
+            # self.rawdata_filepath.split("/")[-1].split(".")[0]
+            rawdata_path = ''
+            # self.rawdata_filepath.replace(self.rawdata_filepath.split("/")[-1], '')
+            title_ppt = "Drive Quality Report"
+        else:
+            list_figs = [['dr_history_sg_curve', 'System Gain Curve.png'], ['dr_history_max_acc', 'Max Acc.png'],
+                         ['dr_history_cons_spd', 'Constant Speed.png'], ['dr_history_acc_curve', 'Acc Response.png'],
+                         ['dr_history_launch', 'Launch.png'], ['dr_history_shift_map', 'Shift Map.png'],
+                         ['dr_history_pedal_map', 'PedalMap.png']]
+            rawdata_name = ""
+            rawdata_path = ''
+            title_ppt = "Drive Quality Compare Result"
+        return list_figs, rawdata_name, title_ppt
+
+    @staticmethod
+    def save_pic_ppt(list_figs, rawdata_name, title_ppt, pic_path):
+        # Input PowerPoint Template，default blank。
+        try:
+            prs = Presentation("SAIC_Temp.pptx")
+        except Exception:
+            prs = Presentation()
+
+        date_pos = [5, 6.8, 3, 0.5]
+        pic_pos = [1.7, 1, 6.5, 5.2]
+        title_pos = [4, 6.1, 3, 0.3]
+        data_pos = [4.8, 6.8, 3, 0.5]
+
+        title_slide_layout = prs.slide_layouts[0]
+        slide = prs.slides.add_slide(title_slide_layout)
+        title = slide.shapes.title
+        subtitle = slide.placeholders[1]
+        title.text = title_ppt
+        title.text_frame.paragraphs[0].font.size = Inches(0.6)
+        subtitle.text = 'Data: ' + rawdata_name
+
+        textbox = slide.shapes.add_textbox(Inches(date_pos[0]), Inches(date_pos[1]),
+                                           Inches(date_pos[2]), Inches(date_pos[3]))
+        textbox.text = "Generated on {:%Y-%m-%d}".format(date.today())
+
+        for i in range(0, len(list_figs)):
+            pic_name = list_figs[i][1].split(".")[0]
+            graph_slide_layout = prs.slide_layouts[6]
+            slide = prs.slides.add_slide(graph_slide_layout)
+            textbox = slide.shapes.add_textbox(Inches(title_pos[0]), Inches(title_pos[1]),
+                                               Inches(title_pos[2]), Inches(title_pos[3]))
+            textbox.text = pic_name
+            if i > 2 and title_ppt == "Drive Quality Compare Result":
+                pic_pos = [0.1, 1, 9.7, 5.2]
+            pic = slide.shapes.add_picture(pic_path + pic_name + '.png', Inches(pic_pos[0]),
+                                           Inches(pic_pos[1]), Inches(pic_pos[2]), Inches(pic_pos[3]))
+            # pic = placeholder.insert_picture(chart[i])
+            textbox = slide.shapes.add_textbox(Inches(data_pos[0]), Inches(data_pos[1]),
+                                               Inches(data_pos[2]), Inches(data_pos[3]))
+            textbox.text = rawdata_name
+            textbox.text_frame.paragraphs[0].font.size = Inches(0.16)
+        # Add the end of PPT
+        end_slide_layout = prs.slide_layouts[6]
+        slide = prs.slides.add_slide(end_slide_layout)
+        textbox = slide.shapes.add_textbox(Inches(title_pos[0]-0.8), Inches(title_pos[1]-3),
+                                           Inches(title_pos[2]), Inches(title_pos[3]))
+        textbox.text = "Thank You"
+
+        textbox.text_frame.paragraphs[0].font.size = Inches(0.8)
+        textbox.text_frame.paragraphs[0].font.bold = True
+
+        return prs
 
 class ConstantSpeed(object):
     def __init__(self, raw_data, feature_list):
