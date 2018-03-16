@@ -554,9 +554,9 @@ class SaveAndLoad(object):
         input_file.close()
         return data_reload
 
-    @staticmethod
+    # PPT
     def get_fig_name(type):
-        if type == "init":
+        if type == "initial_ppt":
             # if self.rawdata_filepath != '':
             list_figs = [['dr_sg_curve', 'System Gain Curve.png'], ['dr_max_acc', 'Max Acc.png'],
                          ['dr_cons_spd', 'Constant Speed.png'], ['dr_acc_curve', 'Acc Response.png'],
@@ -567,7 +567,7 @@ class SaveAndLoad(object):
             rawdata_path = ''
             # self.rawdata_filepath.replace(self.rawdata_filepath.split("/")[-1], '')
             title_ppt = "Drive Quality Report"
-        else:
+        elif type == "analysis_ppt":
             list_figs = [['dr_history_sg_curve', 'System Gain Curve.png'], ['dr_history_max_acc', 'Max Acc.png'],
                          ['dr_history_cons_spd', 'Constant Speed.png'], ['dr_history_acc_curve', 'Acc Response.png'],
                          ['dr_history_launch', 'Launch.png'], ['dr_history_shift_map', 'Shift Map.png'],
@@ -577,7 +577,7 @@ class SaveAndLoad(object):
             title_ppt = "Drive Quality Compare Result"
         return list_figs, rawdata_name, title_ppt
 
-    @staticmethod
+        # PPT
     def save_pic_ppt(list_figs, rawdata_name, title_ppt, pic_path):
         # Input PowerPoint Template，default blank。
         try:
@@ -585,9 +585,9 @@ class SaveAndLoad(object):
         except Exception:
             prs = Presentation()
 
-        date_pos = [5, 6.8, 3, 0.5]
-        pic_pos = [1.7, 1, 6.5, 5.2]
-        title_pos = [4, 6.1, 3, 0.3]
+        date_pos = [5, 6.9, 3, 0.4]
+        pic_pos = [1.95, 1.2, 5.7, 5.0]
+        title_pos = [4, 6.15, 3, 0.3]
         data_pos = [4.8, 6.8, 3, 0.5]
 
         title_slide_layout = prs.slide_layouts[0]
@@ -610,7 +610,7 @@ class SaveAndLoad(object):
                                                Inches(title_pos[2]), Inches(title_pos[3]))
             textbox.text = pic_name
             if i > 2 and title_ppt == "Drive Quality Compare Result":
-                pic_pos = [0.1, 1, 9.7, 5.2]
+                pic_pos = [0.12, 1.5, 9.7, 4.4]
             pic = slide.shapes.add_picture(pic_path + pic_name + '.png', Inches(pic_pos[0]),
                                            Inches(pic_pos[1]), Inches(pic_pos[2]), Inches(pic_pos[3]))
             # pic = placeholder.insert_picture(chart[i])
