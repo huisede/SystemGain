@@ -94,8 +94,12 @@ class SystemGain(object):
         self.colour_Bar = ['orange', 'lightgreen', 'c', 'royalblue', 'lightcoral', 'yellow', 'red', 'brown',
                            'teal', 'blue', 'coral', 'gold', 'lime', 'olive']
         # 数据检查
-        if sum([int(i <= 0) for i in diff(self.time_Data)]) > 0:   # 如果时间序列是非严格递增的，替换为人工生成的序列
-            self.time_Data = arange(0, len(self.time_Data)/self.frequency, 1/self.frequency)
+        if isinstance(self.time_Data[0], int) or isinstance(self.time_Data[0], float):  # 如果时间序列为数字格式
+            if sum([int(i <= 0) for i in diff(self.time_Data)]) > 0:   # 如果时间序列是非严格递增的，替换为人工生成的序列
+                self.time_Data = arange(0, len(self.time_Data)/self.frequency, 1/self.frequency)
+        else:  # 如果时间序列为非数字格式
+            self.time_Data = arange(0, len(self.time_Data) / self.frequency, 1 / self.frequency)
+
         if not isinstance(self.gear_Data[0], int):  # 如果gear不是int类型的，尝试转换
             try:
                 self.gear_Data = [int(i) for i in self.gear_Data]
@@ -105,6 +109,7 @@ class SystemGain(object):
         self.acc_offset = ((self.vehSpd_Data[-1] - self.vehSpd_Data[0]) / 3.6 / (self.time_Data[-1] - self.time_Data[0])
                            - average(self.acc_Data[:]) * 9.8) / 9.8
         self.acc_Data = [x + self.acc_offset for x in self.acc_Data]
+
         self.pedal_cut_index, self.pedal_avg = self.cut_sg_data_pedal(self.pedal_Data, self.vehSpd_Data, self.frequency,
                                                                       self.data_cut_time_of_creep,
                                                                       self.data_cut_time_of_pedal)

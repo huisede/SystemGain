@@ -9,7 +9,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import Icon
 
-
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -208,6 +207,7 @@ class Ui_MainWindow(object):
         self.System_Gain_AT_DCT_Config_Lay = QtWidgets.QGridLayout()
         self.System_Gain_AT_DCT_Config_Lay.setObjectName("System_Gain_AT_DCT_Config_Lay")
         self.System_Gain_MT = QtWidgets.QRadioButton(self.System_Gain_AT_DCT_Config_Group)
+        self.System_Gain_MT.setEnabled(False)
         font = QtGui.QFont()
         font.setFamily("Microsoft YaHei")
         self.System_Gain_MT.setFont(font)
@@ -580,7 +580,7 @@ class Ui_MainWindow(object):
         self.History_Data_Comp_scrollArea.setWidgetResizable(True)
         self.History_Data_Comp_scrollArea.setObjectName("History_Data_Comp_scrollArea")
         self.History_Data_Comp_scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.History_Data_Comp_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 950, 648))
+        self.History_Data_Comp_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 98, 28))
         self.History_Data_Comp_scrollAreaWidgetContents.setObjectName("History_Data_Comp_scrollAreaWidgetContents")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.History_Data_Comp_scrollAreaWidgetContents)
         self.gridLayout_4.setContentsMargins(0, 0, 0, 0)
@@ -861,6 +861,27 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1010, 23))
+        self.menubar.setStyleSheet("QMenu{\n"
+"    padding:5px;\n"
+"    background:white;\n"
+"    border:1px solid gray;\n"
+" }\n"
+"QMenu::item{\n"
+"    padding:0px 40px 0px 30px;\n"
+"    height:25px;\n"
+"}\n"
+"QMenu::item:selected:enabled{\n"
+"    background:lightgray;\n"
+"    color:white;\n"
+"}\n"
+"QMenu::item:selected:!enabled{\n"
+"    background:transparent;\n"
+"}\n"
+"QMenu::separator{\n"
+"    height:1px;\n"
+"    background:lightgray;\n"
+"    margin:5px 0px 5px 0px;\n"
+"}")
         self.menubar.setObjectName("menubar")
         self.menu = QtWidgets.QMenu(self.menubar)
         self.menu.setObjectName("menu")
@@ -938,6 +959,7 @@ class Ui_MainWindow(object):
         self.menu_Speed_Dist = QtWidgets.QAction(MainWindow)
         self.menu_Speed_Dist.setObjectName("menu_Speed_Dist")
         self.action_Data_Viewer = QtWidgets.QAction(MainWindow)
+        self.action_Data_Viewer.setCheckable(False)
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap(":/Image/Icon/find.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.action_Data_Viewer.setIcon(icon1)
@@ -997,9 +1019,12 @@ class Ui_MainWindow(object):
         font.setFamily("Microsoft YaHei")
         self.action_Cal_Result.setFont(font)
         self.action_Cal_Result.setObjectName("action_Cal_Result")
+        self.menu_Output_Histtory_Report = QtWidgets.QAction(MainWindow)
+        self.menu_Output_Histtory_Report.setObjectName("menu_Output_Histtory_Report")
         self.menu.addAction(self.menu_InputData)
         self.menu.addAction(self.menu_Save)
         self.menu.addAction(self.menu_Output_Report)
+        self.menu.addAction(self.menu_Output_Histtory_Report)
         self.menu.addSeparator()
         self.menu.addAction(self.menu_Exit)
         self.menu_2.addAction(self.menu_Guildlines)
@@ -1020,7 +1045,7 @@ class Ui_MainWindow(object):
         self.MainStackedWidget.setCurrentIndex(0)
         self.System_Gain_PT_Choose.setCurrentIndex(0)
         self.Cal_Result_tabWidget.setCurrentIndex(0)
-        self.Cal_Setting_page_TabWidget.setCurrentIndex(1)
+        self.Cal_Setting_page_TabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         MainWindow.setTabOrder(self.System_Gain_AT_DCT_Vspd, self.System_Gain_AT_DCT_Ped)
         MainWindow.setTabOrder(self.System_Gain_AT_DCT_Ped, self.System_Gain_AT_DCT_Acc)
@@ -1203,5 +1228,6 @@ class Ui_MainWindow(object):
         self.action_Cal_Setting.setText(_translate("MainWindow", "Cal Settings"))
         self.action_Data_Base.setText(_translate("MainWindow", "Data Base"))
         self.action_Cal_Result.setText(_translate("MainWindow", "Cal Result"))
+        self.menu_Output_Histtory_Report.setText(_translate("MainWindow", "导出历史对比报告 Output Histtory Report"))
 
 

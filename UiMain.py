@@ -29,7 +29,8 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.menu_InputData.triggered.connect(self.load_sys_gain_data)
         self.menu_Save.triggered.connect(self.save_sys_gain_data)
         # menu_Output_Report_ppt
-        self.menu_Output_Report.triggered.connect(lambda: self.output_data_ppt('analysis'))
+        self.menu_Output_Report.triggered.connect(lambda: self.output_data_ppt('init'))
+        self.menu_Output_Histtory_Report.triggered.connect(lambda: self.output_data_ppt('analysis'))
         # New Add ppt
         self.action_Data_Viewer.triggered.connect(lambda: self.change_main_page(0))
         self.action_System_Gain.triggered.connect(lambda: self.change_main_page(1))
@@ -173,7 +174,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         try:
             self.sl = SaveAndLoad()
             self.sl.store_result(file_path=file_path, store_data=self.MainProcess_thread_cal.ax_holder_SG)
-            message_str = 'Message: ' + file_path + 'has been saved successfully!'
+            message_str = 'Message: ' + file_path + ' has been saved successfully!'
             self.info_widget_update(message_str)
         except Exception:
             pass
@@ -337,18 +338,22 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         columns = self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig.tolist()
         columns_to_pre_select = []
         err = True
-        for i in self.history_index[self.System_Gain_AT_DCT_Index_comboBox.currentText()]:
-            try:
-                columns_to_pre_select.append(columns.index(i))
-            except ValueError:  # 如果需要索引的信号名不含在目前的数据中
-                err = False
-                columns_to_pre_select.append(0)  # 默认选0
-        self.combobox_index_pre_select(columns_to_pre_select)
+        if self.System_Gain_AT_DCT_Index_comboBox.currentText() in self.history_index:  # 排除用户误选择到“请选择”
+            for i in self.history_index[self.System_Gain_AT_DCT_Index_comboBox.currentText()]:
+                try:
+                    columns_to_pre_select.append(columns.index(i))
+                except ValueError:  # 如果需要索引的信号名不含在目前的数据中
+                    err = False
+                    columns_to_pre_select.append(0)  # 默认选0
+            self.combobox_index_pre_select(columns_to_pre_select)
 
-        if err:
-            message_str = 'Message: Features selected!'
+            if err:
+                message_str = 'Message: Features selected!'
+            else:
+                message_str = 'Error: Signal not in Current data!'
         else:
-            message_str = 'Error: Signal not in Current data!'
+            message_str = 'Message: Please Choose the correct feature index!'
+
         self.info_widget_update(message_str)
 
     def combobox_index_pre_select(self, pre_select_item_index_list):  # 自动预选字段
@@ -453,6 +458,9 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             # eli_du_ped.setModal(True)  # 模态显示窗口，即先处理后方可返回主窗体
             eli_du_ped.show()
             eli_du_ped.message.connect(self.sg_cal_thread_edp)
+        elif message == '数据问题':
+            message_str = 'Error: Please Check your data or feature correspondence！'
+            self.info_widget_update(message_str)
 
     def sg_cal_thread_edp(self, remove_list):
         self.MainProcess_thread_cal.ax_holder_SG.eliminate_duplicate_ped(remove_list)
@@ -711,9 +719,15 @@ class ThreadProcess(QtCore.QThread):
                                            pt_type=self.kwargs['pt_type'],
                                            data_cut_time_of_creep=self.kwargs['data_cut_time_of_creep'],
                                            data_cut_time_of_pedal=self.kwargs['data_cut_time_of_pedal'],)
-        ret = self.ax_holder_SG.sg_main()
+        try:
+            ret = self.ax_holder_SG.sg_main()
+        except Exception:
+            ret = "Error"
+
         if ret == 'eliminate_duplicate_ped':
             self.Message_Finish.emit("删除重复")
+        elif ret == "Error":
+            self.Message_Finish.emit("数据问题")
         else:
             self.Message_Finish.emit("计算完成")
 
