@@ -173,6 +173,8 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         try:
             self.sl = SaveAndLoad()
             self.sl.store_result(file_path=file_path, store_data=self.MainProcess_thread_cal.ax_holder_SG)
+            message_str = 'Message: ' + file_path + 'has been saved successfully!'
+            self.info_widget_update(message_str)
         except Exception:
             pass
 
@@ -394,7 +396,10 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
         self.MainProcess_thread_cs_cal = ThreadProcess(method='cs_cal_thread',
                                                        raw_data=self.MainProcess_thread_cs.ax_holder_cs.csv_data_ful,
-                                                       feature_list=feature_array)
+                                                       feature_list=feature_array,
+                                                       frequency=int(self.Constant_Speed_frequency_text_TE.toPlainText()),
+                                                       time_block=int(self.Constant_Speed_time_block_text_TE.toPlainText())
+                                                       )
         self.MainProcess_thread_cs_cal.Message_Finish.connect(self.constant_speed_replace)
         self.MainProcess_thread_cs_cal.start()
 
@@ -415,6 +420,9 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                                                         raw_data=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful,
                                                         feature_array=feature_array,
                                                         pt_type=self.buttonGroup_PT_Type.checkedButton().text(),
+                                                        frequency=int(self.DataViewer_setting_Time_axis_Samples_TE.toPlainText()),
+                                                        data_cut_time_of_creep=int(self.SystemGain_Cal_setting_creep_time_TE.toPlainText()),
+                                                        data_cut_time_of_pedal=int(self.SystemGain_Cal_setting_pedal_time_TE.toPlainText()),
                                                         replace=True,
                                                         cs_table=self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table)
         else:
@@ -422,6 +430,12 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                                                         raw_data=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful,
                                                         feature_array=feature_array,
                                                         pt_type=self.buttonGroup_PT_Type.checkedButton().text(),
+                                                        frequency=int(
+                                                            self.DataViewer_setting_Time_axis_Samples_TE.toPlainText()),
+                                                        data_cut_time_of_creep=int(
+                                                            self.SystemGain_Cal_setting_creep_time_TE.toPlainText()),
+                                                        data_cut_time_of_pedal=int(
+                                                            self.SystemGain_Cal_setting_pedal_time_TE.toPlainText()),
                                                         replace=False)
 
         self.MainProcess_thread_cal.Message_Finish.connect(self.show_ax_pictures_sg_del_du)
@@ -436,7 +450,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         elif message == '删除重复':
             eli_du_ped = UiEliminateDuplicatePed(ped_array=self.MainProcess_thread_cal.ax_holder_SG.pedal_avg,
                                                  rawdata=self.MainProcess_thread_cal.ax_holder_SG.SG_csv_Data_Selc.iloc[:, 1:3])  # 展现给用户的是车速和Pedal
-            eli_du_ped.setModal(True)  # 模态显示窗口，即先处理后方可返回主窗体
+            # eli_du_ped.setModal(True)  # 模态显示窗口，即先处理后方可返回主窗体
             eli_du_ped.show()
             eli_du_ped.message.connect(self.sg_cal_thread_edp)
 
@@ -449,58 +463,85 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
         :return:
         """
+        try:
+            self.dr_acc_curve.axes.clear()
+            self.dr_acc_curve.plot_acc_response(
+                data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.accresponce.data,
+                ped_avg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.accresponce.pedal_avg,
+                ped_maxacc=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.accresponce.max_acc_ped,
+                vehspd_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.vehspd_cs,
+                pedal_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.pedal_cs)
+            self.PicToolBar_1.press(self.PicToolBar_1.home())
+            self.PicToolBar_1.dynamic_update()
+        except ValueError or AttributeError:
+            message_str = 'Warning: Acc Curve-3D plot failed!'
+            self.info_widget_update(message_str)
 
-        self.dr_acc_curve.axes.clear()
-        self.dr_acc_curve.plot_acc_response(
-            data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.accresponce.data,
-            ped_avg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.accresponce.pedal_avg,
-            ped_maxacc=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.accresponce.max_acc_ped,
-            vehspd_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.vehspd_cs,
-            pedal_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.pedal_cs)
-        self.PicToolBar_1.press(self.PicToolBar_1.home())
-        self.PicToolBar_1.dynamic_update()
+        try:
+            self.dr_sg_curve.axes.clear()
+            self.dr_sg_curve.plot_systemgain_curve(
+                vehspd_sg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.vehspd_sg,
+                acc_sg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.acc_sg)
+            self.PicToolBar_2.press(self.PicToolBar_2.home())
+            self.PicToolBar_2.dynamic_update()
+        except ValueError or AttributeError:
+            message_str = 'Warning: SystemGain Curve plot failed!'
+            self.info_widget_update(message_str)
 
-        self.dr_sg_curve.axes.clear()
-        self.dr_sg_curve.plot_systemgain_curve(
-            vehspd_sg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.vehspd_sg,
-            acc_sg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.acc_sg)
-        self.PicToolBar_2.press(self.PicToolBar_2.home())
-        self.PicToolBar_2.dynamic_update()
+        try:
+            self.dr_cons_spd.axes.clear()
+            self.dr_cons_spd.plot_constant_speed(
+                vehspd_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.vehspd_cs,
+                pedal_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.pedal_cs)
+            self.PicToolBar_3.press(self.PicToolBar_3.home())
+            self.PicToolBar_3.dynamic_update()
+        except ValueError or AttributeError:
+            message_str = 'Warning:Constant Speed plot failed!'
+            self.info_widget_update(message_str)
 
-        self.dr_cons_spd.axes.clear()
-        self.dr_cons_spd.plot_constant_speed(
-            vehspd_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.vehspd_cs,
-            pedal_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.pedal_cs)
-        self.PicToolBar_3.press(self.PicToolBar_3.home())
-        self.PicToolBar_3.dynamic_update()
+        try:
+            self.dr_shift_map.axes.clear()
+            if self.System_Gain_AT_DCT.isChecked():
+                self.dr_shift_map.plot_shift_map(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.shiftmap.data,
+                                                 kind='AT/DCT')
+            elif self.System_Gain_CVT.isChecked():
+                self.dr_shift_map.plot_shift_map(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.shiftmap.data,
+                                                 kind='CVT',
+                                                 pedal_avg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.shiftmap.kwargs['pedal_avg'])
+            elif self.System_Gain_MT.isChecked():
+                pass
+            self.PicToolBar_4.press(self.PicToolBar_4.home())
+            self.PicToolBar_4.dynamic_update()
+        except ValueError or AttributeError:
+            message_str = 'Warning: Shift Map plot failed!'
+            self.info_widget_update(message_str)
 
-        self.dr_shift_map.axes.clear()
-        if self.System_Gain_AT_DCT.isChecked():
-            self.dr_shift_map.plot_shift_map(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.shiftmap.data,
-                                             kind='AT/DCT')
-        elif self.System_Gain_CVT.isChecked():
-            self.dr_shift_map.plot_shift_map(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.shiftmap.data,
-                                             kind='CVT',
-                                             pedal_avg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.shiftmap.kwargs['pedal_avg'])
-        elif self.System_Gain_MT.isChecked():
-            pass
-        self.PicToolBar_4.press(self.PicToolBar_4.home())
-        self.PicToolBar_4.dynamic_update()
+        try:
+            self.dr_launch.axes.clear()
+            self.dr_launch.plot_launch(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.launch.data)
+            self.PicToolBar_5.press(self.PicToolBar_5.home())
+            self.PicToolBar_5.dynamic_update()
+        except ValueError or AttributeError:
+            message_str = 'Warning: Launch Map plot failed!'
+            self.info_widget_update(message_str)
 
-        self.dr_launch.axes.clear()
-        self.dr_launch.plot_launch(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.launch.data)
-        self.PicToolBar_5.press(self.PicToolBar_5.home())
-        self.PicToolBar_5.dynamic_update()
+        try:
+            self.dr_pedal_map.axes.clear()
+            self.dr_pedal_map.plot_pedal_map(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.pedalmap.data)
+            self.PicToolBar_6.press(self.PicToolBar_6.home())
+            self.PicToolBar_6.dynamic_update()
+        except ValueError or AttributeError:
+            message_str = 'Warning: Pedal Map plot failed!'
+            self.info_widget_update(message_str)
 
-        self.dr_pedal_map.axes.clear()
-        self.dr_pedal_map.plot_pedal_map(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.pedalmap.data)
-        self.PicToolBar_6.press(self.PicToolBar_6.home())
-        self.PicToolBar_6.dynamic_update()
-
-        self.dr_max_acc.axes.clear()
-        self.dr_max_acc.plot_max_acc(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.maxacc.data)
-        self.PicToolBar_7.press(self.PicToolBar_7.home())
-        self.PicToolBar_7.dynamic_update()
+        try:
+            self.dr_max_acc.axes.clear()
+            self.dr_max_acc.plot_max_acc(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.maxacc.data)
+            self.PicToolBar_7.press(self.PicToolBar_7.home())
+            self.PicToolBar_7.dynamic_update()
+        except ValueError or AttributeError:
+            message_str = 'Warning: Max Acc Map plot failed!'
+            self.info_widget_update(message_str)
 
         message_str = 'Message: System gain calculation finished!'
         self.info_widget_update(message_str)
@@ -661,10 +702,15 @@ class ThreadProcess(QtCore.QThread):
     def sg_cal_thread(self):
         if self.kwargs['replace']:
             self.ax_holder_SG = SystemGain(raw_data=self.kwargs['raw_data'], feature_array=self.kwargs['feature_array'],
-                                           pt_type=self.kwargs['pt_type'], replace=True, cs_table=self.kwargs['cs_table'])
+                                           pt_type=self.kwargs['pt_type'],
+                                           data_cut_time_of_creep=self.kwargs['data_cut_time_of_creep'],
+                                           data_cut_time_of_pedal=self.kwargs['data_cut_time_of_pedal'],
+                                           replace=True, cs_table=self.kwargs['cs_table'])
         else:
             self.ax_holder_SG = SystemGain(raw_data=self.kwargs['raw_data'], feature_array=self.kwargs['feature_array'],
-                                           pt_type=self.kwargs['pt_type'])
+                                           pt_type=self.kwargs['pt_type'],
+                                           data_cut_time_of_creep=self.kwargs['data_cut_time_of_creep'],
+                                           data_cut_time_of_pedal=self.kwargs['data_cut_time_of_pedal'],)
         ret = self.ax_holder_SG.sg_main()
         if ret == 'eliminate_duplicate_ped':
             self.Message_Finish.emit("删除重复")
@@ -677,7 +723,9 @@ class ThreadProcess(QtCore.QThread):
 
     def cs_cal_thread(self):
         self.ax_holder_cs_cal = ConstantSpeed(raw_data=self.kwargs['raw_data'],
-                                              feature_list=self.kwargs['feature_list'])
+                                              feature_list=self.kwargs['feature_list'],
+                                              frequency=self.kwargs['frequency'],
+                                              time_block=self.kwargs['time_block'])
         self.ax_holder_cs_cal.cs_main()
         self.Message_Finish.emit("计算完成！")
 

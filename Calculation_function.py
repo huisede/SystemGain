@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from numpy import average, transpose, zeros, array, linspace, mean, cov, convolve, arange, cumsum, concatenate, abs, \
-    mod, std, ones
-from pandas import read_csv, read_excel
+    mod, std, ones, diff
+from pandas import read_csv, read_excel, Timedelta
 from scipy import interpolate
 import matplotlib.pyplot as plt
 from re import match
@@ -45,7 +45,9 @@ class SystemGain(object):
     ******
     """
 
-    def __init__(self, raw_data, feature_array, pt_type, **kwargs):
+    def __init__(self, raw_data, feature_array, pt_type, frequency=20,
+                 data_cut_time_of_creep=20, data_cut_time_of_pedal=20,
+                 **kwargs):
         """
         Initial function of system gain.
 
@@ -55,6 +57,9 @@ class SystemGain(object):
         self.feature_array = feature_array
         self.pt_type = pt_type
         self.sysGain_class = {}
+        self.frequency = frequency
+        self.data_cut_time_of_creep = data_cut_time_of_creep
+        self.data_cut_time_of_pedal = data_cut_time_of_pedal
         if 'replace' in kwargs:
             self.replace_cs = True
             self.cs_table = kwargs['cs_table']
@@ -88,11 +93,21 @@ class SystemGain(object):
 
         self.colour_Bar = ['orange', 'lightgreen', 'c', 'royalblue', 'lightcoral', 'yellow', 'red', 'brown',
                            'teal', 'blue', 'coral', 'gold', 'lime', 'olive']
-        # 加速度修正
+        # 数据检查
+        if sum([int(i <= 0) for i in diff(self.time_Data)]) > 0:   # 如果时间序列是非严格递增的，替换为人工生成的序列
+            self.time_Data = arange(0, len(self.time_Data)/self.frequency, 1/self.frequency)
+        if not isinstance(self.gear_Data[0], int):  # 如果gear不是int类型的，尝试转换
+            try:
+                self.gear_Data = [int(i) for i in self.gear_Data]
+            except ValueError:
+                pass
+
         self.acc_offset = ((self.vehSpd_Data[-1] - self.vehSpd_Data[0]) / 3.6 / (self.time_Data[-1] - self.time_Data[0])
                            - average(self.acc_Data[:]) * 9.8) / 9.8
         self.acc_Data = [x + self.acc_offset for x in self.acc_Data]
-        self.pedal_cut_index, self.pedal_avg = self.cut_sg_data_pedal(self.pedal_Data, self.vehSpd_Data)
+        self.pedal_cut_index, self.pedal_avg = self.cut_sg_data_pedal(self.pedal_Data, self.vehSpd_Data, self.frequency,
+                                                                      self.data_cut_time_of_creep,
+                                                                      self.data_cut_time_of_pedal)
 
         last_item = -10
         trigger = False
@@ -336,7 +351,7 @@ class SystemGain(object):
         return obj
 
     @staticmethod
-    def cut_sg_data_pedal(pedal_data, vehspd_data):
+    def cut_sg_data_pedal(pedal_data, vehspd_data, frequency, data_cut_time_of_creep=20, data_cut_time_of_pedal=20):
         # 数据切分
         # edges detection initialize to avoid additional detection of rising edges/trailing edges
         pedal_data[0], pedal_data[-1] = 0, 0
@@ -366,16 +381,17 @@ class SystemGain(object):
 
         # creep auto detection
         for j in range(0, len(t_edge_vehspd)):
-            if (t_edge_vehspd[j] - r_edge_vehspd[j] > 500) and (
-                            3.5 < average(vehspd_data[r_edge_vehspd[j] + 200:t_edge_vehspd[j] - 200]) < 8.5) and (
+            if (t_edge_vehspd[j] - r_edge_vehspd[j] > frequency*data_cut_time_of_creep) and (
+                3.5 < average(vehspd_data[r_edge_vehspd[j] + int(frequency*data_cut_time_of_creep/2):t_edge_vehspd[j] -
+                            int(frequency*data_cut_time_of_creep/2)]) < 8.5) and (
                         average(pedal_data[r_edge_vehspd[j]:t_edge_vehspd[j]]) < 0.01):
-                pedal_cut_index[0].append(r_edge_vehspd[j] - 40)  # 车速信号相对于加速度信号有迟滞
-                pedal_cut_index[1].append(t_edge_vehspd[j] - 40)
+                pedal_cut_index[0].append(r_edge_vehspd[j] - frequency*2)  # 车速信号相对于加速度信号有迟滞
+                pedal_cut_index[1].append(t_edge_vehspd[j] - frequency*2)
                 pedal_avg.append(mean(pedal_data[r_edge_vehspd[j]:t_edge_vehspd[j]]))
 
         for j in range(0, len(r_edge_pedal)):
-            if t_edge_pedal[j] - r_edge_pedal[j] > 400:  # 时间长度
-                if cov(pedal_data[r_edge_pedal[j] + 20:t_edge_pedal[j] - 20]) < 3:
+            if t_edge_pedal[j] - r_edge_pedal[j] > frequency*data_cut_time_of_pedal:  # 时间长度
+                if cov(pedal_data[r_edge_pedal[j] + frequency*1:t_edge_pedal[j] - frequency*1]) < 3:
                     pedal_cut_index[0].append(r_edge_pedal[j])
                     pedal_cut_index[1].append(t_edge_pedal[j])
                     pedal_avg.append(mean(pedal_data[r_edge_pedal[j]:t_edge_pedal[j]]))
@@ -473,6 +489,7 @@ class ReadFile(object):
     def start_read(self):
         file_type_match = match(r'^(.+)(\.)(\w*)$', self.file_path)
         file_type = file_type_match.group(3)
+        file_type = file_type.lower()  # 小写
         if file_type == 'csv':
             try:
                 self.csv_data_ful = read_csv(self.file_path, low_memory=False)  # utf-8默认编码
@@ -483,7 +500,9 @@ class ReadFile(object):
         elif file_type == 'mdf' or file_type == 'dat':
             self.mdf_data = mdfreader.mdf(self.file_path)
             self.mdf_data.convertToPandas(self.resample_rate)
-            self.csv_data_ful = self.mdf_data['master_group']
+            data_ful = self.mdf_data['master_group']
+            data_ful['time'] = (data_ful.index-data_ful.index[0]).astype('timedelta64[ms]')/1000
+            self.csv_data_ful = data_ful
 
         self.file_columns_orig = self.csv_data_ful.columns
         back_up_counter = 0
@@ -606,12 +625,13 @@ class SaveAndLoad(object):
 
         return prs
 
+
 class ConstantSpeed(object):
-    def __init__(self, raw_data, feature_list):
+    def __init__(self, raw_data, feature_list, frequency=20, time_block=15):
         self.raw_data = raw_data
         self.feature_list = feature_list
-        self.frequency = 20
-        self.time_block = 15
+        self.frequency = frequency
+        self.time_block = time_block
 
         self.cs_csv_data = self.raw_data.loc[:, feature_list]
         self.veh_spd = self.cs_csv_data.iloc[:, 1].tolist()
