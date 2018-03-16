@@ -503,6 +503,9 @@ p, li { white-space: pre-wrap; }
                  <layout class="QGridLayout" name="System_Gain_AT_DCT_Config_Lay">
                   <item row="1" column="2">
                    <widget class="QRadioButton" name="System_Gain_MT">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
                     <property name="font">
                      <font>
                       <family>Microsoft YaHei</family>
@@ -1294,8 +1297,8 @@ p, li { white-space: pre-wrap; }
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>950</width>
-                    <height>648</height>
+                    <width>98</width>
+                    <height>28</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_4">
@@ -1416,7 +1419,7 @@ p, li { white-space: pre-wrap; }
             <enum>QTabWidget::Triangular</enum>
            </property>
            <property name="currentIndex">
-            <number>1</number>
+            <number>0</number>
            </property>
            <widget class="QWidget" name="DataViewer_setting">
             <attribute name="title">
@@ -1980,6 +1983,29 @@ p, li { white-space: pre-wrap; }
      <height>23</height>
     </rect>
    </property>
+   <property name="styleSheet">
+    <string notr="true">QMenu{
+    padding:5px;
+    background:white;
+    border:1px solid gray;
+ }
+QMenu::item{
+    padding:0px 40px 0px 30px;
+    height:25px;
+}
+QMenu::item:selected:enabled{
+    background:lightgray;
+    color:white;
+}
+QMenu::item:selected:!enabled{
+    background:transparent;
+}
+QMenu::separator{
+    height:1px;
+    background:lightgray;
+    margin:5px 0px 5px 0px;
+}</string>
+   </property>
    <widget class="QMenu" name="menu">
     <property name="title">
      <string>文件 (File)</string>
@@ -1987,6 +2013,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="menu_InputData"/>
     <addaction name="menu_Save"/>
     <addaction name="menu_Output_Report"/>
+    <addaction name="menu_Output_Histtory_Report"/>
     <addaction name="separator"/>
     <addaction name="menu_Exit"/>
    </widget>
@@ -2329,6 +2356,11 @@ p, li { white-space: pre-wrap; }
     </font>
    </property>
   </action>
+  <action name="menu_Output_Histtory_Report">
+   <property name="text">
+    <string>导出历史对比报告 Output Histtory Report</string>
+   </property>
+  </action>
  </widget>
  <tabstops>
   <tabstop>System_Gain_AT_DCT_Vspd</tabstop>
@@ -2344,8 +2376,8 @@ p, li { white-space: pre-wrap; }
  </resources>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_Cons_Speed_Feature_Rule"/>
-  <buttongroup name="buttonGroup_DataViewer_TimeAxisSetting"/>
   <buttongroup name="buttonGroup_PT_Type"/>
+  <buttongroup name="buttonGroup_DataViewer_TimeAxisSetting"/>
+  <buttongroup name="buttonGroup_Cons_Speed_Feature_Rule"/>
  </buttongroups>
 </ui>
