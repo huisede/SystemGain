@@ -41,6 +41,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.SysGain_Cal.clicked.connect(self.cal_sys_gain_data_pre)
         self.History_Data_Choose_PushButton.clicked.connect(self.history_data_reload)
         self.Constant_Speed_Input_button.clicked.connect(self.constant_speed_input_callback)
+        self.Data_Base_page_pushButton.clicked.connect(self.show_feature_index)
         # self.menu_Engine_Working_Dist.triggered.connect(self.data_view_check_box_list)
 
         self.info_list = []
@@ -292,10 +293,6 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.PicToolBar_raw.dynamic_update()
 
     def select_marker(self):
-        QtCore.Qt.Key_Left
-        pass
-
-    def highlight_signal(self):
 
         pass
 
@@ -687,6 +684,24 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                 self.model.setItem(i, j, QtGui.QStandardItem(data_list[i][j]))
         self.DatatableView.setModel(self.model)
         self.DatatableView.resizeColumnsToContents()
+
+    # -----|--|DataBase 页面
+    def show_feature_index(self):
+        self.slfi = SaveAndLoad()
+        self.history_index = self.slfi.reload_feature_index()
+        self.Data_Base_tableWidget.setColumnCount(10)
+        self.Data_Base_tableWidget.setRowCount(len(self.history_index))
+        self.Data_Base_tableWidget.setHorizontalHeaderLabels(['车型名称', '时间s', '车速km/h', '油门',
+                                                              '加速度g', '档位', '扭矩Nm',
+                                                              '喷油量ul/s', '发动机转速rpm', '涡轮转速rpm'])
+        for i, car_index in enumerate(self.history_index):
+            car_index_item = QtWidgets.QTableWidgetItem(car_index)
+            text_font = QtGui.QFont("Yahei", 8, QtGui.QFont.Bold)
+            # car_index_item.setBackground(QtGui.QColor(245, 222, 222))
+            car_index_item.setFont(text_font)
+            self.Data_Base_tableWidget.setItem(i, 0, car_index_item)
+            for j, feature_name in enumerate(self.history_index[car_index]):
+                self.Data_Base_tableWidget.setItem(i, j+1, QtWidgets.QTableWidgetItem(feature_name))
 
     # -----|--|Setting 页面
     def initial_setting_value(self):

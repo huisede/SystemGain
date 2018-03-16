@@ -405,12 +405,16 @@
                   </property>
                   <property name="font">
                    <font>
+                    <family>Microsoft YaHei</family>
                     <pointsize>-1</pointsize>
+                    <weight>75</weight>
+                    <bold>true</bold>
                    </font>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">QPushButton{ background-color:#16A085;border:none;color:#ffffff;font-size:20px;height:30px;}
-QPushButton:hover{background-color:#16A055;}</string>
+                   <string notr="true">QPushButton{ background-color:#16A085;border:none;color:#ffffff;
+font-family:'Microsoft YaHei';font-size:20px;font-weight: bold;height:30px;}
+QPushButton:pressed{background-color:#16A055;}</string>
                   </property>
                   <property name="text">
                    <string>计       算</string>
@@ -1264,12 +1268,17 @@ p, li { white-space: pre-wrap; }
               <widget class="QPushButton" name="History_Data_Choose_PushButton">
                <property name="minimumSize">
                 <size>
-                 <width>0</width>
+                 <width>150</width>
                  <height>0</height>
                 </size>
                </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton{ background-color:#16A085;border:none;color:#ffffff;
+font-family:'Microsoft YaHei';font-size:16px;font-weight: bold;height:30px;}
+QPushButton:pressed{background-color:#16A055;}</string>
+               </property>
                <property name="text">
-                <string>对比</string>
+                <string>对比导入</string>
                </property>
               </widget>
              </item>
@@ -1297,8 +1306,8 @@ p, li { white-space: pre-wrap; }
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>98</width>
-                    <height>28</height>
+                    <width>950</width>
+                    <height>648</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_4">
@@ -1348,8 +1357,8 @@ p, li { white-space: pre-wrap; }
          </item>
          <item>
           <layout class="QGridLayout" name="gridLayout_6">
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="lineEdit">
+           <item row="0" column="2">
+            <widget class="QComboBox" name="comboBox">
              <property name="font">
               <font>
                <family>Microsoft YaHei</family>
@@ -1358,7 +1367,7 @@ p, li { white-space: pre-wrap; }
             </widget>
            </item>
            <item row="0" column="3">
-            <widget class="QPushButton" name="pushButton">
+            <widget class="QPushButton" name="Data_Base_page_pushButton">
              <property name="font">
               <font>
                <family>Microsoft YaHei</family>
@@ -1366,6 +1375,15 @@ p, li { white-space: pre-wrap; }
              </property>
              <property name="text">
               <string>查询</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="lineEdit">
+             <property name="font">
+              <font>
+               <family>Microsoft YaHei</family>
+              </font>
              </property>
             </widget>
            </item>
@@ -1378,15 +1396,6 @@ p, li { white-space: pre-wrap; }
              </property>
              <property name="text">
               <string>查询条件：</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QComboBox" name="comboBox">
-             <property name="font">
-              <font>
-               <family>Microsoft YaHei</family>
-              </font>
              </property>
             </widget>
            </item>
@@ -1753,6 +1762,9 @@ p, li { white-space: pre-wrap; }
                 </item>
                 <item row="1" column="2">
                  <widget class="QRadioButton" name="Constant_Speed_features_reslect_RB">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
                   <property name="text">
                    <string>自定义选取</string>
                   </property>
