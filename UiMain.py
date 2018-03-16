@@ -29,8 +29,8 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.menu_InputData.triggered.connect(self.load_sys_gain_data)
         self.menu_Save.triggered.connect(self.save_sys_gain_data)
         # menu_Output_Report_ppt
-        self.menu_Output_Report.triggered.connect(lambda: self.output_data_ppt('init'))
-        self.menu_Output_Histtory_Report.triggered.connect(lambda: self.output_data_ppt('analysis'))
+        self.menu_Output_Report.triggered.connect(lambda: self.output_data_ppt('initial_ppt'))
+        self.menu_Output_Histtory_Report.triggered.connect(lambda: self.output_data_ppt('analysis_ppt'))
         # New Add ppt
         self.action_Data_Viewer.triggered.connect(lambda: self.change_main_page(0))
         self.action_System_Gain.triggered.connect(lambda: self.change_main_page(1))
@@ -184,9 +184,15 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
         list_figs, rawdata_name, title_ppt = SaveAndLoad.get_fig_name(ppt_type)
         pic_path = './bin/'  # 当前路径
-        for i in range(0, len(list_figs)):
-            # self.dr_acc_curve.fig.savefig(pic_path + 'Acc Response.png', dpi=200)
-            eval('self.' + list_figs[i][0] + ".fig.savefig('" + pic_path + list_figs[i][1] + "', dpi=200)")
+
+        try:
+            for i in range(0, len(list_figs)):
+                # self.dr_acc_curve.fig.savefig(pic_path + 'Acc Response.png', dpi=200)
+                eval('self.' + list_figs[i][0] + ".fig.savefig('" + pic_path + list_figs[i][1] + "', dpi=200)")
+        except AttributeError:
+            message_str = 'Error: No comparison results were obtained '
+            self.info_widget_update(message_str)
+
 
         prs = SaveAndLoad.save_pic_ppt(list_figs, rawdata_name, title_ppt, pic_path)
         # Delete saved Pics
@@ -607,7 +613,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         curve_list = []
         for i in range(len(self.history_data)):  # 将每次画一根线
             self.dr_history_sg_curve.plot_systemgain_curve(vehspd_sg=self.history_data[i].sysGain_class.systemgain.
-                                                           vehspd_sg,acc_sg=self.history_data[i].sysGain_class.
+                                                           vehspd_sg, acc_sg=self.history_data[i].sysGain_class.
                                                            systemgain.acc_sg)
             curve_list.append(self.dr_history_sg_curve.axes.get_lines()[i*7])
         self.dr_history_sg_curve.axes.legend(curve_list, legend_list)  # 第1、8、15……为需求的SG Curve
@@ -637,28 +643,28 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.dr_history_max_acc.setMinimumSize(QtCore.QSize(0, 600))
 
         self.dr_history_acc_curve = MyFigureCanvas(width=18, height=5, plot_type='3d-subplot')
-        self.dr_history_acc_curve.plot_acc_response_subplot(history_data=self.history_data)
+        self.dr_history_acc_curve.plot_acc_response_subplot(history_data=self.history_data, legend_name=legend_list)
         self.PicToolBar_history4 = NavigationBar(self.dr_history_acc_curve, self)
         self.gridLayout_4.addWidget(self.PicToolBar_history4, 2, 0, 1, 3)
         self.gridLayout_4.addWidget(self.dr_history_acc_curve, 3, 0, 1, 3)
         self.dr_history_acc_curve.setMinimumSize(QtCore.QSize(0, 600))
 
         self.dr_history_launch = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
-        self.dr_history_launch.plot_launch_subplot(history_data=self.history_data)
+        self.dr_history_launch.plot_launch_subplot(history_data=self.history_data, legend_name=legend_list)
         self.PicToolBar_history5 = NavigationBar(self.dr_history_launch, self)
         self.gridLayout_4.addWidget(self.PicToolBar_history5, 4, 0, 1, 3)
         self.gridLayout_4.addWidget(self.dr_history_launch, 5, 0, 1, 3)
         self.dr_history_launch.setMinimumSize(QtCore.QSize(0, 600))
 
         self.dr_history_shift_map = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
-        self.dr_history_shift_map.plot_shift_map_subplot(history_data=self.history_data)
+        self.dr_history_shift_map.plot_shift_map_subplot(history_data=self.history_data, legend_name=legend_list)
         self.PicToolBar_history6 = NavigationBar(self.dr_history_shift_map, self)
         self.gridLayout_4.addWidget(self.PicToolBar_history6, 6, 0, 1, 3)
         self.gridLayout_4.addWidget(self.dr_history_shift_map, 7, 0, 1, 3)
         self.dr_history_shift_map.setMinimumSize(QtCore.QSize(0, 600))
 
         self.dr_history_pedal_map = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
-        self.dr_history_pedal_map.plot_pedal_map_subplot(history_data=self.history_data)
+        self.dr_history_pedal_map.plot_pedal_map_subplot(history_data=self.history_data, legend_name=legend_list)
         self.PicToolBar_history7 = NavigationBar(self.dr_history_pedal_map, self)
         self.gridLayout_4.addWidget(self.PicToolBar_history7, 8, 0, 1, 3)
         self.gridLayout_4.addWidget(self.dr_history_pedal_map, 9, 0, 1, 3)
