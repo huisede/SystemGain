@@ -182,30 +182,32 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
     # PPT
     def output_data_ppt(self, ppt_type):
+        try:
+            rawdata_path = self.rawdata_filepath
+        except AttributeError:
+            self.info_widget_update('Error: the path of rawdata is empty')
+            rawdata_path = ''
 
-        list_figs, rawdata_name, title_ppt = SaveAndLoad.get_fig_name(ppt_type)
-        pic_path = './bin/'  # 当前路径
+        list_figs, rawdata_name, title_ppt = SaveAndLoad.get_fig_name(ppt_type, rawdata_path)
+        pic_path = argv[0].replace(argv[0].split("/")[-1], 'bin/')  # 当前路径，避免相对路径'./bin/'问题
 
         try:
             for i in range(0, len(list_figs)):
                 # self.dr_acc_curve.fig.savefig(pic_path + 'Acc Response.png', dpi=200)
                 eval('self.' + list_figs[i][0] + ".fig.savefig('" + pic_path + list_figs[i][1] + "', dpi=200)")
+            prs = SaveAndLoad.save_pic_ppt(list_figs, rawdata_name, title_ppt, pic_path)
+            # Delete saved Pics
+            file_ppt = QFileDialog.getSaveFileName(self, filter='.pptx')
+            file_ppt_path = file_ppt[0] + file_ppt[1]
+            try:
+                prs.save(file_ppt_path)
+                message_str = 'Message: Saving PPT in ' + file_ppt_path + ' ...'
+                self.info_widget_update(message_str)
+            except Exception:
+                pass
         except AttributeError:
             message_str = 'Error: No comparison results were obtained '
             self.info_widget_update(message_str)
-
-
-        prs = SaveAndLoad.save_pic_ppt(list_figs, rawdata_name, title_ppt, pic_path)
-        # Delete saved Pics
-        file_ppt = QFileDialog.getSaveFileName(self, filter='.pptx')
-        file_ppt_path = file_ppt[0] + file_ppt[1]
-
-        try:
-            prs.save(file_ppt_path)
-            message_str = 'Message: Saving PPT in ' + file_ppt_path + ' ...'
-            self.info_widget_update(message_str)
-        except Exception:
-            pass
 
     def resize_figs(self):
         self.dr_acc_curve.fig.set_size_inches(self.System_Gain_AT_DCT_Fig_1.size().width() / 100 * 0.9,
