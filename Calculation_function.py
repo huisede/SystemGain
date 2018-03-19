@@ -304,7 +304,7 @@ class SystemGain(object):
                 cs_ped = cs_ary[:, 1]
                 if pedal_avg[0] == 0:  # 如果原始数据中有怠速数据，则替换
                     cs_ped[0] = 0
-                    cs_vspd[1] = vehspd_sg_for_inter[0]  # 怠速车速
+                    cs_vspd[0] = vehspd_sg_for_inter[0]  # 怠速车速
                 else:
                     cs_ped = cs_ped[1:]  # 去掉传递过来不对的怠速转速
                     cs_vspd = cs_vspd[1:]
@@ -664,7 +664,7 @@ class ConstantSpeed(object):
                                               self.gear[i],
                                               self.veh_std_cal(i)])
                         k = k + 1
-                    elif self.veh_std_cal(i) < self.cs_table[k][5] and abs(
+                    elif self.veh_std_cal(i) < self.cs_table[k][7] and abs(
                                     self.mean_speed_cal(i) - self.cs_table[k][1]) < 5:
                         self.cs_table[k] = [i,
                                             self.mean_speed_cal(i),
