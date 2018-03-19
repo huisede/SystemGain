@@ -555,25 +555,21 @@ class SaveAndLoad(object):
         return data_reload
 
     # PPT
-    def get_fig_name(type):
+    def get_fig_name(type, rawdata_filepath):
         if type == "initial_ppt":
-            # if self.rawdata_filepath != '':
             list_figs = [['dr_sg_curve', 'System Gain Curve.png'], ['dr_max_acc', 'Max Acc.png'],
                          ['dr_cons_spd', 'Constant Speed.png'], ['dr_acc_curve', 'Acc Response.png'],
                          ['dr_launch', 'Launch.png'], ['dr_shift_map', 'Shift Map.png'],
                          ['dr_pedal_map', 'PedalMap.png']]
-            rawdata_name = ''
-            # self.rawdata_filepath.split("/")[-1].split(".")[0]
-            rawdata_path = ''
-            # self.rawdata_filepath.replace(self.rawdata_filepath.split("/")[-1], '')
+            rawdata_name = rawdata_filepath.split("/")[-1].split(".")[0]
             title_ppt = "Drive Quality Report"
-        elif type == "analysis_ppt":
+        else:
+            # type == "analysis_ppt"
             list_figs = [['dr_history_sg_curve', 'System Gain Curve.png'], ['dr_history_max_acc', 'Max Acc.png'],
                          ['dr_history_cons_spd', 'Constant Speed.png'], ['dr_history_acc_curve', 'Acc Response.png'],
                          ['dr_history_launch', 'Launch.png'], ['dr_history_shift_map', 'Shift Map.png'],
                          ['dr_history_pedal_map', 'PedalMap.png']]
             rawdata_name = ""
-            rawdata_path = ''
             title_ppt = "Drive Quality Compare Result"
         return list_figs, rawdata_name, title_ppt
 
@@ -588,7 +584,7 @@ class SaveAndLoad(object):
         date_pos = [5, 6.9, 3, 0.4]
         pic_pos = [1.95, 1.2, 5.7, 5.0]
         title_pos = [4, 6.15, 3, 0.3]
-        data_pos = [4.8, 6.8, 3, 0.5]
+        data_pos = [4.8, 6.85, 3, 0.5]
 
         title_slide_layout = prs.slide_layouts[0]
         slide = prs.slides.add_slide(title_slide_layout)
@@ -602,32 +598,36 @@ class SaveAndLoad(object):
                                            Inches(date_pos[2]), Inches(date_pos[3]))
         textbox.text = "Generated on {:%Y-%m-%d}".format(date.today())
 
-        for i in range(0, len(list_figs)):
-            pic_name = list_figs[i][1].split(".")[0]
-            graph_slide_layout = prs.slide_layouts[6]
-            slide = prs.slides.add_slide(graph_slide_layout)
-            textbox = slide.shapes.add_textbox(Inches(title_pos[0]), Inches(title_pos[1]),
+        try:
+            for i in range(0, len(list_figs)):
+                pic_name = list_figs[i][1].split(".")[0]
+                graph_slide_layout = prs.slide_layouts[6]
+                slide = prs.slides.add_slide(graph_slide_layout)
+                textbox = slide.shapes.add_textbox(Inches(title_pos[0]), Inches(title_pos[1]),
+                                                   Inches(title_pos[2]), Inches(title_pos[3]))
+                textbox.text = pic_name
+                if i > 2 and title_ppt == "Drive Quality Compare Result":
+                    pic_pos = [0.12, 1.5, 9.7, 4.4]
+
+                pic = slide.shapes.add_picture(pic_path + pic_name + '.png', Inches(pic_pos[0]),
+                                               Inches(pic_pos[1]), Inches(pic_pos[2]), Inches(pic_pos[3]))
+                # pic = placeholder.insert_picture(chart[i])
+                textbox = slide.shapes.add_textbox(Inches(data_pos[0]), Inches(data_pos[1]),
+                                                   Inches(data_pos[2]), Inches(data_pos[3]))
+                textbox.text = rawdata_name
+                textbox.text_frame.paragraphs[0].font.size = Inches(0.14)
+            # Add the end of PPT
+            end_slide_layout = prs.slide_layouts[6]
+            slide = prs.slides.add_slide(end_slide_layout)
+            textbox = slide.shapes.add_textbox(Inches(title_pos[0]-0.8), Inches(title_pos[1]-3),
                                                Inches(title_pos[2]), Inches(title_pos[3]))
-            textbox.text = pic_name
-            if i > 2 and title_ppt == "Drive Quality Compare Result":
-                pic_pos = [0.12, 1.5, 9.7, 4.4]
-            pic = slide.shapes.add_picture(pic_path + pic_name + '.png', Inches(pic_pos[0]),
-                                           Inches(pic_pos[1]), Inches(pic_pos[2]), Inches(pic_pos[3]))
-            # pic = placeholder.insert_picture(chart[i])
-            textbox = slide.shapes.add_textbox(Inches(data_pos[0]), Inches(data_pos[1]),
-                                               Inches(data_pos[2]), Inches(data_pos[3]))
-            textbox.text = rawdata_name
-            textbox.text_frame.paragraphs[0].font.size = Inches(0.16)
-        # Add the end of PPT
-        end_slide_layout = prs.slide_layouts[6]
-        slide = prs.slides.add_slide(end_slide_layout)
-        textbox = slide.shapes.add_textbox(Inches(title_pos[0]-0.8), Inches(title_pos[1]-3),
-                                           Inches(title_pos[2]), Inches(title_pos[3]))
-        textbox.text = "Thank You"
+            textbox.text = "Thank You"
 
-        textbox.text_frame.paragraphs[0].font.size = Inches(0.8)
-        textbox.text_frame.paragraphs[0].font.bold = True
-
+            textbox.text_frame.paragraphs[0].font.size = Inches(0.8)
+            textbox.text_frame.paragraphs[0].font.bold = True
+        except FileNotFoundError as err:
+            print('From save_pic_ppt')
+            print(err)
         return prs
 
 
