@@ -57,6 +57,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                                 'System_Gain_AT_DCT_EnSpd',
                                 'System_Gain_AT_DCT_TbSpd']
         self.replace_cs_content = False
+        self.createContextMenu_Data_Base_tableWidget()
 
         # self.buttonGroup_data_viewer = QtWidgets.QButtonGroup(self.verticalLayout)
 
@@ -118,22 +119,23 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
     # ---------------------------- 右键菜单 -----------------------------------------
 
-    def createContextMenu_RawDataView(self):
+    def createContextMenu_Data_Base_tableWidget(self):
         '''
 
         :return:
         '''
-        self.graphicsView_2.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.graphicsView_2.customContextMenuRequested.connect(lambda: self.showContextMenu('graphicsView_2'))
-        self.graphicsView_2.contextMenu = QtWidgets.QMenu(self)
-        self.graphicsView_2.actionA = self.graphicsView_2.contextMenu.addAction(QtGui.QIcon("images/0.png"), u'|  标记')
-        self.graphicsView_2.actionA.triggered.connect(self.select_marker)
-
+        self.Data_Base_tableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.Data_Base_tableWidget.customContextMenuRequested.connect(lambda: self.showContextMenu('Data_Base_tableWidget'))
+        self.Data_Base_tableWidget.contextMenu = QtWidgets.QMenu(self)
+        self.Data_Base_tableWidget.actionA = self.Data_Base_tableWidget.contextMenu.addAction(QtGui.QIcon("images/0.png"), u'|  删除记录')
+        self.Data_Base_tableWidget.actionA.triggered.connect(self.delete_index_item)
+        self.Data_Base_tableWidget.actionB = self.Data_Base_tableWidget.contextMenu.addAction(QtGui.QIcon("images/0.png"), u"|  提交修改")
+        self.Data_Base_tableWidget.actionB.triggered.connect(self.edit_index_item)
         # 添加二级菜单
-        self.graphicsView_2.second = self.graphicsView_2.contextMenu.addMenu(QtGui.QIcon("images/0.png"), u"|  二级菜单")
-        self.graphicsView_2.actionD = self.graphicsView_2.second.addAction(QtGui.QIcon("images/0.png"), u'|  动作A')
-        self.graphicsView_2.actionE = self.graphicsView_2.second.addAction(QtGui.QIcon("images/0.png"), u'|  动作B')
-        self.graphicsView_2.actionF = self.graphicsView_2.second.addAction(QtGui.QIcon("images/0.png"), u'|  动作C')
+        # self.Data_Base_tableWidget.second = self.Data_Base_tableWidget.contextMenu.addMenu(QtGui.QIcon("images/0.png"), u"|  提交修改")
+        # self.Data_Base_tableWidget.actionD = self.Data_Base_tableWidget.second.addAction(QtGui.QIcon("images/0.png"), u'|  动作A')
+        # self.Data_Base_tableWidget.actionE = self.Data_Base_tableWidget.second.addAction(QtGui.QIcon("images/0.png"), u'|  动作B')
+        # self.Data_Base_tableWidget.actionF = self.Data_Base_tableWidget.second.addAction(QtGui.QIcon("images/0.png"), u'|  动作C')
 
         return
 
@@ -294,10 +296,6 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.PicToolBar_raw.press(self.PicToolBar_raw.home())
         self.PicToolBar_raw.dynamic_update()
 
-    def select_marker(self):
-
-        pass
-
     def get_mouse_xy_plot(self, event):
         self.xyCoordinates = [event.xdata, event.ydata]  # 捕捉鼠标点击的坐标
         print(self.xyCoordinates)
@@ -415,9 +413,15 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
     def constant_speed_replace(self):
         self.replace_cs_content = True
-        self.Constant_Speed_Show_Speed_text.setText(str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table[:, 1].round(0))[1:-1])
+        str_speed = str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table[:, 1].round(0))[1:-1]
+        str_speed = str_speed.replace('.', '')
+        str_speed = ' '.join(str_speed.split())
+        self.Constant_Speed_Show_Speed_text.setText(str_speed)
         self.Constant_Speed_Show_Speed_text.setFontPointSize(5)
-        self.Constant_Speed_Show_Ped_text.setText(str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table[:, 2].round(0))[1:-1])
+        str_ped = str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table[:, 2].round(0))[1:-1]
+        str_ped = str_ped.replace('.', '')
+        str_ped = ' '.join(str_ped.split())
+        self.Constant_Speed_Show_Ped_text.setText(str_ped)
         print(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table)
 
     def cal_sys_gain_data(self):
@@ -704,6 +708,28 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             self.Data_Base_tableWidget.setItem(i, 0, car_index_item)
             for j, feature_name in enumerate(self.history_index[car_index]):
                 self.Data_Base_tableWidget.setItem(i, j+1, QtWidgets.QTableWidgetItem(feature_name))
+
+    def delete_index_item(self):
+        feature_car_name = self.Data_Base_tableWidget.item(self.Data_Base_tableWidget.currentIndex().row(), 0).text()
+        self.history_index.pop(feature_car_name)
+        SaveAndLoad.store_feature_index(store_index=self.history_index)
+        self.show_feature_index()
+        message_str = 'Message: Feature index ' + feature_car_name + ' deleted!'
+        self.info_widget_update(message_str)
+        return
+
+    def edit_index_item(self):
+        self.history_index.clear()
+        for i in range(self.Data_Base_tableWidget.rowCount()):
+            feature = []
+            for j in range(1, self.Data_Base_tableWidget.columnCount()):
+                feature.append(self.Data_Base_tableWidget.item(i, j).text())
+            self.history_index[self.Data_Base_tableWidget.item(i, 0).text()] = feature
+        message_str = 'Message: Feature item has been changed!'
+        SaveAndLoad.store_feature_index(store_index=self.history_index)
+        self.show_feature_index()
+        self.info_widget_update(message_str)
+        return
 
     # -----|--|Setting 页面
     def initial_setting_value(self):

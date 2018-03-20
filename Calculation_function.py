@@ -532,6 +532,13 @@ class SaveAndLoad(object):
         return
 
     @staticmethod
+    def store_result_in_excel(file_path, store_data):
+        # output_file = open(file_path, 'wb')
+        # dump(store_data, output_file)
+        # output_file.close()
+        return
+
+    @staticmethod
     def reload_result(file_path_list):
         data_reload = []
         for i in file_path_list:
@@ -555,6 +562,7 @@ class SaveAndLoad(object):
         return data_reload
 
     # PPT
+    @staticmethod
     def get_fig_name(type, rawdata_filepath):
         if type == "initial_ppt":
             list_figs = [['dr_sg_curve', 'System Gain Curve.png'], ['dr_max_acc', 'Max Acc.png'],
@@ -574,6 +582,8 @@ class SaveAndLoad(object):
         return list_figs, rawdata_name, title_ppt
 
         # PPT
+
+    @staticmethod
     def save_pic_ppt(list_figs, rawdata_name, title_ppt, pic_path):
         # Input PowerPoint Template，default blank。
         try:
