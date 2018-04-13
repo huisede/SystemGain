@@ -114,12 +114,19 @@ class SystemGain(object):
                                                                       self.data_cut_time_of_creep,
                                                                       self.data_cut_time_of_pedal)
 
-        last_item = -10
+        # last_item = -10
+        # trigger = False
+        # for item in self.pedal_avg:
+        #     if abs(last_item - item) < 3:
+        #         trigger = True
+        #     last_item = item
+
         trigger = False
-        for item in self.pedal_avg:
-            if abs(last_item - item) < 3:
-                trigger = True
-            last_item = item
+        for i, item in enumerate(self.pedal_avg):
+            for j, item_ in enumerate(self.pedal_avg):
+                if i != j and abs(item-item_) < 3:
+                    trigger = True
+                    break
 
         if trigger:  # 挂起线程，等待eliminate_duplicate_ped()被触发
             return 'eliminate_duplicate_ped'

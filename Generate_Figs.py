@@ -139,10 +139,10 @@ class MyFigureCanvas(FigureCanvas):
 
         self.axes.plot(speedIndex, acc_banana[0, :], color='#B0C4DE', linestyle='--')
         self.axes.plot(speedIndex, acc_banana[1, :], color='#FA8072', linestyle='--')
-        self.axes.plot(speedIndex, acc_banana[2, :], color='696969', linestyle='--')
+        self.axes.plot(speedIndex, acc_banana[2, :], color='#696969', linestyle='--')
         self.axes.plot(speedIndex, acc_banana[3, :], color='#B0C4DE', linestyle='--')
         self.axes.plot(speedIndex, acc_banana[4, :], color='#FA8072', linestyle='--')
-        self.axes.plot([speedIndex[0]] * 5, acc_banana[:, 0], color='696969', linestyle='-')
+        self.axes.plot([speedIndex[0]] * 5, acc_banana[:, 0], color='#696969', linestyle='-')
         self.axes.set_xlabel('Vehicle Speed(kph)', fontsize=12)
         self.axes.set_ylabel('Acc(g/mm)', fontsize=12)
         self.axes.set_xlim(0, 120)

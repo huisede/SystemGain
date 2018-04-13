@@ -250,12 +250,15 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                 self.verticalLayout.removeItem(self.verticalLayout.itemAt(0))  # 删除当前Lay中spacer元素
 
         for i, ch in enumerate(self.MainProcess_thread_rd.ax_holder_rd.file_columns):  # 添加新CheckBox
-            exec('self.checkBox' + ch + '= QtWidgets.QCheckBox(self.Data_Viewer_CheckBox_groupBox)')
-            eval('self.checkBox' + ch + '.setObjectName("' + ch + '")')
-            eval('self.verticalLayout.addWidget(self.checkBox' + ch + ')')
-            eval('self.checkBox' + ch + '.setText("' + self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig[
+            # ——————————————————————————————————————————BUG FIX————————————————————————————————————————————————
+            # 为了命名问题，万一原始数据中存在字段含有加减乘除和非法命名字符，会生成不了checkbox，因此将ch替换为str(i)  ---20180411 LC
+            exec('self.checkBox' + str(i) + '= QtWidgets.QCheckBox(self.Data_Viewer_CheckBox_groupBox)')
+            eval('self.checkBox' + str(i) + '.setObjectName("' + ch + '")')
+            eval('self.verticalLayout.addWidget(self.checkBox' + str(i) + ')')
+            eval('self.checkBox' + str(i) + '.setText("' + self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig[
                 i] + '")')
-            eval('self.checkBox' + ch + '.clicked.connect(self.data_view_check_box_list)')  # 捆绑点击触发绘图
+            eval('self.checkBox' + str(i) + '.clicked.connect(self.data_view_check_box_list)')  # 捆绑点击触发绘图
+            # ——————————————————————————————————————————BUG FIX————————————————————————————————————————————————
 
         spacer_item = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacer_item)  # 添加新spacer排版占位
