@@ -56,7 +56,8 @@ class UiEliminateDuplicatePed(QDialog, Ui_EliminateDuplicateData):
             eval('self.gridLayout.addWidget(self.checkBox' + str(i) + ',' + posi[i] + ')')
             eval('self.checkBox' + str(i) + '.setText("' + str(ch.__round__(1)) + '")')
             if real_duplicate_ped[i] == 0:
-                eval('self.checkBox' + str(i) + '.setDisabled(True)')
+                # eval('self.checkBox' + str(i) + '.setDisabled(True)')  # 灰掉未重复的Pedal
+                pass
             else:
                 # eval('self.checkBox' + str(i) + ".setStyleSheet('QCheckBox{background-color:" + color_array[
                 #     real_duplicate_ped[i]] + " }')")

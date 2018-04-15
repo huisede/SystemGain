@@ -36,5 +36,5 @@ class Ui_EliminateDuplicateData(object):
     def retranslateUi(self, EliminateDuplicateData):
         _translate = QtCore.QCoreApplication.translate
         EliminateDuplicateData.setWindowTitle(_translate("EliminateDuplicateData", "剔除重复数据"))
-        self.groupBox.setTitle(_translate("EliminateDuplicateData", "剔除信号选择"))
+        self.groupBox.setTitle(_translate("EliminateDuplicateData", "剔除信号选择（染色信号为重复项）"))
 

@@ -147,7 +147,9 @@ class SystemGain(object):
         self.sg_obj_cal()
 
     def sg_obj_cal(self):
-        # # fig2起步图，[5,10,20,30,40,50,100],后续补充判断大油门不是100也画出来,粗细
+
+        self.sort_ped()
+
         obj_Launch = self.launch(self.acc_Data, self.pedal_Data, self.pedal_cut_index, self.pedal_avg)
 
         obj_MaxAcc = self.max_acc(self.acc_Data, self.pedal_cut_index, self.pedal_avg)
@@ -409,6 +411,16 @@ class SystemGain(object):
                     pedal_avg.append(mean(pedal_data[r_edge_pedal[j]:t_edge_pedal[j]]))
 
         return pedal_cut_index, pedal_avg
+
+    def sort_ped(self):
+        ped_h_index = []
+        ped_t_index = []
+        origin_ped = self.pedal_avg.copy()  # 浅拷贝
+        self.pedal_avg.sort()
+        for item in self.pedal_avg:
+            ped_h_index.append(self.pedal_cut_index[0][origin_ped.index(item)])
+            ped_t_index.append(self.pedal_cut_index[1][origin_ped.index(item)])
+        self.pedal_cut_index = [ped_h_index, ped_t_index]
 
     class AccResponse:
         def __init__(self, matrix, para1, matrix_max_acc):
