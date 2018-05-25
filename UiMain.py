@@ -1,7 +1,8 @@
 from sys import argv, exit
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore, QtGui, QtWidgets
-from SystemGainUi import Ui_MainWindow  # 界面源码
+# from SystemGainUi import Ui_MainWindow  # 界面源码
+from TestSolverUi import Ui_MainWindow
 from Generate_Figs import *  # 绘图函数
 from Calculation_function import *  # 计算函数
 from re import match  # 正则表达式
@@ -26,36 +27,65 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         # self.initial()
 
-        self.menu_InputData.triggered.connect(self.load_sys_gain_data)
-        self.menu_Save.triggered.connect(self.save_sys_gain_data)
-        # menu_Output_Report_ppt
-        self.menu_Output_Report.triggered.connect(lambda: self.output_data_ppt('initial_ppt'))
-        self.menu_Output_Histtory_Report.triggered.connect(lambda: self.output_data_ppt('analysis_ppt'))
-        # New Add ppt
-        self.action_Data_Viewer.triggered.connect(lambda: self.change_main_page(0))
-        self.action_System_Gain.triggered.connect(lambda: self.change_main_page(1))
-        self.action_Cal_Result.triggered.connect(lambda: self.change_main_page(2))
-        self.action_Compare_Result.triggered.connect(lambda: self.change_main_page(3))
-        self.action_Data_Base.triggered.connect(lambda: self.change_main_page(4))
-        self.action_Cal_Setting.triggered.connect(lambda: self.change_main_page(5))
-        self.SysGain_Cal.clicked.connect(self.cal_sys_gain_data_pre)
-        self.History_Data_Choose_PushButton.clicked.connect(self.history_data_reload)
-        self.Constant_Speed_Input_button.clicked.connect(self.constant_speed_input_callback)
-        self.Data_Base_page_pushButton.clicked.connect(self.show_feature_index)
-        # self.menu_Engine_Working_Dist.triggered.connect(self.data_view_check_box_list)
+        self.triggers()
 
         self.info_list = []
         self.MainProcess_thread = []
         # self.createContextMenu_RawDataView()
-        self.combo_box_names = ['System_Gain_AT_DCT_Time',
-                                'System_Gain_AT_DCT_Vspd',
-                                'System_Gain_AT_DCT_Ped',
-                                'System_Gain_AT_DCT_Acc',
-                                'System_Gain_AT_DCT_Gear',
-                                'System_Gain_AT_DCT_Toq',
-                                'System_Gain_AT_DCT_Fuel',
-                                'System_Gain_AT_DCT_EnSpd',
-                                'System_Gain_AT_DCT_TbSpd']
+        self.combo_box_names = ['Select_Features_Time',
+                                'Select_Features_Vspd',
+                                'Select_Features_Ped',
+                                'Select_Features_Acc',
+                                'Select_Features_Gear',
+                                'Select_Features_Toq',
+                                'Select_Features_Fuel',
+                                'Select_Features_EnSpd',
+                                'Select_Features_TbSpd',
+                                'Select_Features_Brk',
+                                'Select_Features_Latitude',
+                                'Select_Features_Longitude',
+                                'Select_Features_StrWhlAng',
+                                'Select_Features_CoolingTemp',
+                                'Select_Features_CryHeat',
+                                ]
+
+        self.dbc_search_list = {'SystemGain': {'Vspd': [r'^.*VehSpdAvgNonDrvn.*$', r'^.*VehicleSpeedd.*$', ],  # 编辑此处的正则表达式即可
+                                               'Acc': [r'^.*LongtAcc.*$', r'^.*LongAccelG.*$', ],
+                                               'Ped': [r'^.*AccelActuPos.*$', ],
+                                               'Gear': [r'^.*Gear.*$', ],
+                                               'Toq': [r'^.*EnActuStdyStaToq.*$', r'^.*Toq.*$', ],
+                                               'EnSpd': [r'^.*EnSpd.*$', ],
+                                               'TbSpd': [r'^.*TrTurbAngulVel.*$', r'^.*Turb.*$', ],
+                                               },
+                                'Emission': {'fuel_data': [r'^.*vsksml.*$', ],
+                                             'veh_spd': [r'^.*vfzg.*$', r'^.*VehV_v.*$'],
+                                             },
+                                'RealRoadFC': {'Vspd': [r'^.*VehSpdAvgNonDrvn.*$', ],
+                                               'EnSpd': [r'^.*EnSpd.*$', ],
+                                               'Fuel': [r'^.*FuelCsump.*$', ],
+                                               },
+                                }
+
+        self.color_array = ['#FFA500',  # 橙色
+                            '#3CB371',  # 春绿
+                            '#4169E1',  # 皇家蓝
+                            '#DF12ED',  # 紫
+                            '#FD143C',  # 鲜红
+                            '#D2691E',  # 巧克力
+                            '#696969',  # 暗灰
+                            '#40E0D0',  # 绿宝石
+                            '#9400D3',  # 紫罗兰
+                            ]
+        self.color_array_rgb = [(255, 165, 0, 0.3),
+                                (60, 179, 113, 0.3),
+                                (65, 105, 225, 0.3),
+                                (223, 18, 237, 0.3),
+                                (253, 20, 60, 0.3),
+                                (210, 105, 30, 0.3),
+                                (105, 105, 105, 0.3),
+                                (64, 224, 208, 0.3),
+                                (148, 0, 211, 0.3)]
+
         self.replace_cs_content = False
         self.createContextMenu_Data_Base_tableWidget()
 
@@ -117,6 +147,32 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         # self.data_viewer_graphics_view.Message_DoubleClick.connect(self.highlight_signal)  # 双击高亮
         # self.initial_data_edit()
 
+    def triggers(self):
+        self.menu_InputData.triggered.connect(self.load_data)
+        self.menu_Save.triggered.connect(self.save_sys_gain_data)
+        # menu_Output_Report_ppt
+        self.menu_Output_Report.triggered.connect(lambda: self.output_data_ppt('initial_ppt'))
+        # New Add ppt
+        self.menu_Output_Histtory_Report.triggered.connect(lambda: self.output_data_ppt('analysis_ppt'))
+        # Main Page Change
+        self.action_Data_Viewer.triggered.connect(lambda: self.change_main_page(0))
+        self.action_Select_Features.triggered.connect(lambda: self.change_main_page(1))
+        self.action_System_Gain.triggered.connect(lambda: self.change_main_page(2))
+        self.action_Emission_Test.triggered.connect(lambda: self.change_main_page(3))
+        self.action_Real_Road_Fc.triggered.connect(lambda: self.change_main_page(4))
+        self.action_Compare_Result.triggered.connect(lambda: self.change_main_page(5))
+        self.action_Data_Base.triggered.connect(lambda: self.change_main_page(6))
+        self.action_Cal_Setting.triggered.connect(lambda: self.change_main_page(7))
+        self.SysGain_Cal.clicked.connect(self.cal_sys_gain_data)
+        self.History_Data_Choose_PushButton.clicked.connect(self.history_data_reload)
+        self.Constant_Speed_Input_button.clicked.connect(self.constant_speed_input_callback)
+        self.Data_Base_page_pushButton.clicked.connect(self.show_feature_index)
+        # self.menu_Engine_Working_Dist.triggered.connect(self.data_view_check_box_list)
+        self.Select_Features_New_Index_PushButton.clicked.connect(self.create_feature_index)
+        self.Select_Features_SystemGain.clicked.connect(self.system_gain_index_pre_fit)
+        self.Select_Features_EmissionCal.clicked.connect(self.emission_cal_index_pre_fit)
+        self.Select_Features_RealRoadFC.clicked.connect(self.real_road_fc_index_pre_fit)
+
     # ---------------------------- 右键菜单 -----------------------------------------
 
     def createContextMenu_Data_Base_tableWidget(self):
@@ -151,11 +207,11 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
     # ---------------------------- 回调函数 -----------------------------------------
     # -----|主菜单
 
-    def load_sys_gain_data(self):
+    def load_data(self):
         file = QFileDialog.getOpenFileName(self, filter='*.csv *.xls *.xlsx *.mdf *.dat')
         self.rawdata_filepath = file[0]
         if self.rawdata_filepath != '':
-            self.MainProcess_thread_rd = ThreadProcess(method='sg_read_thread',
+            self.MainProcess_thread_rd = ThreadProcess(method='read_thread',
                                                        filepath=self.rawdata_filepath,
                                                        resample_rate=self.DataViewer_setting_Rawdata_mdf_res_TE.toPlainText())
             self.MainProcess_thread_rd.Message_Finish.connect(self.initial_data_edit)
@@ -170,6 +226,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             self.refresh_raw_data_pic()
             self.refresh_cs_data()  # 新导入数据后清空Constant Speed数据
             self.refresh_sg_pics()
+            self.enable_pre_select()
 
     def save_sys_gain_data(self):
         file = QFileDialog.getSaveFileName(self, filter='.pkl')
@@ -239,7 +296,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.InfoWidget.addItem(self.info_list[-1])
         self.InfoWidget.setCurrentRow(self.InfoWidget.count() - 1)  # 滚动条置为最下方
 
-    # -----|--|Data Edit 页面
+    # -----|--|Data viewer 页面
     def initial_data_edit(self):
         while self.verticalLayout.itemAt(0) is not None:  # 删除当前Lay中的元素
             try:
@@ -263,10 +320,11 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         spacer_item = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacer_item)  # 添加新spacer排版占位
 
+        self.combobox_index_features_initial()   # 初始化在库的车型Features
+        self.combobox_index_initial(self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig)  # 初始化每一个下拉菜单
+
         message_str = 'Message: Finish data import!'
         self.info_widget_update(message_str)
-
-        self.combobox_index_features_initial()
 
     def data_view_check_box_list(self):
         checked_list = []
@@ -307,10 +365,86 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.dr_raw.fig.clear()
         self.PicToolBar_raw.dynamic_update()
 
-    # -----|--|System Gain
+    # -----|--|Select Features 页面
+    # -----|--|Select Features --|Features Selection
+    def enable_pre_select(self):
+        self.Select_Features_SystemGain.setEnabled(True)
+        self.Select_Features_RealRoadFC.setEnabled(True)
+        self.Select_Features_EmissionCal.setEnabled(True)
+        self.Select_Features_New_Index_PushButton.setEnabled(True)
+
+    def refresh_all_combo_box(self):
+        for i in self.combo_box_names:
+            eval('self.' + i + "_lab.setStyleSheet('')")
+
+    def system_gain_index_pre_fit(self):
+        self.refresh_all_combo_box()
+        target_combo_box_names = sorted([
+                                'Select_Features_Vspd',
+                                'Select_Features_Ped',
+                                'Select_Features_Acc',
+                                'Select_Features_Gear',
+                                'Select_Features_Toq',
+                                'Select_Features_EnSpd',
+                                'Select_Features_TbSpd',
+                                 ])
+
+        for i in range(target_combo_box_names.__len__()):
+            eval('self.' + target_combo_box_names[i] + '.setCurrentIndex('
+                 +
+                 str("SaveAndLoad.search_feature(self.MainProcess_thread_rd.ax_holder_rd."
+                                         "file_columns_orig,self.dbc_search_list['SystemGain']['"
+                                         + sorted(self.dbc_search_list['SystemGain'])[i] + "'])"
+                     )
+                 +
+                 ")")
+            # 例句
+            # self.Select_Features_Acc.setCurrentIndex(SaveAndLoad.search_feature(self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig,
+            #                                  self.dbc_search_list['SystemGain']['Acc']))
+
+            eval('self.' + target_combo_box_names[i] + "_lab.setStyleSheet('QLabel{background-color: rgba"
+                 + str(self.color_array_rgb[0]) + " }')")
+            # 例句
+            # self.Select_Features_Acc_lab.setStyleSheet('QLabel{background-color: rgba[0]}')
+
+    def real_road_fc_index_pre_fit(self):
+        self.refresh_all_combo_box()
+        target_combo_box_names = sorted([
+                                        'Select_Features_Vspd',
+                                        'Select_Features_Fuel',
+                                        'Select_Features_EnSpd',
+                                        ])
+
+        for i in range(target_combo_box_names.__len__()):
+            eval('self.' + target_combo_box_names[i] + '.setCurrentIndex('
+                 +
+                 str("SaveAndLoad.search_feature(self.MainProcess_thread_rd.ax_holder_rd."
+                     "file_columns_orig,self.dbc_search_list['RealRoadFC']['"
+                     + sorted(self.dbc_search_list['RealRoadFC'])[i] + "'])"
+                     )
+                 +
+                 ")")
+
+            eval('self.' + target_combo_box_names[i] + "_lab.setStyleSheet('QLabel{background-color: rgba"
+                 + str(self.color_array_rgb[1]) + " }')")
+
+    def emission_cal_index_pre_fit(self):
+
+        pass
+
+    def create_feature_index(self):
+        try:
+            self.UiSetIndexName = UiSetIndexName()
+            self.UiSetIndexName.show()
+            self.UiSetIndexName.setModal(True)  # 模态显示窗口，即先处理后方可返回主窗体
+            self.UiSetIndexName.message.connect(self.save_feature_index)
+        except Exception:
+            message_str = 'Error: Please INPUT DATA and CHOOSE SIGNALS!'
+            self.info_widget_update(message_str)
+
     def combobox_index_features_initial(self):  # 将字段规则导入
         try:
-            self.System_Gain_AT_DCT_Index_comboBox.activated.disconnect(self.combobox_index_features_initial_callback)
+            self.Select_Features_Index_comboBox.activated.disconnect(self.combobox_index_features_initial_callback)
             # 1、防止多次连接导致的提示信息重复 2、先行断开作为双保险，防止第一遍连接时留下的触发开关由clear()等动作带来的误触发跳转
         except TypeError:
             pass
@@ -318,18 +452,17 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         try:
             self.slfi = SaveAndLoad()
             self.history_index = self.slfi.reload_feature_index()
-            self.System_Gain_AT_DCT_Index_comboBox.clear()  # ????第二次导入数据时运行报错   问题已解决 20180226
-            self.System_Gain_AT_DCT_Index_comboBox.addItem('请选择')
+            self.Select_Features_Index_comboBox.clear()  # ????第二次导入数据时运行报错   问题已解决 20180226
+            self.Select_Features_Index_comboBox.addItem('请选择')
             for i in self.history_index:
-                self.System_Gain_AT_DCT_Index_comboBox.addItem(i)  # 配合下面的注释
+                self.Select_Features_Index_comboBox.addItem(i)  # 配合下面的注释
         except Exception:
             message_str = 'Error: from combobox_index_features_initial!'
             self.info_widget_update(message_str)
 
-        self.System_Gain_AT_DCT_Index_comboBox.activated.connect(
-            self.combobox_index_features_initial_callback)    # 写在这里是为了防止上面addItem改变了currentIndex导致误触发
+        self.Select_Features_Index_comboBox.activated.connect(
+            self.combobox_index_features_initial_callback)  # 写在这里是为了防止上面addItem改变了currentIndex导致误触发
         # 20180226 交互类性的触发请选择activated而不是currentIndexChanged!!!!!!
-        self.combobox_index_initial(self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig)
 
     def combobox_index_initial(self, item_list):  # 将文件中的所有字段写入列表
         for i in self.combo_box_names:  # 编号
@@ -344,8 +477,8 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         columns = self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig.tolist()
         columns_to_pre_select = []
         err = True
-        if self.System_Gain_AT_DCT_Index_comboBox.currentText() in self.history_index:  # 排除用户误选择到“请选择”
-            for i in self.history_index[self.System_Gain_AT_DCT_Index_comboBox.currentText()]:
+        if self.Select_Features_Index_comboBox.currentText() in self.history_index:  # 排除用户误选择到“请选择”
+            for i in self.history_index[self.Select_Features_Index_comboBox.currentText()]:
                 try:
                     columns_to_pre_select.append(columns.index(i))
                 except ValueError:  # 如果需要索引的信号名不含在目前的数据中
@@ -362,20 +495,9 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
         self.info_widget_update(message_str)
 
-    def combobox_index_pre_select(self, pre_select_item_index_list):  # 自动预选字段
+    def combobox_index_pre_select(self, pre_select_item_index_list):  # 根据索引预选字段    老数据只有7个字段，目前会报错！
         for i in range(self.combo_box_names.__len__()):  # 编号
             eval('self.' + self.combo_box_names[i] + '.setCurrentIndex(' + str(pre_select_item_index_list[i]) + ')')
-
-    def cal_sys_gain_data_pre(self):
-        try:
-            if self.System_Gain_AT_DCT_New_Index.isChecked():
-                self.UiSetIndexName = UiSetIndexName()
-                self.UiSetIndexName.show()
-                self.UiSetIndexName.message.connect(self.save_feature_index)
-            self.cal_sys_gain_data()
-        except Exception:
-            message_str = 'Error: Please INPUT DATA and CHOOSE SIGNALS!'
-            self.info_widget_update(message_str)
 
     def save_feature_index(self, feature_save_name):
         feature_array = []
@@ -386,6 +508,62 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.slfi.store_feature_index(store_index=self.history_index)  # 重新替换feature_index.pkl中所有数据
         message_str = 'Message: Feature index ' + feature_save_name + ' added!'
         self.info_widget_update(message_str)
+        # 刷新页面
+        self.combobox_index_features_initial()
+
+    # -----|--|Select Features --|Features DB
+    def show_feature_index(self):
+        self.slfi = SaveAndLoad()
+        self.history_index = self.slfi.reload_feature_index()
+        self.Data_Base_tableWidget.setColumnCount(16)
+        self.Data_Base_tableWidget.setRowCount(len(self.history_index))
+        self.Data_Base_tableWidget.setHorizontalHeaderLabels(['车型名称', '时间s', '车速km/h', '油门',
+                                                              '加速度g', '档位', '扭矩Nm',
+                                                              '喷油量ul/s', '发动机转速rpm', '涡轮转速rpm',
+                                                              '制动', '纬度°', '经度°', '方向盘转角°',
+                                                              '水温℃', '催化器加热'])
+        for i, car_index in enumerate(self.history_index):
+            car_index_item = QtWidgets.QTableWidgetItem(car_index)
+            text_font = QtGui.QFont("Yahei", 8, QtGui.QFont.Bold)
+            # car_index_item.setBackground(QtGui.QColor(245, 222, 222))
+            car_index_item.setFont(text_font)
+            self.Data_Base_tableWidget.setItem(i, 0, car_index_item)
+            for j, feature_name in enumerate(self.history_index[car_index]):
+                self.Data_Base_tableWidget.setItem(i, j+1, QtWidgets.QTableWidgetItem(feature_name))
+
+    def delete_index_item(self):
+        feature_car_name = self.Data_Base_tableWidget.item(self.Data_Base_tableWidget.currentIndex().row(), 0).text()
+        self.history_index.pop(feature_car_name)
+        SaveAndLoad.store_feature_index(store_index=self.history_index)
+        self.show_feature_index()
+        message_str = 'Message: Feature index ' + feature_car_name + ' deleted!'
+        self.info_widget_update(message_str)
+        # 刷新页面
+        try:
+            self.combobox_index_features_initial() # 刷新下拉菜单
+        except Exception:
+            pass
+        return
+
+    def edit_index_item(self):
+        self.history_index.clear()
+        for i in range(self.Data_Base_tableWidget.rowCount()):
+            feature = []
+            for j in range(1, self.Data_Base_tableWidget.columnCount()):
+                feature.append(self.Data_Base_tableWidget.item(i, j).text())
+            self.history_index[self.Data_Base_tableWidget.item(i, 0).text()] = feature
+        message_str = 'Message: Feature item has been changed!'
+        SaveAndLoad.store_feature_index(store_index=self.history_index)
+        self.show_feature_index()
+        self.info_widget_update(message_str)
+        try:
+            self.combobox_index_features_initial()  # 刷新下拉菜单
+        except Exception:
+            pass
+        return
+
+    # -----|--|System Gain 页面
+    # -----|--|System Gain --|Calculation
 
     def constant_speed_input_callback(self):
         file = QFileDialog.getOpenFileName(self, filter='*.csv *.xls *.xlsx *.mdf *.dat')
@@ -587,7 +765,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.dr_max_acc.axes.clear()
         self.PicToolBar_7.dynamic_update()
 
-    # -----|--|Comparison 页面
+    # -----|--|System Gain --|Compare Results
     def history_data_reload(self):
         file = QFileDialog.getOpenFileNames(self, filter='*.pkl')
         self.history_file_path_list = file[0]
@@ -604,7 +782,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
     def history_data_plot(self):
         legend_list = []
         for i in self.history_file_path_list:
-            file_name = match(r'^([0-9a-zA-Z/:_.%\u4e00-\u9fa5\-]+)(/)([0-9a-zA-Z/:_.%\u4e00-\u9fa5\-]+)(.pkl)$', i)
+            file_name = match(r'^(.+)(/)(.+)(.pkl)$', i)
             legend_list.append(file_name.group(3))
 
         while self.gridLayout_4.itemAt(0) is not None:  # 删除当前Lay中的元素
@@ -694,46 +872,6 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.DatatableView.setModel(self.model)
         self.DatatableView.resizeColumnsToContents()
 
-    # -----|--|DataBase 页面
-    def show_feature_index(self):
-        self.slfi = SaveAndLoad()
-        self.history_index = self.slfi.reload_feature_index()
-        self.Data_Base_tableWidget.setColumnCount(10)
-        self.Data_Base_tableWidget.setRowCount(len(self.history_index))
-        self.Data_Base_tableWidget.setHorizontalHeaderLabels(['车型名称', '时间s', '车速km/h', '油门',
-                                                              '加速度g', '档位', '扭矩Nm',
-                                                              '喷油量ul/s', '发动机转速rpm', '涡轮转速rpm'])
-        for i, car_index in enumerate(self.history_index):
-            car_index_item = QtWidgets.QTableWidgetItem(car_index)
-            text_font = QtGui.QFont("Yahei", 8, QtGui.QFont.Bold)
-            # car_index_item.setBackground(QtGui.QColor(245, 222, 222))
-            car_index_item.setFont(text_font)
-            self.Data_Base_tableWidget.setItem(i, 0, car_index_item)
-            for j, feature_name in enumerate(self.history_index[car_index]):
-                self.Data_Base_tableWidget.setItem(i, j+1, QtWidgets.QTableWidgetItem(feature_name))
-
-    def delete_index_item(self):
-        feature_car_name = self.Data_Base_tableWidget.item(self.Data_Base_tableWidget.currentIndex().row(), 0).text()
-        self.history_index.pop(feature_car_name)
-        SaveAndLoad.store_feature_index(store_index=self.history_index)
-        self.show_feature_index()
-        message_str = 'Message: Feature index ' + feature_car_name + ' deleted!'
-        self.info_widget_update(message_str)
-        return
-
-    def edit_index_item(self):
-        self.history_index.clear()
-        for i in range(self.Data_Base_tableWidget.rowCount()):
-            feature = []
-            for j in range(1, self.Data_Base_tableWidget.columnCount()):
-                feature.append(self.Data_Base_tableWidget.item(i, j).text())
-            self.history_index[self.Data_Base_tableWidget.item(i, 0).text()] = feature
-        message_str = 'Message: Feature item has been changed!'
-        SaveAndLoad.store_feature_index(store_index=self.history_index)
-        self.show_feature_index()
-        self.info_widget_update(message_str)
-        return
-
     # -----|--|Setting 页面
     def initial_setting_value(self):
         pass
@@ -755,7 +893,7 @@ class ThreadProcess(QtCore.QThread):
             message_str = 'Error: Error occurred in calculating SG data!'
             self.info_widget_update(message_str)
 
-    def sg_read_thread(self):
+    def read_thread(self):
         self.ax_holder_rd = ReadFile(file_path=self.kwargs['filepath'], resample_rate=self.kwargs['resample_rate'])
         self.Message_Finish.emit("计算完成！")
 

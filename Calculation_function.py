@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from numpy import average, transpose, zeros, array, linspace, mean, cov, convolve, arange, cumsum, concatenate, abs, \
-    mod, std, ones, diff
-from pandas import read_csv, read_excel, Timedelta
+    mod, std, ones, diff , interp
+from pandas import read_csv, read_excel, Timedelta ,DataFrame
 from scipy import interpolate
 import matplotlib.pyplot as plt
 from re import match
@@ -580,6 +580,24 @@ class SaveAndLoad(object):
         input_file.close()
         return data_reload
 
+    @staticmethod
+    def search_feature(cols_to_search, feature):
+        if not isinstance(cols_to_search, list):
+            try:
+                cols_to_search = cols_to_search.tolist()
+            except AttributeError:
+                return
+        for i in feature:
+            for j in cols_to_search:
+                _match_result = match(i, j)
+                try:
+                    match_result = _match_result.group(0)
+                    match_result_index = cols_to_search.index(match_result)
+                    return match_result_index
+                except AttributeError:
+                    pass
+        return 0   # 什么都没找到的时候返回0
+
     # PPT
     @staticmethod
     def get_fig_name(type, rawdata_filepath):
@@ -754,6 +772,335 @@ class ConstantSpeed(object):
 
     def mean_rpm_cal(self, i):
         return mean(self.en_spd[i:i + self.frequency * self.time_block])
+
+
+class RealRoadFc(object):
+    def __init__(self):
+        pass
+
+    def real_road_main(self):
+
+        for i in range(target_driver_travel_date.shape[0]):  # 样本数据个数
+            driver_id = target_driver_travel_date.iloc[i][0]
+            travel_date = target_driver_travel_date.iloc[i][1]
+            travel_id = target_driver_travel_date.iloc[i][2]
+            target_driver = csvdata[(csvdata['Travel_ID'] == travel_id)]  # 筛出的样本集
+
+            if target_driver.shape[0] > 1000:  # 太短的样本选择丢弃
+
+                # target_driver = target_driver[1000:-1]   # 切掉冷启动的
+
+                fuel_csump = target_driver['fuel_csump[uL/100ms]']
+                # vspd = ((target_driver['WhlSpd_RR[kph]'] + target_driver['WhlSpd_RL[kph]']) / 2)
+                vspd = target_driver['Vspd[kph]']
+                strg_whl_ang = target_driver['strg_whl_ang']
+                acc_ped = target_driver['Acc_Actu_Pos[%]']
+                # time = target_driver['time[s]']
+
+                x_acc = self.five_points_avg_acc(vspd.tolist(), frequency=10)
+                # x_acc = target_driver['x_acc[m/s^2]']
+                y_acc = target_driver['y_acc[m/s^2]']
+                # x_acc = five_points_avg(x_acc.tolist())
+                y_acc = self.five_points_avg(y_acc.tolist())
+
+                # gen_load_toq = target_driver['gen_load_toq[Nm]']
+                engine_toq = target_driver['engine_toq[Nm]']
+                engine_spd = target_driver['En_Spd[rpm]']
+                turbo_speed = target_driver['turbo_speed[rpm]']
+                # TC_state = target_driver['TC_state']
+                gen_load_toq = target_driver['gen_load_toq[Nm]']
+                ac_toq_req = target_driver['ac_toq_req[Nm]'] * engine_spd / 9550  # kw
+
+                target_driver['Delta_TC_speed[rpm]'] = engine_spd - turbo_speed
+                target_driver['Veh_spd[kph]'] = vspd
+                tc_run_data = target_driver[vspd > 1]
+                tc_open_data = target_driver[(target_driver['TrRealGear'] > 0) &
+                                             (abs(target_driver['Delta_TC_speed[rpm]']) > 200)]
+                tc_close_data = tc_run_data[(tc_run_data['TrRealGear'] > 0) &
+                                            (abs(tc_run_data['Delta_TC_speed[rpm]']) < 50)]
+                # ------------------- Style features ---------------------
+                odemeter = self.odometer_cal(vspd)
+                fuel_cons = sum(fuel_csump) / odemeter * 100 / 1e6  # L/100km
+                fuel_csump_run = target_driver[vspd > 0]['fuel_csump[uL/100ms]']
+                fuel_cons_run = sum(fuel_csump_run) / odemeter * 100 / 1e6  # L/100km
+
+                sudden_acc_times = self.sudden_acc(x_acc, vspd.tolist(), CarName)
+                sudden_brake_times = self.sudden_brake(x_acc, CarName)
+                sudden_steering_times = self.sudden_steering(y_acc.tolist(), CarName)
+                tip_in_times = self.tip_in(acc_ped.tolist())
+
+                # ----------------- Statistics features ------------------
+                # soc_start = target_driver['BMSPackSOC'].tolist()[0]
+                # soc_end = target_driver['BMSPackSOC'].tolist()[-1]
+                # soc_balance_ratio = soc_balance_time_ratio(target_driver['BMSPackSOC'])
+                mean_spd = vspd.mean()
+                mean_spd_run = vspd[vspd > 0].mean()
+                std_spd = vspd.std()
+                mean_strg_whl_ang = strg_whl_ang.mean()
+                std_strg_whl_ang = strg_whl_ang.std()
+                mean_strg_whl_ang_pos = target_driver[target_driver['strg_whl_ang'] > 0].strg_whl_ang.mean()
+                mean_strg_whl_ang_neg = target_driver[target_driver['strg_whl_ang'] < 0].strg_whl_ang.mean()
+                mean_x_acc = x_acc.mean()
+                std_x_acc = x_acc.std()
+                mean_x_acc_pos = x_acc[x_acc > 0].mean()
+                mean_x_acc_neg = x_acc[x_acc < 0].mean()
+                mean_acc_ped = acc_ped.mean()
+                std_acc_ped = acc_ped.std()
+                idle_time = target_driver[(vspd == 0) & (engine_spd > 0)].shape[0] / 10
+                run_time = target_driver[vspd > 0].shape[0] / 10
+                total_time = target_driver.shape[0] / 10
+                fuel_csump_idle = target_driver[(vspd == 0) & (engine_spd > 0)]['fuel_csump[uL/100ms]']
+                fuel_cons_idle = 0.1 * sum(fuel_csump_idle) / idle_time / 100
+
+                start_times = self.start_times_cal(vspd)
+
+                print(driver_id, travel_date, travel_id, '....finish')
+
+                sudden_acc_times = array(sudden_acc_times) / odemeter
+                sudden_brake_times = array(sudden_brake_times) / odemeter
+                sudden_steering_times = array(sudden_steering_times) / odemeter
+                # ------------------- Plot Data --------------------------
+                fuel_distri = self.spd_distribution_array(vspd, fuel_csump, type='sum')
+                portion_distri = self.spd_distribution_array(vspd, vspd, type='weight')
+
+                resultarray.append([driver_id, travel_date])
+                backup_data.append([travel_id, sudden_acc_times[0], sudden_acc_times[1], sudden_acc_times[2],
+                                    sudden_brake_times[0], sudden_brake_times[1], sudden_brake_times[2],
+                                    sudden_steering_times[0], sudden_steering_times[1], sudden_steering_times[2],
+                                    tip_in_times[0] / odemeter, odemeter, idle_time, fuel_cons_idle, run_time,
+                                    total_time,
+                                    start_times, mean_spd_run,
+                                    mean_spd, mean_strg_whl_ang, mean_strg_whl_ang_pos, mean_strg_whl_ang_neg,
+                                    mean_x_acc, mean_x_acc_pos, mean_x_acc_neg, mean_acc_ped,
+                                    std_spd, std_strg_whl_ang, std_x_acc, std_acc_ped,
+                                    fuel_cons, fuel_cons_run])
+
+                docker1 = docker1.append(DataFrame([fuel_distri], columns=docker1.columns), ignore_index=True)
+                docker2 = docker2.append(DataFrame([portion_distri], columns=docker2.columns), ignore_index=True)
+
+                print(tc_run_data.shape[0], tc_close_data.shape[0])
+
+                # heatmap_plot(target_driver[['En_Spd[rpm]', 'engine_toq[Nm]']], tc_open_data[['En_Spd[rpm]', 'engine_toq[Nm]']],
+                #              driver_id, seg_size=[50, 50], xlim=5000, ylim=250)     # 发动机工作点热力图
+
+                self.heatmap_plot(target_driver[['En_Spd[rpm]', 'engine_toq[Nm]']], target_driver, seg_size=[50, 50],
+                                  xlim=5000, ylim=250)
+                self.heatmap_plot_shift(target_driver[['Veh_spd[kph]', 'Acc_Actu_Pos[%]']], target_driver,
+                                        seg_size=[50, 50], xlim=250, ylim=100)
+        pass
+
+    @staticmethod
+    def find_3_level_times(series, base=0, a1=1, a2=2, a3=3, delta_t=20):  # Passed Test 20170526
+        count_1 = count_2 = count_3 = 0
+        up_1 = up_2 = up_3 = 0
+        down_1 = down_2 = down_3 = 0
+        l = len(series)
+        for j in range(l - 1):
+            if series[j] == base and series[j + 1] == a1:
+                up_1 = j + 1
+            if series[j] == a1 and series[j + 1] == a2:
+                up_2 = j + 1
+            if series[j] == a2 and series[j + 1] == a3:
+                up_3 = j + 1
+            if series[j] == a1 and series[j + 1] == base:
+                down_1 = j + 1
+            if series[j] == a2 and series[j + 1] == a1:
+                down_2 = j + 1
+            if series[j] == a3 and series[j + 1] == a2:
+                down_3 = j + 1
+            if series[j] > series[j + 1]:
+                if down_3 - up_3 < delta_t <= down_2 - up_2:
+                    count_2 = count_2 + 1
+                    down_1 = down_2 = down_3 = -l * 2
+                    up_1 = up_2 = up_3 = l * 2
+                if down_3 - up_3 >= delta_t:
+                    count_3 = count_3 + 1
+                    down_1 = down_2 = down_3 = -l * 2
+                    up_1 = up_2 = up_3 = l * 2
+                if down_2 - up_2 < delta_t <= down_1 - up_1:
+                    count_1 = count_1 + 1
+                    down_1 = down_2 = down_3 = -l * 2
+                    up_1 = up_2 = up_3 = l * 2
+        return count_1, count_2, count_3
+
+    @staticmethod
+    def five_points_avg(series):
+        l = len(series)
+        avg_series = zeros(l)
+        avg_series[0] = (series[1] + series[0]) / 2
+        avg_series[1] = (series[2] + series[1] + series[0]) / 3
+        for i in range(2, l - 2, 1):
+            avg_series[i] = (series[i + 2] + series[i + 1] + series[i] + series[i - 1] + series[i - 2]) / 5
+        avg_series[-2] = (series[-1] + series[-2] + series[-3]) / 3
+        avg_series[-1] = (series[-1] + series[-2]) / 2
+        return avg_series
+
+    @staticmethod
+    def five_points_avg_acc(series, g=9.8, frequency=10):
+        l = len(series)
+        avg_acc = zeros(l)
+        avg_acc[0] = (series[1] - series[0]) * frequency / 3.6 / g
+        avg_acc[1] = (series[2] - series[0]) * frequency / 2 / 3.6 / g
+        for i in range(2, l - 2, 1):
+            avg_acc[i] = (series[i + 2] - series[i - 2]) * frequency / 4 / 3.6 / g
+        avg_acc[-2] = (series[-1] - series[-3]) * frequency / 2 / 3.6 / g
+        avg_acc[-1] = (series[-1] - series[-2]) * frequency / 3.6 / g
+        return avg_acc
+
+    @staticmethod
+    def fuel_cal(series, buffer_size=65535):
+        l = len(series)
+        fuel_count = 0
+        bug_fc = []
+        for i in range(1, l, 1):
+            if (series[i] - series[i - 1]) < 0:
+                if series[i - 1] > (buffer_size - 500):
+                    fuel_count = fuel_count + 1
+                else:
+                    bug_fc.append(series[i - 1])
+        fuel_sum = fuel_count * buffer_size + series[-1] - series[0] + sum(bug_fc)
+        return fuel_sum / 1e6  # unit L
+
+    @staticmethod
+    def signal_times_cal(series):  # 数上升沿个数  Passed Test
+        l = len(series)
+        times_counter = 0
+        for i in range(1, l, 1):
+            if (not series[i - 1]) and series[i]:
+                times_counter = times_counter + 1
+            else:
+                continue
+        return
+
+    # ----------------------  Calculation functions  --------------------------
+    @staticmethod
+    def odometer_cal(vspd, frequency=10):
+        odometer = sum(vspd) / frequency / 3.6 / 1000  # km
+        return odometer
+
+    def sudden_brake(self, series, car_type='ZS11'):
+        style_brk = {'ZS11': [-0.5, -0.35, -0.1],
+                     'AS24': [-0.5, -0.35, -0.15],
+                     'N330': [-0.5, -0.35, -0.15]}
+        l = len(series)
+        brk_lab = zeros(l)
+        for i in range(l):
+            if series[i] < style_brk[car_type][0]:
+                brk_lab[i] = 3
+            elif style_brk[car_type][0] < series[i] < style_brk[car_type][1]:
+                brk_lab[i] = 2
+            elif style_brk[car_type][1] < series[i] < style_brk[car_type][2]:
+                brk_lab[i] = 1
+        brk_times = self.find_3_level_times(brk_lab)
+        return brk_times
+
+    def sudden_acc(self, series_xacc, series_vspd, car_type='ZS11'):
+        style_acc = {'ZS11': [0.04, 0.31, 0.36, 0.35, 0.22, 0.23, 0.16, 0.12, 0.08],
+                     'AS24': [0.2, 0.38, 0.41, 0.41, 0.39, 0.43, 0.36, 0.30, 0.22],
+                     'N330': [0.2, 0.38, 0.41, 0.41, 0.39, 0.43, 0.36, 0.30, 0.22]}
+        vspd_interp = [0, 10, 20, 30, 40, 60, 80, 100, 120]
+        l = len(series_xacc)
+        acc_lab = zeros(l)
+        style_acc_current = array(style_acc[car_type])
+        for i in range(l):
+            if series_xacc[i] > interp(series_vspd[i], vspd_interp, 0.5 * style_acc_current):
+                acc_lab[i] = 3
+            elif interp(series_vspd[i], vspd_interp, 0.3 * style_acc_current) < series_xacc[i] < \
+                    interp(series_vspd[i], vspd_interp, 0.5 * style_acc_current):
+                acc_lab[i] = 2
+            elif interp(series_vspd[i], vspd_interp, 0.15 * style_acc_current) < series_xacc[i] < \
+                    interp(series_vspd[i], vspd_interp, 0.3 * style_acc_current):
+                acc_lab[i] = 1
+        acc_times = self.find_3_level_times(acc_lab)
+        return acc_times
+    
+    def sudden_steering(self, series, car_type='ZS11'):
+        style_steer = {'ZS11': [0.35, 0.2, 0.1],
+                       'AS24': [0.35, 0.2, 0.15],
+                       'N330': [0.35, 0.2, 0.15]}
+        l = len(series)
+        str_lab = zeros(l)
+        for i in range(l):
+            if series[i] > style_steer[car_type][0]:
+                str_lab[i] = 3
+            elif style_steer[car_type][0] > series[i] > style_steer[car_type][1]:
+                str_lab[i] = 2
+            elif style_steer[car_type][1] > series[i] > style_steer[car_type][2]:
+                str_lab[i] = 1
+        str_times = self.find_3_level_times(str_lab)
+        return str_times
+
+    @staticmethod
+    def brake_skill(series_xacc, v_spd):
+        l = len(v_spd)
+        vel_spd_lab = zeros(l)
+        brake_skill_cal = []
+        for i in range(l):
+            if not v_spd[i]:
+                vel_spd_lab[i] = 1
+
+        for i in range(15, l - 1, 1):  # 防止max_acc出错
+            if not vel_spd_lab[i] and vel_spd_lab[i + 1]:
+                max_acc = max(series_xacc[i - 15:i])
+                I = series_xacc[i - 15:i].index(max_acc)
+                # I = np.where(series_xacc[i - 15:i] == max_acc)
+                start_ = I + i - 15 - 1
+                for j in range(start_, start_ + 5, 1):
+                    if series_xacc[j] > series_xacc[j + 1] and series_xacc[j + 1] <= series_xacc[j + 2]:
+                        min_acc = series_xacc[j + 1]
+                        brake_skill_cal = concatenate((brake_skill_cal, [max_acc - min_acc]))
+                        break
+
+        return array(brake_skill_cal).mean()
+
+    @staticmethod
+    def tip_in(series_acc_ped, frequency=10):
+        l = len(series_acc_ped)
+        delta_acc_ped = []
+        result_array = []
+        for i in range(1, l, 1):
+            delta_acc_ped.append(series_acc_ped[i] - series_acc_ped[i - 1])
+        delta_accped = array(delta_acc_ped) * frequency
+        tip_in_times = 0
+        for i in range(1, l - 5, 1):
+            sum_of_acc = 0
+            if delta_acc_ped[i] > 0 and delta_acc_ped[i - 1] <= 0:
+                sum_of_acc = delta_accped[i]
+                j = i + 1
+                while delta_acc_ped[j] > 0 and delta_acc_ped[j + 3] >= 0 and j < l - 5:
+                    sum_of_acc = sum_of_acc + delta_acc_ped[j]
+                    j = j + 1
+                if sum_of_acc / (j - i) > 80 and series_acc_ped[j - 1] > 10:
+                    tip_in_times = tip_in_times + 1
+                    result_array.append([series_acc_ped[i], series_acc_ped[j], (j - i) / frequency])
+        return tip_in_times, result_array
+
+    @staticmethod
+    def soc_balance_time_ratio(series_soc_df, balance_position=33):
+        time_ratio = series_soc_df[series_soc_df < balance_position].shape[0] / series_soc_df.shape[0]
+        return time_ratio
+
+    @staticmethod
+    def spd_distribution_array(vspd, input_series, cal_type='sum'):
+        output_array = []
+        for i in range(1, 13, 1):
+            if cal_type == 'sum':
+                output_array.append(sum(input_series[(vspd < (i * 10)) & (vspd > ((i - 1) * 10))]))
+            elif cal_type == 'avg':
+                output_array.append(input_series[(vspd < (i * 10)) & (vspd > ((i - 1) * 10))].mean())
+            elif cal_type == 'weight':
+                output_array.append(input_series[(vspd < (i * 10)) & (vspd > ((i - 1) * 10))].size / input_series.size)
+
+        return output_array
+
+    @staticmethod
+    def start_times_cal(vspd):
+        start_times = 0
+        l = vspd.shape[0]
+        for i in range(1, l - 1):
+            if vspd.iloc[i] == 0 and vspd.iloc[i + 1] > 0:
+                start_times = start_times + 1
+        return start_times
 
 
 if __name__ == '__main__':

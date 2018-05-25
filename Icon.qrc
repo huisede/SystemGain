@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="Image">
+    <file>Icon/Emission.png</file>
+    <file>Icon/SelectFeature.png</file>
+    <file>Icon/real_road.png</file>
     <file>Icon/result.png</file>
     <file>Icon/database.png</file>
     <file>Icon/setting.png</file>

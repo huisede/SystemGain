@@ -1,0 +1,3284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="windowModality">
+   <enum>Qt::WindowModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1011</width>
+    <height>792</height>
+   </rect>
+  </property>
+  <property name="palette">
+   <palette>
+    <active/>
+    <inactive/>
+    <disabled/>
+   </palette>
+  </property>
+  <property name="font">
+   <font>
+    <family>Microsoft YaHei</family>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>TestSolver V1.1.0</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="Icon.qrc">
+    <normaloff>:/Image/Icon/SAIC.PNG</normaloff>:/Image/Icon/SAIC.PNG</iconset>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
+  <property name="iconSize">
+   <size>
+    <width>40</width>
+    <height>40</height>
+   </size>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="0" column="0">
+     <widget class="QSplitter" name="splitter_centralwidget">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <widget class="QStackedWidget" name="MainStackedWidget">
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="Data_Viewer_page">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QSplitter" name="splitter_Data_Viewer_page">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <widget class="QScrollArea" name="Data_Viewer_CheckBox_scrollArea">
+            <property name="maximumSize">
+             <size>
+              <width>2000</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="Data_Viewer_CheckBox_scrollAreaWidgetContents">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>957</width>
+               <height>547</height>
+              </rect>
+             </property>
+             <layout class="QGridLayout" name="gridLayout">
+              <item row="0" column="0">
+               <widget class="QGroupBox" name="Data_Viewer_CheckBox_groupBox">
+                <property name="minimumSize">
+                 <size>
+                  <width>150</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Microsoft YaHei</family>
+                 </font>
+                </property>
+                <property name="title">
+                 <string>信号选取</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout"/>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+           <widget class="QWidget" name="layoutWidget">
+            <layout class="QVBoxLayout" name="Data_Viewer_page_graphicsView_LayV"/>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="Select_Features_page">
+        <layout class="QGridLayout" name="gridLayout_17">
+         <item row="0" column="0">
+          <widget class="QTabWidget" name="Select_Features_tabWidget">
+           <property name="tabPosition">
+            <enum>QTabWidget::West</enum>
+           </property>
+           <property name="tabShape">
+            <enum>QTabWidget::Triangular</enum>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="Select_Features_main">
+            <attribute name="title">
+             <string>Features Selection</string>
+            </attribute>
+            <layout class="QGridLayout" name="gridLayout_21">
+             <item row="1" column="0">
+              <widget class="QComboBox" name="Select_Features_Index_comboBox">
+               <property name="minimumSize">
+                <size>
+                 <width>200</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Microsoft YaHei</family>
+                </font>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0" colspan="3">
+              <widget class="QLabel" name="Select_Features_lab">
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>400</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Microsoft YaHei UI</family>
+                 <pointsize>11</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="layoutDirection">
+                <enum>Qt::LeftToRight</enum>
+               </property>
+               <property name="text">
+                <string>字段选择：</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2" rowspan="5">
+              <widget class="QScrollArea" name="scrollArea_SG_Calculation">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="palette">
+                <palette>
+                 <active>
+                  <colorrole role="Base">
+                   <brush brushstyle="SolidPattern">
+                    <color alpha="255">
+                     <red>255</red>
+                     <green>255</green>
+                     <blue>255</blue>
+                    </color>
+                   </brush>
+                  </colorrole>
+                  <colorrole role="Window">
+                   <brush brushstyle="SolidPattern">
+                    <color alpha="255">
+                     <red>255</red>
+                     <green>255</green>
+                     <blue>255</blue>
+                    </color>
+                   </brush>
+                  </colorrole>
+                 </active>
+                 <inactive>
+                  <colorrole role="Base">
+                   <brush brushstyle="SolidPattern">
+                    <color alpha="255">
+                     <red>255</red>
+                     <green>255</green>
+                     <blue>255</blue>
+                    </color>
+                   </brush>
+                  </colorrole>
+                  <colorrole role="Window">
+                   <brush brushstyle="SolidPattern">
+                    <color alpha="255">
+                     <red>255</red>
+                     <green>255</green>
+                     <blue>255</blue>
+                    </color>
+                   </brush>
+                  </colorrole>
+                 </inactive>
+                 <disabled>
+                  <colorrole role="Base">
+                   <brush brushstyle="SolidPattern">
+                    <color alpha="255">
+                     <red>255</red>
+                     <green>255</green>
+                     <blue>255</blue>
+                    </color>
+                   </brush>
+                  </colorrole>
+                  <colorrole role="Window">
+                   <brush brushstyle="SolidPattern">
+                    <color alpha="255">
+                     <red>255</red>
+                     <green>255</green>
+                     <blue>255</blue>
+                    </color>
+                   </brush>
+                  </colorrole>
+                 </disabled>
+                </palette>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <property name="lineWidth">
+                <number>0</number>
+               </property>
+               <property name="widgetResizable">
+                <bool>true</bool>
+               </property>
+               <widget class="QWidget" name="scrollAreaWidgetContents">
+                <property name="geometry">
+                 <rect>
+                  <x>0</x>
+                  <y>0</y>
+                  <width>702</width>
+                  <height>507</height>
+                 </rect>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_18">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>4</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item row="3" column="0">
+                  <widget class="QLabel" name="Select_Features_Vspd_lab">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>60</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>车速(km/h)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="11" column="1">
+                  <widget class="QLabel" name="Select_Features_CryHeat_lab">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>60</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>催化器加热(-)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="10" column="1">
+                  <widget class="QComboBox" name="Select_Features_CoolingTemp">
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="9" column="1">
+                  <widget class="QLabel" name="Select_Features_CoolingTemp_lab">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>60</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>水温(-)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="0">
+                  <widget class="QComboBox" name="Select_Features_Vspd">
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="8" column="1">
+                  <widget class="QComboBox" name="Select_Features_StrWhlAng">
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="Select_Features_Time_lab">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>60</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true"/>
+                   </property>
+                   <property name="text">
+                    <string>时间(s)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="0">
+                  <widget class="QLabel" name="Select_Features_Ped_lab">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>60</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>油门(-)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="0">
+                  <widget class="QComboBox" name="Select_Features_Ped">
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="8" column="0">
+                  <widget class="QComboBox" name="Select_Features_Acc">
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="12" column="0">
+                  <widget class="QComboBox" name="Select_Features_Toq">
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="13" column="0">
+                  <widget class="QLabel" name="Select_Features_Fuel_lab">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>60</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>喷油量(ul/s)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="15" column="0">
+                  <widget class="QLabel" name="Select_Features_EnSpd_lab">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>60</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>发动机转速(rpm)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="16" column="0">
+                  <widget class="QComboBox" name="Select_Features_EnSpd">
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="9" column="0">
+                  <widget class="QLabel" name="Select_Features_Gear_lab">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>60</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>档位(-)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="11" column="0">
+                  <widget class="QLabel" name="Select_Features_Toq_lab">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>60</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>扭矩(N.m)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="17" column="0">
+                  <widget class="QLabel" name="Select_Features_TbSpd_lab">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>60</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>涡轮转速(rpm)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="14" column="0">
+                  <widget class="QComboBox" name="Select_Features_Fuel">
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="10" column="0">
+                  <widget class="QComboBox" name="Select_Features_Gear">
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="18" column="0">
+                  <widget class="QComboBox" name="Select_Features_TbSpd">
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="0">
+                  <widget class="QLabel" name="Select_Features_Acc_lab">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>60</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>加速度(g)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="1">
+                  <widget class="QComboBox" name="Select_Features_Latitude">
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="1">
+                  <widget class="QLabel" name="Select_Features_Latitude_lab">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>60</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>纬度(°)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="1">
+                  <widget class="QLabel" name="Select_Features_StrWhlAng_lab">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>60</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>方向盘转角(°)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="1">
+                  <widget class="QComboBox" name="Select_Features_Longitude">
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QComboBox" name="Select_Features_Time">
+                   <property name="minimumSize">
+                    <size>
+                     <width>200</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="1">
+                  <widget class="QLabel" name="Select_Features_Longitude_lab">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>60</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>经度(°)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QComboBox" name="Select_Features_Brk">
+                   <property name="minimumSize">
+                    <size>
+                     <width>200</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="12" column="1">
+                  <widget class="QComboBox" name="Select_Features_CryHeat">
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QLabel" name="Select_Features_Brk_lab">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>60</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Microsoft YaHei</family>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>制动(-)</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </widget>
+             </item>
+             <item row="5" column="0">
+              <widget class="QGroupBox" name="Select_Features_Search_group">
+               <property name="title">
+                <string>索引预选（正则匹配）</string>
+               </property>
+               <widget class="QRadioButton" name="Select_Features_SystemGain">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="geometry">
+                 <rect>
+                  <x>10</x>
+                  <y>30</y>
+                  <width>239</width>
+                  <height>20</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>System Gain</string>
+                </property>
+               </widget>
+               <widget class="QRadioButton" name="Select_Features_RealRoadFC">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="geometry">
+                 <rect>
+                  <x>10</x>
+                  <y>70</y>
+                  <width>239</width>
+                  <height>20</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>Real Road FC</string>
+                </property>
+               </widget>
+               <widget class="QRadioButton" name="Select_Features_EmissionCal">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="geometry">
+                 <rect>
+                  <x>10</x>
+                  <y>110</y>
+                  <width>239</width>
+                  <height>20</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>Emission Cal</string>
+                </property>
+               </widget>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QPushButton" name="Select_Features_New_Index_PushButton">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton{ background-color:#16A085;border:none;color:#ffffff;
+font-family:'Microsoft YaHei';font-size:14px;font-weight: bold;height:30px;}
+QPushButton:pressed{background-color:#16A055;}
+QPushButton:disabled{background-color:#DDDDDD;}</string>
+               </property>
+               <property name="text">
+                <string>新建索引</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+            <zorder>Select_Features_lab</zorder>
+            <zorder>Select_Features_Index_comboBox</zorder>
+            <zorder>scrollArea_SG_Calculation</zorder>
+            <zorder>Select_Features_Search_group</zorder>
+            <zorder>Select_Features_New_Index_PushButton</zorder>
+           </widget>
+           <widget class="QWidget" name="Select_Features_DB">
+            <attribute name="title">
+             <string>Features DB</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout_10">
+             <item>
+              <widget class="QLabel" name="Data_Base_table_label">
+               <property name="font">
+                <font>
+                 <family>微软雅黑</family>
+                 <pointsize>10</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>数据库页面</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QGridLayout" name="gridLayout_6">
+               <item row="0" column="2">
+                <widget class="QComboBox" name="comboBox">
+                 <property name="font">
+                  <font>
+                   <family>Microsoft YaHei</family>
+                  </font>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>索引字段</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="0" column="3">
+                <widget class="QPushButton" name="Data_Base_page_pushButton">
+                 <property name="font">
+                  <font>
+                   <family>Microsoft YaHei</family>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>查询</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="lineEdit">
+                 <property name="font">
+                  <font>
+                   <family>Microsoft YaHei</family>
+                  </font>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label">
+                 <property name="font">
+                  <font>
+                   <family>Microsoft YaHei</family>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>查询条件：</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QTableWidget" name="Data_Base_tableWidget"/>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="System_Gain_page">
+        <layout class="QGridLayout" name="gridLayout_16">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QTabWidget" name="System_Gain_PT_Choose">
+           <property name="font">
+            <font>
+             <family>Microsoft YaHei</family>
+            </font>
+           </property>
+           <property name="tabPosition">
+            <enum>QTabWidget::West</enum>
+           </property>
+           <property name="tabShape">
+            <enum>QTabWidget::Triangular</enum>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="System_Gain_AT_DCT_tab">
+            <attribute name="title">
+             <string>Calculation</string>
+            </attribute>
+            <layout class="QGridLayout" name="gridLayout_9">
+             <item row="0" column="1" colspan="4">
+              <widget class="QGroupBox" name="System_Gain_AT_DCT_Figs_Group">
+               <property name="title">
+                <string>输出图片</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_8">
+                <item row="0" column="2">
+                 <widget class="QScrollArea" name="System_Gain_AT_DCT_Figs_scrollArea">
+                  <property name="contextMenuPolicy">
+                   <enum>Qt::NoContextMenu</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true"/>
+                  </property>
+                  <property name="widgetResizable">
+                   <bool>true</bool>
+                  </property>
+                  <widget class="QWidget" name="System_Gain_AT_DCT_Figs_scrollAreaWidgetContents">
+                   <property name="geometry">
+                    <rect>
+                     <x>0</x>
+                     <y>0</y>
+                     <width>623</width>
+                     <height>505</height>
+                    </rect>
+                   </property>
+                   <layout class="QGridLayout" name="gridLayout_2"/>
+                  </widget>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QGroupBox" name="System_Gain_AT_DCT_Config_Group">
+               <property name="maximumSize">
+                <size>
+                 <width>300</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="title">
+                <string>配置</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_13">
+                <item row="1" column="3">
+                 <widget class="QRadioButton" name="System_Gain_MT">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Microsoft YaHei</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>MT</string>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_PT_Type</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="8" column="0">
+                 <widget class="QLabel" name="System_Gain_AT_DCT_StableVspd_lab">
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>60</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Microsoft YaHei</family>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>稳态车速：</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="7" column="3">
+                 <widget class="QPushButton" name="Constant_Speed_Input_button">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Microsoft YaHei UI</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>导入</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="9" column="1" colspan="3">
+                 <widget class="QTextEdit" name="Constant_Speed_Show_Ped_text">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>25</height>
+                   </size>
+                  </property>
+                  <property name="verticalScrollBarPolicy">
+                   <enum>Qt::ScrollBarAlwaysOff</enum>
+                  </property>
+                  <property name="html">
+                   <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Microsoft YaHei'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2';&quot;&gt;-----&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="7" column="0" colspan="2">
+                 <widget class="QLabel" name="System_Gain_AT_DCT_AddInput">
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>400</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Microsoft YaHei UI</family>
+                    <pointsize>11</pointsize>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="layoutDirection">
+                   <enum>Qt::LeftToRight</enum>
+                  </property>
+                  <property name="text">
+                   <string>附加输入：</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="9" column="0">
+                 <widget class="QLabel" name="System_Gain_AT_DCT_StablePed_lab">
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>60</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Microsoft YaHei</family>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>踏板信号：</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="1" colspan="3">
+                 <widget class="QTextEdit" name="Constant_Speed_Show_Speed_text">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>25</height>
+                   </size>
+                  </property>
+                  <property name="verticalScrollBarPolicy">
+                   <enum>Qt::ScrollBarAlwaysOff</enum>
+                  </property>
+                  <property name="html">
+                   <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Microsoft YaHei'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2';&quot;&gt;-----&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="System_Gain_AT_DCT_Features_lab_2">
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>400</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Microsoft YaHei UI</family>
+                    <pointsize>11</pointsize>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="layoutDirection">
+                   <enum>Qt::LeftToRight</enum>
+                  </property>
+                  <property name="text">
+                   <string>动力总成：</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QRadioButton" name="System_Gain_CVT">
+                  <property name="font">
+                   <font>
+                    <family>Microsoft YaHei</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>CVT</string>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_PT_Type</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QRadioButton" name="System_Gain_AT_DCT">
+                  <property name="font">
+                   <font>
+                    <family>Microsoft YaHei</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>AT/DCT</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_PT_Type</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="2" column="0" colspan="4">
+                 <widget class="Line" name="line_2">
+                  <property name="styleSheet">
+                   <string notr="true"/>
+                  </property>
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="11" column="0">
+                 <spacer name="verticalSpacer_6">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="12" column="0" colspan="4">
+                 <widget class="QPushButton" name="SysGain_Cal">
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="WindowText">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>255</red>
+                        <green>255</green>
+                        <blue>255</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                     <colorrole role="Button">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>22</red>
+                        <green>160</green>
+                        <blue>133</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>255</red>
+                        <green>255</green>
+                        <blue>255</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                     <colorrole role="ButtonText">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>255</red>
+                        <green>255</green>
+                        <blue>255</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                     <colorrole role="Base">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>22</red>
+                        <green>160</green>
+                        <blue>133</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                     <colorrole role="Window">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>22</red>
+                        <green>160</green>
+                        <blue>133</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="WindowText">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>255</red>
+                        <green>255</green>
+                        <blue>255</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                     <colorrole role="Button">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>22</red>
+                        <green>160</green>
+                        <blue>133</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>255</red>
+                        <green>255</green>
+                        <blue>255</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                     <colorrole role="ButtonText">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>255</red>
+                        <green>255</green>
+                        <blue>255</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                     <colorrole role="Base">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>22</red>
+                        <green>160</green>
+                        <blue>133</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                     <colorrole role="Window">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>22</red>
+                        <green>160</green>
+                        <blue>133</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="WindowText">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>255</red>
+                        <green>255</green>
+                        <blue>255</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                     <colorrole role="Button">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>22</red>
+                        <green>160</green>
+                        <blue>133</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>255</red>
+                        <green>255</green>
+                        <blue>255</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                     <colorrole role="ButtonText">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>255</red>
+                        <green>255</green>
+                        <blue>255</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                     <colorrole role="Base">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>22</red>
+                        <green>160</green>
+                        <blue>133</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                     <colorrole role="Window">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>22</red>
+                        <green>160</green>
+                        <blue>133</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Microsoft YaHei</family>
+                    <pointsize>-1</pointsize>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton{ background-color:#16A085;border:none;color:#ffffff;
+font-family:'Microsoft YaHei';font-size:20px;font-weight: bold;height:30px;}
+QPushButton:pressed{background-color:#16A055;}</string>
+                  </property>
+                  <property name="text">
+                   <string>计       算</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tab">
+            <attribute name="title">
+             <string>Rating</string>
+            </attribute>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <layout class="QVBoxLayout" name="Cal_Result_page_acc_curve_tabLayV">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QTextBrowser" name="textBrowser">
+                 <property name="minimumSize">
+                  <size>
+                   <width>500</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="html">
+                  <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Microsoft YaHei'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:26pt; font-weight:600;&quot;&gt;待建设&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QTabWidget" name="Cal_Result_tabWidget">
+               <property name="font">
+                <font>
+                 <family>Microsoft YaHei</family>
+                </font>
+               </property>
+               <property name="tabPosition">
+                <enum>QTabWidget::East</enum>
+               </property>
+               <property name="tabShape">
+                <enum>QTabWidget::Triangular</enum>
+               </property>
+               <property name="currentIndex">
+                <number>0</number>
+               </property>
+               <widget class="QWidget" name="Cal_Result_acc_curve_tab">
+                <attribute name="title">
+                 <string>Acc Curve</string>
+                </attribute>
+                <layout class="QHBoxLayout" name="horizontalLayout_2">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QSplitter" name="splitter_Cal_Result_acc_curve_tab">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <widget class="QTableWidget" name="Cal_Result_acc_curve_tab_tableWidget">
+                    <row>
+                     <property name="text">
+                      <string>新建行</string>
+                     </property>
+                    </row>
+                    <row>
+                     <property name="text">
+                      <string>新建行</string>
+                     </property>
+                    </row>
+                    <row>
+                     <property name="text">
+                      <string>新建行</string>
+                     </property>
+                    </row>
+                    <row>
+                     <property name="text">
+                      <string>新建行</string>
+                     </property>
+                    </row>
+                    <row>
+                     <property name="text">
+                      <string>新建行</string>
+                     </property>
+                    </row>
+                    <row>
+                     <property name="text">
+                      <string>新建行</string>
+                     </property>
+                    </row>
+                    <column>
+                     <property name="text">
+                      <string>新建列</string>
+                     </property>
+                    </column>
+                    <column>
+                     <property name="text">
+                      <string>新建列</string>
+                     </property>
+                    </column>
+                    <column>
+                     <property name="text">
+                      <string>新建列</string>
+                     </property>
+                    </column>
+                    <column>
+                     <property name="text">
+                      <string>新建列</string>
+                     </property>
+                    </column>
+                    <column>
+                     <property name="text">
+                      <string>新建列</string>
+                     </property>
+                    </column>
+                   </widget>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+               <widget class="QWidget" name="tab_2">
+                <attribute name="title">
+                 <string>System Gain Curve</string>
+                </attribute>
+                <layout class="QVBoxLayout" name="verticalLayout_3"/>
+               </widget>
+               <widget class="QWidget" name="tab_3">
+                <attribute name="title">
+                 <string>Cons Speed</string>
+                </attribute>
+               </widget>
+               <widget class="QWidget" name="tab_4">
+                <attribute name="title">
+                 <string>Shift Map</string>
+                </attribute>
+               </widget>
+               <widget class="QWidget" name="tab_5">
+                <attribute name="title">
+                 <string>Launch</string>
+                </attribute>
+               </widget>
+               <widget class="QWidget" name="tab_6">
+                <attribute name="title">
+                 <string>Pedal Map</string>
+                </attribute>
+               </widget>
+               <widget class="QWidget" name="tab_7">
+                <attribute name="title">
+                 <string>Max Acc</string>
+                </attribute>
+               </widget>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tab_9">
+            <attribute name="title">
+             <string>Compare Results</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout_11">
+             <item>
+              <widget class="QGroupBox" name="History_Data_Choose">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>80</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Microsoft YaHei</family>
+                </font>
+               </property>
+               <property name="title">
+                <string>计算结果导入</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_10">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="History_Data_Choose_lab">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Microsoft YaHei</family>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>历史测试数据导入：</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QPlainTextEdit" name="History_Data_Choose_PlainTextEdit">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QPushButton" name="History_Data_Choose_PushButton">
+                  <property name="minimumSize">
+                   <size>
+                    <width>150</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton{ background-color:#16A085;border:none;color:#ffffff;
+font-family:'Microsoft YaHei';font-size:16px;font-weight: bold;height:30px;}
+QPushButton:pressed{background-color:#16A055;}</string>
+                  </property>
+                  <property name="text">
+                   <string>对比导入</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="History_Data_Comp">
+               <property name="font">
+                <font>
+                 <family>Microsoft YaHei</family>
+                </font>
+               </property>
+               <property name="title">
+                <string>对比图</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_5">
+                <item row="0" column="0">
+                 <layout class="QGridLayout" name="History_Data_Comp_LayG">
+                  <item row="1" column="0">
+                   <widget class="QScrollArea" name="History_Data_Comp_scrollArea">
+                    <property name="widgetResizable">
+                     <bool>true</bool>
+                    </property>
+                    <widget class="QWidget" name="History_Data_Comp_scrollAreaWidgetContents">
+                     <property name="geometry">
+                      <rect>
+                       <x>0</x>
+                       <y>0</y>
+                       <width>927</width>
+                       <height>417</height>
+                      </rect>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_4">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="spacing">
+                       <number>0</number>
+                      </property>
+                     </layout>
+                    </widget>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="Emission_test_page">
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QGroupBox" name="groupBox">
+           <property name="title">
+            <string/>
+           </property>
+           <widget class="QLabel" name="label_4">
+            <property name="geometry">
+             <rect>
+              <x>30</x>
+              <y>80</y>
+              <width>181</width>
+              <height>31</height>
+             </rect>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>20</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Consumption</string>
+            </property>
+           </widget>
+           <widget class="QLCDNumber" name="lcdNumber_2">
+            <property name="geometry">
+             <rect>
+              <x>220</x>
+              <y>160</y>
+              <width>251</width>
+              <height>101</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QLCDNumber" name="lcdNumber">
+            <property name="geometry">
+             <rect>
+              <x>220</x>
+              <y>20</y>
+              <width>251</width>
+              <height>101</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_5">
+            <property name="geometry">
+             <rect>
+              <x>480</x>
+              <y>80</y>
+              <width>241</width>
+              <height>51</height>
+             </rect>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>22</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>L/100Km</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_6">
+            <property name="geometry">
+             <rect>
+              <x>34</x>
+              <y>210</y>
+              <width>240</width>
+              <height>51</height>
+             </rect>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>20</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Distance</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_7">
+            <property name="geometry">
+             <rect>
+              <x>30</x>
+              <y>30</y>
+              <width>241</width>
+              <height>51</height>
+             </rect>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>36</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Fuel </string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_8">
+            <property name="geometry">
+             <rect>
+              <x>30</x>
+              <y>160</y>
+              <width>241</width>
+              <height>51</height>
+             </rect>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>36</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Drive</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_9">
+            <property name="geometry">
+             <rect>
+              <x>480</x>
+              <y>220</y>
+              <width>241</width>
+              <height>51</height>
+             </rect>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>22</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Km</string>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="EmissionTest_Cal_Button">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>330</y>
+              <width>280</width>
+              <height>30</height>
+             </rect>
+            </property>
+            <property name="palette">
+             <palette>
+              <active>
+               <colorrole role="WindowText">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Button">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>22</red>
+                  <green>160</green>
+                  <blue>133</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Text">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="ButtonText">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Base">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>22</red>
+                  <green>160</green>
+                  <blue>133</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Window">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>22</red>
+                  <green>160</green>
+                  <blue>133</blue>
+                 </color>
+                </brush>
+               </colorrole>
+              </active>
+              <inactive>
+               <colorrole role="WindowText">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Button">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>22</red>
+                  <green>160</green>
+                  <blue>133</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Text">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="ButtonText">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Base">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>22</red>
+                  <green>160</green>
+                  <blue>133</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Window">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>22</red>
+                  <green>160</green>
+                  <blue>133</blue>
+                 </color>
+                </brush>
+               </colorrole>
+              </inactive>
+              <disabled>
+               <colorrole role="WindowText">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Button">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>22</red>
+                  <green>160</green>
+                  <blue>133</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Text">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="ButtonText">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Base">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>22</red>
+                  <green>160</green>
+                  <blue>133</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Window">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>22</red>
+                  <green>160</green>
+                  <blue>133</blue>
+                 </color>
+                </brush>
+               </colorrole>
+              </disabled>
+             </palette>
+            </property>
+            <property name="font">
+             <font>
+              <family>Microsoft YaHei</family>
+              <pointsize>-1</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton{ background-color:#16A085;border:none;color:#ffffff;
+font-family:'Microsoft YaHei';font-size:20px;font-weight: bold;height:30px;}
+QPushButton:pressed{background-color:#16A055;}</string>
+            </property>
+            <property name="text">
+             <string>计       算</string>
+            </property>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="Real_Road_Fc_page">
+        <layout class="QVBoxLayout" name="verticalLayout_9">
+         <item>
+          <widget class="QTabWidget" name="Real_Road_Fc_tabWidget">
+           <property name="tabPosition">
+            <enum>QTabWidget::West</enum>
+           </property>
+           <property name="tabShape">
+            <enum>QTabWidget::Triangular</enum>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="Real_Road_Fc_main">
+            <attribute name="title">
+             <string>RR Calculation</string>
+            </attribute>
+            <layout class="QGridLayout" name="gridLayout_19">
+             <item row="0" column="0">
+              <widget class="QGroupBox" name="groupBox_3">
+               <property name="title">
+                <string/>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_20">
+                <item row="0" column="1">
+                 <widget class="QPlainTextEdit" name="plainTextEdit">
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_2">
+                  <property name="text">
+                   <string>时间：</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_3">
+                  <property name="text">
+                   <string>地点：</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QPlainTextEdit" name="plainTextEdit_2">
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="1" column="0" colspan="2">
+              <widget class="QTableWidget" name="Real_Road_Fc_tableWidget"/>
+             </item>
+             <item row="0" column="1">
+              <widget class="QGraphicsView" name="Real_Road_Fc_graphicsView">
+               <property name="maximumSize">
+                <size>
+                 <width>500</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="Real_Road_Fc_DB">
+            <attribute name="title">
+             <string>RR DB</string>
+            </attribute>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="Compare_Result_page">
+        <layout class="QVBoxLayout" name="verticalLayout_8">
+         <item>
+          <widget class="QSplitter" name="Compare_Result_page_splitter">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="Data_Base_page">
+        <layout class="QVBoxLayout" name="verticalLayout_2"/>
+       </widget>
+       <widget class="QWidget" name="Cal_Setting_page">
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QTabWidget" name="Cal_Setting_page_TabWidget">
+           <property name="font">
+            <font>
+             <family>Microsoft YaHei</family>
+            </font>
+           </property>
+           <property name="tabPosition">
+            <enum>QTabWidget::West</enum>
+           </property>
+           <property name="tabShape">
+            <enum>QTabWidget::Triangular</enum>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="DataViewer_setting">
+            <attribute name="title">
+             <string>DataViewer</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout_6">
+             <item>
+              <widget class="QGroupBox" name="DataViewer_setting_Rawdata">
+               <property name="font">
+                <font>
+                 <family>Microsoft YaHei</family>
+                </font>
+               </property>
+               <property name="title">
+                <string>数据源</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_12">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="DataViewer_setting_Rawdata_mdf_res_HZ">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Microsoft YaHei UI</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>.dat/.mdf 重采样率：</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QTextEdit" name="DataViewer_setting_Rawdata_mdf_res_TE">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>100</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="verticalScrollBarPolicy">
+                   <enum>Qt::ScrollBarAlwaysOff</enum>
+                  </property>
+                  <property name="horizontalScrollBarPolicy">
+                   <enum>Qt::ScrollBarAlwaysOff</enum>
+                  </property>
+                  <property name="html">
+                   <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Microsoft YaHei'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2';&quot;&gt;20&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QLabel" name="DataViewer_setting_Rawdata_mdf_HZ">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>HZ</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <spacer name="verticalSpacer">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="0" column="3">
+                 <spacer name="horizontalSpacer">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="DataViewer_setting_Time_axis">
+               <property name="font">
+                <font>
+                 <family>Microsoft YaHei</family>
+                </font>
+               </property>
+               <property name="title">
+                <string>时间轴设置</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_11">
+                <item row="4" column="4">
+                 <spacer name="horizontalSpacer_2">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QRadioButton" name="DataViewer_setting_Time_axis_Samples_RB">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Microsoft YaHei</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>采样率基准</string>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_DataViewer_TimeAxisSetting</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QRadioButton" name="DataViewer_setting_Time_axis_Signal_RB">
+                  <property name="font">
+                   <font>
+                    <family>Microsoft YaHei</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>自定义信号</string>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_DataViewer_TimeAxisSetting</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QRadioButton" name="DataViewer_setting_Time_axis_Dots_RB">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Microsoft YaHei</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>点数基准</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_DataViewer_TimeAxisSetting</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="6" column="1">
+                 <spacer name="verticalSpacer_2">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QTextEdit" name="DataViewer_setting_Time_axis_Samples_TE">
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Microsoft YaHei</family>
+                   </font>
+                  </property>
+                  <property name="verticalScrollBarPolicy">
+                   <enum>Qt::ScrollBarAlwaysOff</enum>
+                  </property>
+                  <property name="horizontalScrollBarPolicy">
+                   <enum>Qt::ScrollBarAlwaysOff</enum>
+                  </property>
+                  <property name="html">
+                   <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Microsoft YaHei'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2';&quot;&gt;20&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QComboBox" name="DataViewer_setting_Time_axis_Samples_comboBox">
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="3">
+                 <widget class="QLabel" name="DataViewer_setting_Time_axis_Samples_HZ">
+                  <property name="text">
+                   <string>HZ</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+               <zorder>DataViewer_setting_Time_axis_Dots_RB</zorder>
+               <zorder>DataViewer_setting_Time_axis_Samples_RB</zorder>
+               <zorder>DataViewer_setting_Time_axis_Signal_RB</zorder>
+               <zorder>verticalSpacer_2</zorder>
+               <zorder>horizontalSpacer_2</zorder>
+               <zorder>DataViewer_setting_Time_axis_Samples_TE</zorder>
+               <zorder>DataViewer_setting_Time_axis_Samples_comboBox</zorder>
+               <zorder>DataViewer_setting_Time_axis_Samples_HZ</zorder>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="groupBox_2">
+               <property name="font">
+                <font>
+                 <family>Microsoft YaHei</family>
+                </font>
+               </property>
+               <property name="title">
+                <string>坐标轴设置</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_7">
+                <item row="0" column="0">
+                 <spacer name="verticalSpacer_3">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="SystemGain_setting">
+            <attribute name="title">
+             <string>SystemGain</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout_7">
+             <item>
+              <widget class="QGroupBox" name="Constant_Speed_setting">
+               <property name="title">
+                <string>稳态车速导入原则</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_14">
+                <item row="1" column="0" colspan="2">
+                 <widget class="QRadioButton" name="Constant_Speed_features_follow_RB">
+                  <property name="text">
+                   <string>沿用SG信号选取规则</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_Cons_Speed_Feature_Rule</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="5" column="0">
+                 <spacer name="verticalSpacer_5">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>369</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="1" column="3">
+                 <spacer name="horizontalSpacer_3">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QRadioButton" name="Constant_Speed_features_reslect_RB">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>自定义选取</string>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_Cons_Speed_Feature_Rule</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="Constant_Speed_frequency_lab">
+                  <property name="text">
+                   <string>采样率：</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QTextEdit" name="Constant_Speed_frequency_text_TE">
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="verticalScrollBarPolicy">
+                   <enum>Qt::ScrollBarAlwaysOff</enum>
+                  </property>
+                  <property name="html">
+                   <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Microsoft YaHei'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;20&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="tabStopWidth">
+                   <number>80</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="2">
+                 <widget class="QLabel" name="Constant_Speed_frequency_text_HZ_lab">
+                  <property name="text">
+                   <string>HZ</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="Constant_Speed_time_block_lab">
+                  <property name="text">
+                   <string>稳车速识别时间块：</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="2">
+                 <widget class="QLabel" name="Constant_Speed_time_block_text_s_lab">
+                  <property name="text">
+                   <string>s</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QTextEdit" name="Constant_Speed_time_block_text_TE">
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="verticalScrollBarPolicy">
+                   <enum>Qt::ScrollBarAlwaysOff</enum>
+                  </property>
+                  <property name="html">
+                   <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Microsoft YaHei'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;15&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="tabStopWidth">
+                   <number>80</number>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="SystemGain_Cal_setting">
+               <property name="title">
+                <string>SG计算参数规则</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_15">
+                <item row="1" column="0">
+                 <widget class="QLabel" name="SystemGain_Cal_setting_pedal_lab">
+                  <property name="text">
+                   <string>稳油门判定时间窗：</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QTextEdit" name="SystemGain_Cal_setting_creep_time_TE">
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="verticalScrollBarPolicy">
+                   <enum>Qt::ScrollBarAlwaysOff</enum>
+                  </property>
+                  <property name="html">
+                   <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Microsoft YaHei'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;25&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="tabStopWidth">
+                   <number>80</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <spacer name="verticalSpacer_4">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>264</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QLabel" name="SystemGain_Cal_setting_creep_text_S">
+                  <property name="text">
+                   <string>s</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="SystemGain_Cal_setting_creep_lab">
+                  <property name="text">
+                   <string>怠速判定时间窗：</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="4">
+                 <spacer name="horizontalSpacer_4">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QTextEdit" name="SystemGain_Cal_setting_pedal_time_TE">
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="verticalScrollBarPolicy">
+                   <enum>Qt::ScrollBarAlwaysOff</enum>
+                  </property>
+                  <property name="html">
+                   <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Microsoft YaHei'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;20&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="tabStopWidth">
+                   <number>80</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QLabel" name="SystemGain_Cal_setting_pedal_text_S">
+                  <property name="text">
+                   <string>s</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tab_10">
+            <attribute name="title">
+             <string>CalResult</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="tab_11">
+            <attribute name="title">
+             <string>CompareResult</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="tab_12">
+            <attribute name="title">
+             <string>DataBase</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="tab_8">
+            <attribute name="title">
+             <string>RealRoadFc</string>
+            </attribute>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+      <widget class="QListWidget" name="InfoWidget"/>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1011</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QMenu{
+    padding:5px;
+    background:white;
+    border:1px solid gray;
+ }
+QMenu::item{
+    padding:0px 40px 0px 30px;
+    height:25px;
+}
+QMenu::item:selected:enabled{
+    background:lightgray;
+    color:white;
+}
+QMenu::item:selected:!enabled{
+    background:transparent;
+}
+QMenu::separator{
+    height:1px;
+    background:lightgray;
+    margin:5px 0px 5px 0px;
+}</string>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>文件 (File)</string>
+    </property>
+    <addaction name="menu_InputData"/>
+    <addaction name="menu_Save"/>
+    <addaction name="menu_Output_Report"/>
+    <addaction name="menu_Output_Histtory_Report"/>
+    <addaction name="separator"/>
+    <addaction name="menu_Exit"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>帮助 (Help)</string>
+    </property>
+    <addaction name="menu_Guildlines"/>
+    <addaction name="separator"/>
+    <addaction name="menu_ContactUs"/>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="palette">
+    <palette>
+     <active>
+      <colorrole role="Base">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+       </brush>
+      </colorrole>
+      <colorrole role="Window">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+       </brush>
+      </colorrole>
+      <colorrole role="Highlight">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>209</red>
+         <green>255</green>
+         <blue>202</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </active>
+     <inactive>
+      <colorrole role="Base">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+       </brush>
+      </colorrole>
+      <colorrole role="Window">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+       </brush>
+      </colorrole>
+      <colorrole role="Highlight">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>209</red>
+         <green>255</green>
+         <blue>202</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </inactive>
+     <disabled>
+      <colorrole role="Base">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+       </brush>
+      </colorrole>
+      <colorrole role="Window">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+       </brush>
+      </colorrole>
+      <colorrole role="Highlight">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>0</red>
+         <green>120</green>
+         <blue>215</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </disabled>
+    </palette>
+   </property>
+   <property name="font">
+    <font>
+     <family>Microsoft YaHei</family>
+    </font>
+   </property>
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>32</width>
+     <height>24</height>
+    </size>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextUnderIcon</enum>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_Data_Viewer"/>
+   <addaction name="action_Select_Features"/>
+   <addaction name="separator"/>
+   <addaction name="action_System_Gain"/>
+   <addaction name="action_Emission_Test"/>
+   <addaction name="action_Real_Road_Fc"/>
+   <addaction name="action_Compare_Result"/>
+   <addaction name="action_Data_Base"/>
+   <addaction name="separator"/>
+   <addaction name="action_Cal_Setting"/>
+  </widget>
+  <action name="actiontest">
+   <property name="text">
+    <string>test</string>
+   </property>
+  </action>
+  <action name="actiontest2">
+   <property name="text">
+    <string>test2</string>
+   </property>
+  </action>
+  <action name="menu_Engine_Working_Dist">
+   <property name="text">
+    <string>发动机工况点分布 Engine Work Point Dist.</string>
+   </property>
+  </action>
+  <action name="menu_InputData">
+   <property name="text">
+    <string>导入测试数据 Input Test Data</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Microsoft YaHei</family>
+    </font>
+   </property>
+  </action>
+  <action name="menu_CalData">
+   <property name="text">
+    <string>求解 Solution</string>
+   </property>
+  </action>
+  <action name="menu_Exit">
+   <property name="text">
+    <string>退出 Exit</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Microsoft YaHei</family>
+    </font>
+   </property>
+  </action>
+  <action name="menu_Guildlines">
+   <property name="text">
+    <string>操作指南 Guildlines</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Microsoft YaHei</family>
+    </font>
+   </property>
+  </action>
+  <action name="menu_ContactUs">
+   <property name="text">
+    <string>联系作者 Contact Us!</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Microsoft YaHei</family>
+    </font>
+   </property>
+  </action>
+  <action name="menu_Shifting_Strategy">
+   <property name="text">
+    <string>换挡策略分布 Shifting Strategy Dist.</string>
+   </property>
+  </action>
+  <action name="menu_Speed_Dist">
+   <property name="text">
+    <string>速度分布 Speed Dist.</string>
+   </property>
+  </action>
+  <action name="action_Data_Viewer">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="Icon.qrc">
+     <normaloff>:/Image/Icon/find.png</normaloff>:/Image/Icon/find.png</iconset>
+   </property>
+   <property name="text">
+    <string>Data Viewer</string>
+   </property>
+   <property name="toolTip">
+    <string>Data_Viewer</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Microsoft YaHei</family>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
+  </action>
+  <action name="action_System_Gain">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="Icon.qrc">
+     <normaloff>:/Image/Icon/wave.png</normaloff>:/Image/Icon/wave.png</iconset>
+   </property>
+   <property name="text">
+    <string>System Gain</string>
+   </property>
+   <property name="toolTip">
+    <string>System_Gain</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Microsoft YaHei</family>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
+   </property>
+  </action>
+  <action name="action_Compare_Result">
+   <property name="icon">
+    <iconset resource="Icon.qrc">
+     <normaloff>:/Image/Icon/compare01.png</normaloff>:/Image/Icon/compare01.png</iconset>
+   </property>
+   <property name="text">
+    <string>Compare Result</string>
+   </property>
+   <property name="toolTip">
+    <string>Compare_Result</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Microsoft YaHei</family>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>F3</string>
+   </property>
+  </action>
+  <action name="menu_Save">
+   <property name="text">
+    <string>保存计算结果 Save Data</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Microsoft YaHei</family>
+    </font>
+   </property>
+  </action>
+  <action name="menu_Output_Report">
+   <property name="text">
+    <string>导出计算报告 Output Report</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Microsoft YaHei</family>
+    </font>
+   </property>
+  </action>
+  <action name="action_Cal_Setting">
+   <property name="icon">
+    <iconset resource="Icon.qrc">
+     <normaloff>:/Image/Icon/setting.png</normaloff>:/Image/Icon/setting.png</iconset>
+   </property>
+   <property name="text">
+    <string>Cal Settings</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Microsoft YaHei</family>
+    </font>
+   </property>
+  </action>
+  <action name="action_Data_Base">
+   <property name="icon">
+    <iconset resource="Icon.qrc">
+     <normaloff>:/Image/Icon/database.png</normaloff>:/Image/Icon/database.png</iconset>
+   </property>
+   <property name="text">
+    <string>Data Base</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Microsoft YaHei</family>
+    </font>
+   </property>
+  </action>
+  <action name="action_Emission_Test">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="Icon.qrc">
+     <normaloff>:/Image/Icon/Emission.png</normaloff>:/Image/Icon/Emission.png</iconset>
+   </property>
+   <property name="text">
+    <string>Emission Test</string>
+   </property>
+   <property name="toolTip">
+    <string>Emission Test</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Microsoft YaHei</family>
+    </font>
+   </property>
+  </action>
+  <action name="menu_Output_Histtory_Report">
+   <property name="text">
+    <string>导出历史对比报告 Output Histtory Report</string>
+   </property>
+  </action>
+  <action name="action_Real_Road_Fc">
+   <property name="icon">
+    <iconset resource="Icon.qrc">
+     <normaloff>:/Image/Icon/real_road.png</normaloff>:/Image/Icon/real_road.png</iconset>
+   </property>
+   <property name="text">
+    <string>Real Road Fc</string>
+   </property>
+  </action>
+  <action name="action_Select_Features">
+   <property name="icon">
+    <iconset resource="Icon.qrc">
+     <normaloff>:/Image/Icon/SelectFeature.png</normaloff>:/Image/Icon/SelectFeature.png</iconset>
+   </property>
+   <property name="text">
+    <string>Select Features</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="Icon.qrc"/>
+ </resources>
+ <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup_DataViewer_TimeAxisSetting"/>
+  <buttongroup name="buttonGroup_Cons_Speed_Feature_Rule"/>
+  <buttongroup name="buttonGroup_PT_Type"/>
+ </buttongroups>
+</ui>
