@@ -36,7 +36,7 @@ class MyFigureCanvas(FigureCanvas):
                            ]
 
         if plot_type == '2d':
-            self.axes = self.fig.add_axes([0.15, 0.1, 0.75, 0.8])
+            self.axes = self.fig.add_axes([0.15, 0.15, 0.75, 0.75])
         elif plot_type == '3d':
             self.fig.subplots_adjust(left=0.08, top=0.92, right=0.95, bottom=0.1)
             # self.fig.subplots_adjust(left=0.08, top=0.92, right=0.95, bottom=0.1)

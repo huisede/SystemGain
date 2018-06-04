@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from numpy import average, transpose, zeros, array, linspace, mean, cov, convolve, arange, cumsum, concatenate, abs, \
-    mod, std, ones, diff , interp
-from pandas import read_csv, read_excel, Timedelta ,DataFrame
+    mod, std, ones, diff, interp
+from pandas import read_csv, read_excel, Timedelta, DataFrame
 from scipy import interpolate
 import matplotlib.pyplot as plt
 from re import match
@@ -11,6 +11,9 @@ from mdfreader import mdfreader
 from pptx import Presentation
 from pptx.util import Inches
 from datetime import date
+import time
+from requests import get
+from math import sin, cos, sqrt
 
 
 class SystemGain(object):
@@ -95,8 +98,8 @@ class SystemGain(object):
                            'teal', 'blue', 'coral', 'gold', 'lime', 'olive']
         # 数据检查
         if isinstance(self.time_Data[0], int) or isinstance(self.time_Data[0], float):  # 如果时间序列为数字格式
-            if sum([int(i <= 0) for i in diff(self.time_Data)]) > 0:   # 如果时间序列是非严格递增的，替换为人工生成的序列
-                self.time_Data = arange(0, len(self.time_Data)/self.frequency, 1/self.frequency)
+            if sum([int(i <= 0) for i in diff(self.time_Data)]) > 0:  # 如果时间序列是非严格递增的，替换为人工生成的序列
+                self.time_Data = arange(0, len(self.time_Data) / self.frequency, 1 / self.frequency)
         else:  # 如果时间序列为非数字格式
             self.time_Data = arange(0, len(self.time_Data) / self.frequency, 1 / self.frequency)
 
@@ -124,7 +127,7 @@ class SystemGain(object):
         trigger = False
         for i, item in enumerate(self.pedal_avg):
             for j, item_ in enumerate(self.pedal_avg):
-                if i != j and abs(item-item_) < 3:
+                if i != j and abs(item - item_) < 3:
                     trigger = True
                     break
 
@@ -393,19 +396,40 @@ class SystemGain(object):
         # 判断个数大于1000个，去重未做！！
         pedal_cut_index, pedal_avg = [[], []], []
 
-        # creep auto detection
+        # creep auto detection 修改了对Creep的判定方式，逻辑如下：1、先寻找到最长的0-Pedal段 2、判定满足长度以及车速状态的0-Pedal段
         for j in range(0, len(t_edge_vehspd)):
-            if (t_edge_vehspd[j] - r_edge_vehspd[j] > frequency*data_cut_time_of_creep) and (
-                3.5 < average(vehspd_data[r_edge_vehspd[j] + int(frequency*data_cut_time_of_creep/2):t_edge_vehspd[j] -
-                            int(frequency*data_cut_time_of_creep/2)]) < 8.5) and (
-                        average(pedal_data[r_edge_vehspd[j]:t_edge_vehspd[j]]) < 0.01):
-                pedal_cut_index[0].append(r_edge_vehspd[j] - frequency*2)  # 车速信号相对于加速度信号有迟滞
-                pedal_cut_index[1].append(t_edge_vehspd[j] - frequency*2)
-                pedal_avg.append(mean(pedal_data[r_edge_vehspd[j]:t_edge_vehspd[j]]))
+
+            counter = 0
+            counter_max = 0
+            start_trigger = True
+            index_longest_start_0 = 0
+            index_longest_stop_0 = 0
+            index_longest_start_0_buffer = 0
+
+            for index, ped_content in enumerate(pedal_data[r_edge_vehspd[j]:t_edge_vehspd[j]]):  # 寻找最长的 0 Pedal段
+                if int(ped_content) == 0 and index < t_edge_vehspd[j] - r_edge_vehspd[j] - 1:
+                    counter += 1
+                    if start_trigger:
+                        index_longest_start_0_buffer = index + r_edge_vehspd[j]
+                        start_trigger = False
+                else:
+                    if counter > counter_max:
+                        counter_max = counter
+                        index_longest_stop_0 = index + r_edge_vehspd[j]
+                        index_longest_start_0 = index_longest_start_0_buffer
+                        start_trigger = True
+                    counter = 0
+
+            if (index_longest_stop_0 - index_longest_start_0 > frequency * data_cut_time_of_creep) and (
+                            3.5 < average(vehspd_data[index_longest_start_0:index_longest_stop_0]) < 8.5):
+                pedal_cut_index[0].append(index_longest_start_0 - frequency * 2)  # 车速信号相对于加速度信号有迟滞
+                pedal_cut_index[1].append(index_longest_stop_0 - frequency * 2)
+                pedal_avg.append(mean(pedal_data[index_longest_start_0:index_longest_stop_0]))
+                break
 
         for j in range(0, len(r_edge_pedal)):
-            if t_edge_pedal[j] - r_edge_pedal[j] > frequency*data_cut_time_of_pedal:  # 时间长度
-                if cov(pedal_data[r_edge_pedal[j] + frequency*1:t_edge_pedal[j] - frequency*1]) < 3:
+            if t_edge_pedal[j] - r_edge_pedal[j] > frequency * data_cut_time_of_pedal:  # 时间长度
+                if cov(pedal_data[r_edge_pedal[j] + frequency * 1:t_edge_pedal[j] - frequency * 1]) < 3:
                     pedal_cut_index[0].append(r_edge_pedal[j])
                     pedal_cut_index[1].append(t_edge_pedal[j])
                     pedal_avg.append(mean(pedal_data[r_edge_pedal[j]:t_edge_pedal[j]]))
@@ -493,50 +517,68 @@ class SystemGain(object):
 
 class ReadFile(object):
 
-    def __init__(self, file_path, resample_rate):
+    def __init__(self, file_path, resample_rate, intest_data, feature_row, data_row):
         """
         Initial function of Read File.
 
         :param file_path: path of system gain file in local disc
         """
         self.file_path = file_path
-        self.resample_rate = 1/int(resample_rate)
+        self.resample_rate = 1 / int(resample_rate)
+        self.intest_data = intest_data
+        self.feature_row = int(feature_row) - 1
+        self.data_row = int(data_row) - 1
         self.file_columns_orig = []
         self.file_columns = []
-        self.csv_data_ful = []
+        self.import_data_ful_ = []
         self.mdf_data = []
-        try:
-            self.start_read()
-        except AttributeError as e:
-            print(e)
+        self.import_status = 'OK'
+
+        self.start_read()
 
     def start_read(self):
+        file_name_match = match(r'^(\w*)_(\w*)_([\w.]*)$', self.file_path)
+
         file_type_match = match(r'^(.+)(\.)(\w*)$', self.file_path)
         file_type = file_type_match.group(3)
         file_type = file_type.lower()  # 小写
         if file_type == 'csv':
             try:
-                self.csv_data_ful = read_csv(self.file_path, low_memory=False)  # utf-8默认编码
+                self.import_data_ful_ = read_csv(self.file_path, low_memory=False)  # utf-8默认编码
             except UnicodeDecodeError:
-                self.csv_data_ful = read_csv(self.file_path, encoding='gb18030')  # gb18030中文编码
-        elif file_type == 'xls' or file_type == 'xlsx':
-            self.csv_data_ful = read_excel(self.file_path)
-        elif file_type == 'mdf' or file_type == 'dat':
-            self.mdf_data = mdfreader.mdf(self.file_path)
-            self.mdf_data.convertToPandas(self.resample_rate)
-            data_ful = self.mdf_data['master_group']
-            data_ful['time'] = (data_ful.index-data_ful.index[0]).astype('timedelta64[ms]')/1000
-            self.csv_data_ful = data_ful
+                self.import_data_ful_ = read_csv(self.file_path, encoding='gb18030')  # gb18030中文编码
 
-        self.file_columns_orig = self.csv_data_ful.columns
+        elif file_type == 'xls' or file_type == 'xlsx':
+            try:
+                if self.intest_data:
+                    _data_ful = read_excel(self.file_path, header=0, skiprows=range(self.feature_row))  # 删头
+                    self.import_data_ful_ = _data_ful[self.data_row - self.feature_row - 1:]  # 去单位
+                else:
+                    self.import_data_ful_ = read_excel(self.file_path)
+            except Exception:
+                self.import_status = 'Error'
+
+        elif file_type == 'mdf' or file_type == 'dat':
+            try:
+                self.mdf_data = mdfreader.mdf(self.file_path)
+                self.mdf_data.convertToPandas(self.resample_rate)
+                data_ful = self.mdf_data['master_group']
+                data_ful['time'] = (data_ful.index - data_ful.index[0]).astype('timedelta64[ms]') / 1000
+                self.import_data_ful_ = data_ful
+            except AttributeError:
+                self.import_status = 'Error'
+
+        self.file_columns_orig = self.import_data_ful_.columns
         back_up_counter = 0
-        for i in self.csv_data_ful.columns:  # 去除'[]'号，防止控件命名问题
+        for i in self.import_data_ful_.columns:  # 去除'[]'号，防止控件命名问题
             try:
                 ma = match(r'^([0-9a-zA-Z/:_.%\u4e00-\u9fa5\-]+)(\[?)([0-9a-zA-Z/:_.%\u4e00-\u9fa5\[\]\-]*)$', i)
                 self.file_columns.append(ma.group(1))
             except AttributeError:
                 back_up_counter += 1
                 self.file_columns.append('signal' + str(back_up_counter) + '_with_unknown_char')
+            except TypeError:  # 原始数据格式有问题
+                self.import_status = 'Error'
 
 
 class SaveAndLoad(object):
@@ -596,7 +638,7 @@ class SaveAndLoad(object):
                     return match_result_index
                 except AttributeError:
                     pass
-        return 0   # 什么都没找到的时候返回0
+        return 0  # 什么都没找到的时候返回0
 
     # PPT
     @staticmethod
@@ -666,7 +708,7 @@ class SaveAndLoad(object):
             # Add the end of PPT
             end_slide_layout = prs.slide_layouts[6]
             slide = prs.slides.add_slide(end_slide_layout)
-            textbox = slide.shapes.add_textbox(Inches(title_pos[0]-0.8), Inches(title_pos[1]-3),
+            textbox = slide.shapes.add_textbox(Inches(title_pos[0] - 0.8), Inches(title_pos[1] - 3),
                                                Inches(title_pos[2]), Inches(title_pos[3]))
             textbox.text = "Thank You"
 
@@ -684,6 +726,7 @@ class ConstantSpeed(object):
         self.feature_list = feature_list
         self.frequency = frequency
         self.time_block = time_block
+        self.gear_consider = True
 
         self.cs_csv_data = self.raw_data.loc[:, feature_list]
         self.veh_spd = self.cs_csv_data.iloc[:, 1].tolist()
@@ -698,9 +741,19 @@ class ConstantSpeed(object):
     def cs_main(self):
         k = 0
         self.cs_table.append([0, 5, 0, 0, 0, 800, 1, 0])
+        #                    [index, meanspd, meanped, meanacc, acc_smooth_rate, meanrpm, gear , spd_std]
+
+        gear_nums = {}
+        for i in self.gear:  # 统计Gear信号中的数据种类
+            gear_nums[i] = gear_nums.get(i, 0) + 1
+        if gear_nums.keys().__len__() > 15:  # 若数据种类大于15种，认为是非DCT/MT/AT车型的，可能为CVT，也可能是选错了信号
+            self.gear_consider = False
+
         try:
             for i in range(0, len(self.veh_spd) - self.frequency * self.time_block, self.frequency):
-                if self.veh_std_cal(i) < 0.7 and self.gear_std_cal(i) == 0 and self.mean_speed_cal(i) > 5:
+                if self.veh_std_cal(i) < 0.7 and self.mean_speed_cal(i) > 5 and \
+                        (self.gear_std_cal(i) == 0 and self.gear_consider or not self.gear_consider):
+                    # 若为DCT/MT/AT车型，则要求稳态车速实验时挡位固定，否则不要求
                     if k == 0:
                         self.cs_table.append([i,
                                               self.mean_speed_cal(i),
@@ -731,7 +784,13 @@ class ConstantSpeed(object):
                                               self.mean_rpm_cal(i),
                                               self.gear[i],
                                               self.veh_std_cal(i)])
-            self.cs_table = array(self.cs_table)
+
+            self.cs_table = DataFrame(self.cs_table, columns=['index', 'meanspd', 'meanped', 'meanacc',
+                                                              'acc_smooth_rate', 'meanrpm', 'gear', 'spd_std'])
+            self.cs_table.sort_values(by=['meanped'], inplace=True)
+            # 排序后请用iloc索引
+            pass
+
         except Exception as e:
             print('From cs_main')
             print(e)
@@ -775,119 +834,125 @@ class ConstantSpeed(object):
 
 
 class RealRoadFc(object):
-    def __init__(self):
-        pass
+    x_PI = 3.14159265358979324 * 3000.0 / 180.0
+    PI = 3.1415926535897932384626
+    a = 6378245.0
+    ee = 0.00669342162296594323
+
+    def __init__(self, raw_data, feature_array, pt_type, frequency=20, ):
+        self.raw_data = raw_data
+        self.feature_array = feature_array
+        self.pt_type = pt_type
+        self.real_road_class = {}
+        self.frequency = frequency
 
     def real_road_main(self):
+        real_road_data_select = self.raw_data.loc[:, self.feature_array]
+        time_data = real_road_data_select.iloc[:, 0]
+        vehicle_speed_data = real_road_data_select.iloc[:, 1]
+        pedal_data = real_road_data_select.iloc[:, 2]
+        acceleration_x_data = real_road_data_select.iloc[:, 3]
+        gear_data = real_road_data_select.iloc[:, 4]
+        torque_data = real_road_data_select.iloc[:, 5]
+        fuel_data = real_road_data_select.iloc[:, 6]
+        engine_speed_data = real_road_data_select.iloc[:, 7]
+        turbine_speed_data = real_road_data_select.iloc[:, 8]
+        brake_data = real_road_data_select.iloc[:, 9]
+        latitude_data = real_road_data_select.iloc[:, 10]
+        longitude_data = real_road_data_select.iloc[:, 11]
+        steering_angle_data = real_road_data_select.iloc[:, 12]
+        acceleration_y_data = real_road_data_select.iloc[:, 13]
 
-        for i in range(target_driver_travel_date.shape[0]):  # 样本数据个数
-            driver_id = target_driver_travel_date.iloc[i][0]
-            travel_date = target_driver_travel_date.iloc[i][1]
-            travel_id = target_driver_travel_date.iloc[i][2]
-            target_driver = csvdata[(csvdata['Travel_ID'] == travel_id)]  # 筛出的样本集
+        time_index_start = time_data[0]
 
-            if target_driver.shape[0] > 1000:  # 太短的样本选择丢弃
+        # driver_name =
+        # travel_date =
+        # travel_id =
 
-                # target_driver = target_driver[1000:-1]   # 切掉冷启动的
+        # target_driver = target_driver[1000:]   # 切掉冷启动的
 
-                fuel_csump = target_driver['fuel_csump[uL/100ms]']
-                # vspd = ((target_driver['WhlSpd_RR[kph]'] + target_driver['WhlSpd_RL[kph]']) / 2)
-                vspd = target_driver['Vspd[kph]']
-                strg_whl_ang = target_driver['strg_whl_ang']
-                acc_ped = target_driver['Acc_Actu_Pos[%]']
-                # time = target_driver['time[s]']
+        x_acc = self.five_points_avg_acc(vehicle_speed_data.tolist(), frequency=10)
+        y_acc = self.five_points_avg(acceleration_y_data.tolist())
 
-                x_acc = self.five_points_avg_acc(vspd.tolist(), frequency=10)
-                # x_acc = target_driver['x_acc[m/s^2]']
-                y_acc = target_driver['y_acc[m/s^2]']
-                # x_acc = five_points_avg(x_acc.tolist())
-                y_acc = self.five_points_avg(y_acc.tolist())
+        delta_tc_speed = engine_speed_data - turbine_speed_data
+        tc_open_data = time_data[(gear_data > 0) & (abs(delta_tc_speed) > 200)]
+        tc_close_data = time_data[(gear_data > 0) & (abs(delta_tc_speed) < 50) & vehicle_speed_data > 1]
+        # ------------------- Style features ---------------------
+        odometer = self.odometer_cal(vehicle_speed_data)
+        fuel_cons = sum(fuel_data) / odometer * 100 / 1e6  # L/100km
+        fuel_csump_run = fuel_data[vehicle_speed_data > 0]
+        fuel_cons_run = sum(fuel_csump_run) / odometer * 100 / 1e6  # L/100km
 
-                # gen_load_toq = target_driver['gen_load_toq[Nm]']
-                engine_toq = target_driver['engine_toq[Nm]']
-                engine_spd = target_driver['En_Spd[rpm]']
-                turbo_speed = target_driver['turbo_speed[rpm]']
-                # TC_state = target_driver['TC_state']
-                gen_load_toq = target_driver['gen_load_toq[Nm]']
-                ac_toq_req = target_driver['ac_toq_req[Nm]'] * engine_spd / 9550  # kw
+        sudden_acc_times = self.sudden_acc(x_acc, vehicle_speed_data.tolist())
+        sudden_brake_times = self.sudden_brake(x_acc)
+        sudden_steering_times = self.sudden_steering(y_acc)
+        tip_in_times = self.tip_in(pedal_data.tolist())
 
-                target_driver['Delta_TC_speed[rpm]'] = engine_spd - turbo_speed
-                target_driver['Veh_spd[kph]'] = vspd
-                tc_run_data = target_driver[vspd > 1]
-                tc_open_data = target_driver[(target_driver['TrRealGear'] > 0) &
-                                             (abs(target_driver['Delta_TC_speed[rpm]']) > 200)]
-                tc_close_data = tc_run_data[(tc_run_data['TrRealGear'] > 0) &
-                                            (abs(tc_run_data['Delta_TC_speed[rpm]']) < 50)]
-                # ------------------- Style features ---------------------
-                odemeter = self.odometer_cal(vspd)
-                fuel_cons = sum(fuel_csump) / odemeter * 100 / 1e6  # L/100km
-                fuel_csump_run = target_driver[vspd > 0]['fuel_csump[uL/100ms]']
-                fuel_cons_run = sum(fuel_csump_run) / odemeter * 100 / 1e6  # L/100km
+        # ----------------- Statistics features ------------------
+        # soc_start = target_driver['BMSPackSOC'].tolist()[0]
+        # soc_end = target_driver['BMSPackSOC'].tolist()[-1]
+        # soc_balance_ratio = soc_balance_time_ratio(target_driver['BMSPackSOC'])
+        mean_spd = vehicle_speed_data.mean()
+        mean_spd_run = vehicle_speed_data[vehicle_speed_data > 0].mean()
+        std_spd = vehicle_speed_data.std()
+        mean_str_whl_ang = steering_angle_data.mean()
+        std_str_whl_ang = steering_angle_data.std()
+        mean_str_whl_ang_pos = steering_angle_data[steering_angle_data > 0].mean()
+        mean_str_whl_ang_neg = steering_angle_data[steering_angle_data < 0].mean()
+        mean_x_acc = x_acc.mean()
+        std_x_acc = x_acc.std()
+        mean_x_acc_pos = x_acc[x_acc > 0].mean()
+        mean_x_acc_neg = x_acc[x_acc < 0].mean()
+        mean_acc_ped = pedal_data.mean()
+        std_acc_ped = pedal_data.std()
+        idle_time = time_data[(vehicle_speed_data == 0) & (engine_speed_data > 0)].shape[0] / 10
+        run_time = time_data[vehicle_speed_data > 0].shape[0] / 10
+        total_time = vehicle_speed_data.shape[0] / 10
+        fuel_csump_idle = fuel_data[(vehicle_speed_data == 0) & (engine_speed_data > 0)]
+        try:
+            fuel_cons_idle = 0.1 * sum(fuel_csump_idle) / idle_time / 100
+        except ZeroDivisionError:
+            fuel_cons_idle = 9999
+        start_times = self.start_times_cal(vehicle_speed_data)
 
-                sudden_acc_times = self.sudden_acc(x_acc, vspd.tolist(), CarName)
-                sudden_brake_times = self.sudden_brake(x_acc, CarName)
-                sudden_steering_times = self.sudden_steering(y_acc.tolist(), CarName)
-                tip_in_times = self.tip_in(acc_ped.tolist())
+        sudden_acc_times = array(sudden_acc_times) / odometer
+        sudden_brake_times = array(sudden_brake_times) / odometer
+        sudden_steering_times = array(sudden_steering_times) / odometer
 
-                # ----------------- Statistics features ------------------
-                # soc_start = target_driver['BMSPackSOC'].tolist()[0]
-                # soc_end = target_driver['BMSPackSOC'].tolist()[-1]
-                # soc_balance_ratio = soc_balance_time_ratio(target_driver['BMSPackSOC'])
-                mean_spd = vspd.mean()
-                mean_spd_run = vspd[vspd > 0].mean()
-                std_spd = vspd.std()
-                mean_strg_whl_ang = strg_whl_ang.mean()
-                std_strg_whl_ang = strg_whl_ang.std()
-                mean_strg_whl_ang_pos = target_driver[target_driver['strg_whl_ang'] > 0].strg_whl_ang.mean()
-                mean_strg_whl_ang_neg = target_driver[target_driver['strg_whl_ang'] < 0].strg_whl_ang.mean()
-                mean_x_acc = x_acc.mean()
-                std_x_acc = x_acc.std()
-                mean_x_acc_pos = x_acc[x_acc > 0].mean()
-                mean_x_acc_neg = x_acc[x_acc < 0].mean()
-                mean_acc_ped = acc_ped.mean()
-                std_acc_ped = acc_ped.std()
-                idle_time = target_driver[(vspd == 0) & (engine_spd > 0)].shape[0] / 10
-                run_time = target_driver[vspd > 0].shape[0] / 10
-                total_time = target_driver.shape[0] / 10
-                fuel_csump_idle = target_driver[(vspd == 0) & (engine_spd > 0)]['fuel_csump[uL/100ms]']
-                fuel_cons_idle = 0.1 * sum(fuel_csump_idle) / idle_time / 100
+        sudden_acc_score = (sudden_acc_times[0] + sudden_acc_times[1] * 3 + sudden_acc_times[2] * 7) / odometer
+        sudden_brake_score = (sudden_brake_times[0] + sudden_brake_times[1] * 3 + sudden_brake_times[
+            2] * 7) / odometer
+        sudden_steering_score = (sudden_steering_times[0] + sudden_steering_times[1] * 3 + sudden_steering_times[
+            2] * 7) / odometer
 
-                start_times = self.start_times_cal(vspd)
+        # ------------------- Plot Data --------------------------
+        # fuel_distri = self.spd_distribution_array(vspd, fuel_csump, type='sum')
+        # portion_distri = self.spd_distribution_array(vspd, vspd, type='weight')
+        Date = date_reverse(int(Date))
+        resultarray.append(
+            [str(driver_name), int(travel_date), int(time_index_start), brake_skill_score, sudden_acc_score,
+             sudden_brake_score, sudden_steering_score, overtake_times / odemeter])
+        backup_data.append([int(TravelID), round(sudden_acc_times[0], 3), round(sudden_acc_times[1], 3),
+                            round(sudden_acc_times[2], 3), round(sudden_brake_times[0], 3),
+                            round(sudden_brake_times[1], 3), round(sudden_brake_times[2], 3),
+                            round(sudden_steering_times[0], 3), round(sudden_steering_times[1], 3),
+                            round(sudden_steering_times[2], 3),
+                            round(brake_skill_score, 3), round(overtake_times / odemeter, 4),
+                            round(tip_in_times[0] / odemeter, 4),
+                            round(odemeter, 2), round(mean_spd, 1), round(mean_Strg_Whl_Ang, 1),
+                            round(mean_Strg_Whl_Ang_pos, 1), round(mean_Strg_Whl_Ang_neg, 1),
+                            round(mean_X_acc, 3), round(mean_X_acc_pos, 3), round(mean_X_acc_neg, 3),
+                            round(mean_acc_ped, 2), round(std_spd, 2), round(std_Strg_Whl_Ang, 2),
+                            round(std_X_acc, 3), round(std_acc_ped, 2), round(over_speed_propotion, 3),
+                            round(fuel_cons, 3), round(soc_balance_ratio, 3), round(soc_start, 1),
+                            round(soc_end, 1), round(run_time, 1), round(total_time, 1), round(fuel_cons_idle, 3),
+                            int(start_times)])
 
-                print(driver_id, travel_date, travel_id, '....finish')
-
-                sudden_acc_times = array(sudden_acc_times) / odemeter
-                sudden_brake_times = array(sudden_brake_times) / odemeter
-                sudden_steering_times = array(sudden_steering_times) / odemeter
-                # ------------------- Plot Data --------------------------
-                fuel_distri = self.spd_distribution_array(vspd, fuel_csump, type='sum')
-                portion_distri = self.spd_distribution_array(vspd, vspd, type='weight')
-
-                resultarray.append([driver_id, travel_date])
-                backup_data.append([travel_id, sudden_acc_times[0], sudden_acc_times[1], sudden_acc_times[2],
-                                    sudden_brake_times[0], sudden_brake_times[1], sudden_brake_times[2],
-                                    sudden_steering_times[0], sudden_steering_times[1], sudden_steering_times[2],
-                                    tip_in_times[0] / odemeter, odemeter, idle_time, fuel_cons_idle, run_time,
-                                    total_time,
-                                    start_times, mean_spd_run,
-                                    mean_spd, mean_strg_whl_ang, mean_strg_whl_ang_pos, mean_strg_whl_ang_neg,
-                                    mean_x_acc, mean_x_acc_pos, mean_x_acc_neg, mean_acc_ped,
-                                    std_spd, std_strg_whl_ang, std_x_acc, std_acc_ped,
-                                    fuel_cons, fuel_cons_run])
-
-                docker1 = docker1.append(DataFrame([fuel_distri], columns=docker1.columns), ignore_index=True)
-                docker2 = docker2.append(DataFrame([portion_distri], columns=docker2.columns), ignore_index=True)
-
-                print(tc_run_data.shape[0], tc_close_data.shape[0])
-
-                # heatmap_plot(target_driver[['En_Spd[rpm]', 'engine_toq[Nm]']], tc_open_data[['En_Spd[rpm]', 'engine_toq[Nm]']],
-                #              driver_id, seg_size=[50, 50], xlim=5000, ylim=250)     # 发动机工作点热力图
-
-                self.heatmap_plot(target_driver[['En_Spd[rpm]', 'engine_toq[Nm]']], target_driver, seg_size=[50, 50],
-                                  xlim=5000, ylim=250)
-                self.heatmap_plot_shift(target_driver[['Veh_spd[kph]', 'Acc_Actu_Pos[%]']], target_driver,
-                                        seg_size=[50, 50], xlim=250, ylim=100)
-        pass
+        rq = requests.get(static_map_request_url(Target_Driver[['Longitude', 'Latitude']].values.tolist()))
+        file = open('./RoutinePic/' + str(CarName) + '_' + str(DriverID) + '_' + str(Date) + '_' +
+                    str(int(Time_index_start)) + '.png', 'wb')
+        file.write(rq.content)
+        file.close()
 
     @staticmethod
     def find_3_level_times(series, base=0, a1=1, a2=2, a3=3, delta_t=20):  # Passed Test 20170526
@@ -972,16 +1037,66 @@ class RealRoadFc(object):
                 continue
         return
 
+    def date_reverse(self, date_in):
+        revised_data = []
+        if date_in.__class__ == str:
+            revised_data = self.normal_time_stamp(int(date_in))
+        elif date_in.__class__ == int:
+            revised_data = self.normal_time_stamp(date_in)
+        return revised_data
+
+    @staticmethod
+    def normal_time_stamp(date_in):
+        if 170101 < date_in < 180101:  # 年月日
+            normal_time_stamp = (int(date_in / 10000) + 2000) * 10000 + (int(
+                (date_in - int(date_in / 10000) * 10000) / 100)) * 100 + int(date_in - int(date_in / 100) * 100)
+
+        else:  # 日月年
+            normal_time_stamp = (int(date_in - int(date_in / 100) * 100) + 2000) * 10000 + (int(
+                (date_in - int(date_in / 10000) * 10000) / 100)) * 100 + int(date_in / 10000)
+
+        return normal_time_stamp
+
+    @staticmethod
+    def utc_mktime(DATE, TIME):
+        """Returns number of seconds elapsed since epoch
+     
+        Note that no timezone are taken into consideration.
+     
+        utc tuple must be: (year, month, day, hour, minute, second)
+        """
+        if 170101 < DATE < 180101:  # 年月日
+            utc_tuple = (int(DATE / 10000) + 2000,
+                         int((DATE - int(DATE / 10000) * 10000) / 100),
+                         int(DATE - int(DATE / 100) * 100),
+                         int(TIME / 10000),
+                         int((TIME - int(TIME / 10000) * 10000) / 100),
+                         int(TIME - int(TIME / 100) * 100),
+                         0, 0, 0)
+        else:  # 日月年
+            utc_tuple = (int(DATE - int(DATE / 100) * 100) + 2000,
+                         int((DATE - int(DATE / 10000) * 10000) / 100),
+                         int(DATE / 10000),
+                         int(TIME / 10000),
+                         int((TIME - int(TIME / 10000) * 10000) / 100),
+                         int(TIME - int(TIME / 100) * 100),
+                         0, 0, 0)
+        return int(time.mktime(utc_tuple))
+
+    def datetime_to_timestamp(self, dt):
+        """Converts a datetime object to UTC timestamp"""
+        return int(self.utc_mktime(dt.timetuple()))
+
     # ----------------------  Calculation functions  --------------------------
     @staticmethod
     def odometer_cal(vspd, frequency=10):
         odometer = sum(vspd) / frequency / 3.6 / 1000  # km
         return odometer
 
-    def sudden_brake(self, series, car_type='ZS11'):
+    def sudden_brake(self, series, car_type='default'):
         style_brk = {'ZS11': [-0.5, -0.35, -0.1],
                      'AS24': [-0.5, -0.35, -0.15],
-                     'N330': [-0.5, -0.35, -0.15]}
+                     'default': [-0.5, -0.35, -0.15]}
         l = len(series)
         brk_lab = zeros(l)
         for i in range(l):
@@ -994,10 +1109,10 @@ class RealRoadFc(object):
         brk_times = self.find_3_level_times(brk_lab)
         return brk_times
 
-    def sudden_acc(self, series_xacc, series_vspd, car_type='ZS11'):
+    def sudden_acc(self, series_xacc, series_vspd, car_type='default'):
         style_acc = {'ZS11': [0.04, 0.31, 0.36, 0.35, 0.22, 0.23, 0.16, 0.12, 0.08],
                      'AS24': [0.2, 0.38, 0.41, 0.41, 0.39, 0.43, 0.36, 0.30, 0.22],
-                     'N330': [0.2, 0.38, 0.41, 0.41, 0.39, 0.43, 0.36, 0.30, 0.22]}
+                     'default': [0.2, 0.38, 0.41, 0.41, 0.39, 0.43, 0.36, 0.30, 0.22]}
         vspd_interp = [0, 10, 20, 30, 40, 60, 80, 100, 120]
         l = len(series_xacc)
         acc_lab = zeros(l)
@@ -1013,11 +1128,11 @@ class RealRoadFc(object):
                 acc_lab[i] = 1
         acc_times = self.find_3_level_times(acc_lab)
         return acc_times
-    
-    def sudden_steering(self, series, car_type='ZS11'):
+
+    def sudden_steering(self, series, car_type='default'):
         style_steer = {'ZS11': [0.35, 0.2, 0.1],
                        'AS24': [0.35, 0.2, 0.15],
-                       'N330': [0.35, 0.2, 0.15]}
+                       'default': [0.35, 0.2, 0.15]}
         l = len(series)
         str_lab = zeros(l)
         for i in range(l):
@@ -1101,6 +1216,97 @@ class RealRoadFc(object):
             if vspd.iloc[i] == 0 and vspd.iloc[i + 1] > 0:
                 start_times = start_times + 1
         return start_times
+
+    # ------------------------   API
+
+    def gps_fix_wgs84(self, lgt, lat):
+        lgt = int(lgt / 100) + (lgt / 100 - int(lgt / 100)) * 100 / 60
+        lat = int(lat / 100) + (lat / 100 - int(lat / 100)) * 100 / 60
+        return self.wgs84_to_gcj02(lgt, lat)
+
+    def wgs84_to_gcj02(self, lng, lat):
+        if self.out_of_china(lng, lat):
+            return [lng, lat]
+        else:
+            dlat = self.transform_lat(lng - 105.0, lat - 35.0)
+            dlng = self.transform_lng(lng - 105.0, lat - 35.0)
+            radlat = lat / 180.0 * self.PI
+            magic = sin(radlat)
+            magic = 1 - self.ee * magic * magic
+            sqrtmagic = sqrt(magic)
+            dlat = (dlat * 180.0) / ((self.a * (1 - self.ee)) / (magic * sqrtmagic) * self.PI)
+            dlng = (dlng * 180.0) / (self.a / sqrtmagic * cos(radlat) * self.PI)
+            mglat = lat + dlat
+            mglng = lng + dlng
+            return [mglng, mglat]
+
+    def transform_lat(self, lng, lat):
+        ret = -100.0 + 2.0 * lng + 3.0 * lat + 0.2 * lat * lat + 0.1 * lng * lat + 0.2 * sqrt(abs(lng))
+        ret = ret + (20.0 * sin(6.0 * lng * self.PI) + 20.0 * sin(2.0 * lng * self.PI)) * 2.0 / 3.0
+        ret = ret + (20.0 * sin(lat * self.PI) + 40.0 * sin(lat / 3.0 * self.PI)) * 2.0 / 3.0
+        ret = ret + (160.0 * sin(lat / 12.0 * self.PI) + 320 * sin(lat * self.PI / 30.0)) * 2.0 / 3.0
+        return ret
+
+    def transform_lng(self, lng, lat):
+        ret = 300.0 + lng + 2.0 * lat + 0.1 * lng * lng + 0.1 * lng * lat + 0.1 * sqrt(abs(lng))
+        ret = ret + (20.0 * sin(6.0 * lng * self.PI) + 20.0 * sin(2.0 * lng * self.PI)) * 2.0 / 3.0
+        ret = ret + (20.0 * sin(lng * self.PI) + 40.0 * sin(lng / 3.0 * self.PI)) * 2.0 / 3.0
+        ret = ret + (150.0 * sin(lng / 12.0 * self.PI) + 300.0 * sin(lng / 30.0 * self.PI)) * 2.0 / 3.0
+        return ret
+
+    @staticmethod
+    def out_of_china(lng, lat):
+        return (lng < 72.004 or lng > 137.8347) or ((lat < 0.8293 or lat > 55.8271) or False)
+
+    def gps_to_road_information(self, csvdata, i):
+        csvdata = csvdata[['Longitude', 'Latitude', 'Direction', 'Date', 'Time', 'Veh_Spd_NonDrvn']]
+        # csvdata = csvdata[csvdata['Longitude'] > 0]
+        GPS = csvdata[['Longitude', 'Latitude']]
+        Time = csvdata[['Date', 'Time']]
+        Dirction = csvdata['Direction']
+        Vspd = csvdata['Veh_Spd_NonDrvn']
+
+        # # 另一种写法
+        # server = 'http://restapi.amap.com/v3/autograsp'
+        # parameters = {'key': '42f165dabcfcb28c1c0290058adee399', 'carid': 'e399123456',
+        #               'locations': '116.496167,39.917066|116.496149,39.917205|116.496149,39.917326',
+        #               'time': '1502242820,1502242823,1502242830', 'direction': '1,1,2',
+        #               'speed': '1,1,2'}
+        # r = requests.get(server, params=parameters)
+        # print(r.url)
+
+        # 每次取点
+        base = 'http://restapi.amap.com/v3/autograsp?key=42f165dabcfcb28c1c0290058adee399&carid=e399123456'
+        Gps1 = self.gps_fix_wgs84(GPS.iloc[i][0], GPS.iloc[i][1])
+        Gps2 = self.gps_fix_wgs84(GPS.iloc[i + 50][0], GPS.iloc[i + 50][1])
+        Gps3 = self.gps_fix_wgs84(GPS.iloc[i + 100][0], GPS.iloc[i + 100][1])
+        location = '&locations=' + str(Gps1[0]) + ',' + str(Gps1[1]) + '|' + str(Gps2[0]) + ',' + str(
+            Gps2[1]) + '|' + str(
+            Gps3[0]) + ',' + str(Gps3[1])
+        Time1 = self.utc_mktime(Time.iloc[i][0], Time.iloc[i][1])
+        Time2 = self.utc_mktime(Time.iloc[i + 50][0], Time.iloc[i + 50][1])
+        Time3 = self.utc_mktime(Time.iloc[i + 100][0], Time.iloc[i + 100][1])
+        time = '&time=' + str(Time1) + ',' + str(Time2) + ',' + str(Time3)
+        direction = '&direction=' + str(Dirction.iloc[i]) + ',' + str(Dirction.iloc[i + 50]) + ',' + str(
+            Dirction.iloc[i + 100])
+        speed = '&speed=' + str(Vspd.iloc[i]) + ',' + str(Vspd.iloc[i + 50]) + ',' + str(Vspd.iloc[i + 100])
+        url = base + location + time + direction + speed
+        r = get(url)
+        answer = r.json()
+        if answer['infocode'] == '10000':  # 请求成功
+            if answer['roads'] != []:
+                road = answer['roads'][0]['roadname']
+                maxspeed = answer['roads'][0]['maxspeed']
+                level = answer['roads'][0]['roadlevel']
+            else:
+                road = 'Unknown'
+                maxspeed = '60'
+                level = 'Unknown'
+        else:
+            road = 'GPS_error'
+            maxspeed = '120'
+            level = 'GPS_error'
+        return road, maxspeed, level
 
 
 if __name__ == '__main__':

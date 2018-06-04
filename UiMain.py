@@ -32,24 +32,28 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.info_list = []
         self.MainProcess_thread = []
         # self.createContextMenu_RawDataView()
-        self.combo_box_names = ['Select_Features_Time',
-                                'Select_Features_Vspd',
-                                'Select_Features_Ped',
-                                'Select_Features_Acc',
-                                'Select_Features_Gear',
-                                'Select_Features_Toq',
-                                'Select_Features_Fuel',
-                                'Select_Features_EnSpd',
-                                'Select_Features_TbSpd',
-                                'Select_Features_Brk',
-                                'Select_Features_Latitude',
-                                'Select_Features_Longitude',
-                                'Select_Features_StrWhlAng',
-                                'Select_Features_CoolingTemp',
-                                'Select_Features_CryHeat',
-                                ]
+        self.combo_box_names = ['Select_Features_Time',         # 0
+                                'Select_Features_Vspd',         # 1
+                                'Select_Features_Ped',          # 2
+                                'Select_Features_Acc',          # 3
+                                'Select_Features_Gear',         # 4
+                                'Select_Features_Toq',          # 5
+                                'Select_Features_Fuel',         # 6
+                                'Select_Features_EnSpd',        # 7
+                                'Select_Features_TbSpd',        # 8
+                                'Select_Features_Brk',          # 9
+                                'Select_Features_Latitude',     #10
+                                'Select_Features_Longitude',    #11
+                                'Select_Features_StrWhlAng',    #12
+                                'Select_Features_Acc_y',        #13
+                                'Select_Features_CoolingTemp',  #14
+                                'Select_Features_CryHeat',      #15
+                                ]   # 更改后记得同步修改
+                                    # system_gain_index_pre_fit,
+                                    # real_road_fc_index_pre_fit,
+                                    # emission_cal_index_pre_fit 中的表格
 
-        self.dbc_search_list = {'SystemGain': {'Vspd': [r'^.*VehSpdAvgNonDrvn.*$', r'^.*VehicleSpeedd.*$', ],  # 编辑此处的正则表达式即可
+        self.dbc_search_list = {'SystemGain': {'Vspd': [r'^.*VehSpdAvgNonDrvn.*$', r'^.*VehicleSpeed.*$', ],  # 编辑此处的正则表达式即可
                                                'Acc': [r'^.*LongtAcc.*$', r'^.*LongAccelG.*$', ],
                                                'Ped': [r'^.*AccelActuPos.*$', ],
                                                'Gear': [r'^.*Gear.*$', ],
@@ -57,8 +61,8 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                                                'EnSpd': [r'^.*EnSpd.*$', ],
                                                'TbSpd': [r'^.*TrTurbAngulVel.*$', r'^.*Turb.*$', ],
                                                },
-                                'Emission': {'fuel_data': [r'^.*vsksml.*$', ],
-                                             'veh_spd': [r'^.*vfzg.*$', r'^.*VehV_v.*$'],
+                                'Emission': {'Fuel': [r'^.*vsksml.*$', ],
+                                             'Vspd': [r'^.*vfzg.*$', r'^.*VehV_v.*$'],
                                              },
                                 'RealRoadFC': {'Vspd': [r'^.*VehSpdAvgNonDrvn.*$', ],
                                                'EnSpd': [r'^.*EnSpd.*$', ],
@@ -87,56 +91,16 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                                 (148, 0, 211, 0.3)]
 
         self.replace_cs_content = False
+
+        # 右键菜单初始化
         self.createContextMenu_Data_Base_tableWidget()
-
-        # self.buttonGroup_data_viewer = QtWidgets.QButtonGroup(self.verticalLayout)
-
-        self.dr_acc_curve = MyFigureCanvas(width=6, height=4, plot_type='3d')
-        self.PicToolBar_1 = NavigationBar(self.dr_acc_curve, self)
-        self.gridLayout_2.addWidget(self.PicToolBar_1, 0, 0, 1, 1)
-        self.gridLayout_2.addWidget(self.dr_acc_curve, 1, 0, 1, 1)
-        self.dr_acc_curve.setMinimumSize(QtCore.QSize(0, 600))
-
-        self.dr_sg_curve = MyFigureCanvas(width=6, height=4, plot_type='2d')
-        self.PicToolBar_2 = NavigationBar(self.dr_sg_curve, self)
-        self.gridLayout_2.addWidget(self.PicToolBar_2, 0, 1, 1, 1)
-        self.gridLayout_2.addWidget(self.dr_sg_curve, 1, 1, 1, 1)
-        self.dr_sg_curve.setMinimumSize(QtCore.QSize(0, 600))
-
-        self.dr_cons_spd = MyFigureCanvas(width=6, height=4, plot_type='2d')
-        self.PicToolBar_3 = NavigationBar(self.dr_cons_spd, self)
-        self.gridLayout_2.addWidget(self.PicToolBar_3, 2, 0, 1, 1)
-        self.gridLayout_2.addWidget(self.dr_cons_spd, 3, 0, 1, 1)
-        self.dr_cons_spd.setMinimumSize(QtCore.QSize(0, 600))
-
-        self.dr_shift_map = MyFigureCanvas(width=6, height=4, plot_type='2d')
-        self.PicToolBar_4 = NavigationBar(self.dr_shift_map, self)
-        self.gridLayout_2.addWidget(self.PicToolBar_4, 2, 1, 1, 1)
-        self.gridLayout_2.addWidget(self.dr_shift_map, 3, 1, 1, 1)
-        self.dr_shift_map.setMinimumSize(QtCore.QSize(0, 600))
-
-        self.dr_launch = MyFigureCanvas(width=6, height=4, plot_type='2d')
-        self.PicToolBar_5 = NavigationBar(self.dr_launch, self)
-        self.gridLayout_2.addWidget(self.PicToolBar_5, 4, 0, 1, 1)
-        self.gridLayout_2.addWidget(self.dr_launch, 5, 0, 1, 1)
-        self.dr_launch.setMinimumSize(QtCore.QSize(0, 600))
-
-        self.dr_pedal_map = MyFigureCanvas(width=6, height=4, plot_type='2d')
-        self.PicToolBar_6 = NavigationBar(self.dr_pedal_map, self)
-        self.gridLayout_2.addWidget(self.PicToolBar_6, 4, 1, 1, 1)
-        self.gridLayout_2.addWidget(self.dr_pedal_map, 5, 1, 1, 1)
-        self.dr_pedal_map.setMinimumSize(QtCore.QSize(0, 600))
-
-        self.dr_max_acc = MyFigureCanvas(width=6, height=4, plot_type='2d')
-        self.PicToolBar_7 = NavigationBar(self.dr_max_acc, self)
-        self.gridLayout_2.addWidget(self.PicToolBar_7, 6, 0, 1, 1)
-        self.gridLayout_2.addWidget(self.dr_max_acc, 7, 0, 1, 1)
-        self.dr_max_acc.setMinimumSize(QtCore.QSize(0, 600))
+        self.createContextMenu_Constant_Speed_tableWidget()
 
         self.dr_raw = MyFigureCanvas(width=15, height=8, plot_type='2d-multi')
         self.PicToolBar_raw = NavigationBar(self.dr_raw, self)
         self.Data_Viewer_page_graphicsView_LayV.addWidget(self.PicToolBar_raw)
         self.Data_Viewer_page_graphicsView_LayV.addWidget(self.dr_raw)
+        # self.buttonGroup_data_viewer = QtWidgets.QButtonGroup(self.verticalLayout)
 
         # ---------------------------- 初始化 -----------------------------------------
         # def initial(self):
@@ -146,6 +110,55 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         # self.data_viewer_graphics_view.Message_Drag_accept.connect(self.show_data_edit_drag_pictures)  # 拖拽重绘
         # self.data_viewer_graphics_view.Message_DoubleClick.connect(self.highlight_signal)  # 双击高亮
         # self.initial_data_edit()
+
+    def _set_resolution(self):
+        return self.frameSize()
+
+    def _draw_canvas(self, width=800, height=600):
+        width_for_sg = (width-350)/2/1.2
+        height_for_sg = width_for_sg
+
+        self.dr_acc_curve = MyFigureCanvas(width=2, height=2, plot_type='3d')
+        self.PicToolBar_1 = NavigationBar(self.dr_acc_curve, self)
+        self.gridLayout_2.addWidget(self.PicToolBar_1, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.dr_acc_curve, 1, 0, 1, 1)
+        self.dr_acc_curve.setMinimumSize(QtCore.QSize(width_for_sg, height_for_sg))
+
+        self.dr_sg_curve = MyFigureCanvas(width=2, height=2, plot_type='2d')
+        self.PicToolBar_2 = NavigationBar(self.dr_sg_curve, self)
+        self.gridLayout_2.addWidget(self.PicToolBar_2, 0, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.dr_sg_curve, 1, 1, 1, 1)
+        self.dr_sg_curve.setMinimumSize(QtCore.QSize(width_for_sg, height_for_sg))
+
+        self.dr_cons_spd = MyFigureCanvas(width=2, height=2, plot_type='2d')
+        self.PicToolBar_3 = NavigationBar(self.dr_cons_spd, self)
+        self.gridLayout_2.addWidget(self.PicToolBar_3, 2, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.dr_cons_spd, 3, 0, 1, 1)
+        self.dr_cons_spd.setMinimumSize(QtCore.QSize(width_for_sg, height_for_sg))
+
+        self.dr_shift_map = MyFigureCanvas(width=2, height=2, plot_type='2d')
+        self.PicToolBar_4 = NavigationBar(self.dr_shift_map, self)
+        self.gridLayout_2.addWidget(self.PicToolBar_4, 2, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.dr_shift_map, 3, 1, 1, 1)
+        self.dr_shift_map.setMinimumSize(QtCore.QSize(width_for_sg, height_for_sg))
+
+        self.dr_launch = MyFigureCanvas(width=2, height=2, plot_type='2d')
+        self.PicToolBar_5 = NavigationBar(self.dr_launch, self)
+        self.gridLayout_2.addWidget(self.PicToolBar_5, 4, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.dr_launch, 5, 0, 1, 1)
+        self.dr_launch.setMinimumSize(QtCore.QSize(width_for_sg, height_for_sg))
+
+        self.dr_pedal_map = MyFigureCanvas(width=2, height=2, plot_type='2d')
+        self.PicToolBar_6 = NavigationBar(self.dr_pedal_map, self)
+        self.gridLayout_2.addWidget(self.PicToolBar_6, 4, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.dr_pedal_map, 5, 1, 1, 1)
+        self.dr_pedal_map.setMinimumSize(QtCore.QSize(width_for_sg, height_for_sg))
+
+        self.dr_max_acc = MyFigureCanvas(width=2, height=2, plot_type='2d')
+        self.PicToolBar_7 = NavigationBar(self.dr_max_acc, self)
+        self.gridLayout_2.addWidget(self.PicToolBar_7, 6, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.dr_max_acc, 7, 0, 1, 1)
+        self.dr_max_acc.setMinimumSize(QtCore.QSize(width_for_sg, height_for_sg))
 
     def triggers(self):
         self.menu_InputData.triggered.connect(self.load_data)
@@ -166,12 +179,20 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.SysGain_Cal.clicked.connect(self.cal_sys_gain_data)
         self.History_Data_Choose_PushButton.clicked.connect(self.history_data_reload)
         self.Constant_Speed_Input_button.clicked.connect(self.constant_speed_input_callback)
-        self.Data_Base_page_pushButton.clicked.connect(self.show_feature_index)
+        self.Select_Features_DB_Data_Base_Select_Commit_pushButton.clicked.connect(self.show_feature_index)
         # self.menu_Engine_Working_Dist.triggered.connect(self.data_view_check_box_list)
         self.Select_Features_New_Index_PushButton.clicked.connect(self.create_feature_index)
         self.Select_Features_SystemGain.clicked.connect(self.system_gain_index_pre_fit)
         self.Select_Features_EmissionCal.clicked.connect(self.emission_cal_index_pre_fit)
         self.Select_Features_RealRoadFC.clicked.connect(self.real_road_fc_index_pre_fit)
+        # 设置界面的显示逻辑
+        self.DataViewer_setting_Rawdata_mdf_res_RB.toggled.connect(self.enable_disable_set_data_viewer_data_source_dat_mdf)
+        self.DataViewer_setting_Rawdata_Intest_RB.toggled.connect(self.enable_disable_set_data_viewer_data_source_intest)
+        self.DataViewer_setting_Time_axis_Samples_RB.toggled.connect(self.enable_disable_set_data_viewer_setting_time_axis_fs_base)
+        self.DataViewer_setting_Time_axis_Signal_RB.toggled.connect(self.enable_disable_set_data_viewer_setting_time_axis_signal_base)
+        self.buttonGroup_BSFC_Need.buttonClicked.connect(self.enable_disable_set_real_road_fc_button_group_bsfc)
+        self.RealRoadFc_Engine_Working_Points_X_Range_slider.valueChanged.connect(lambda: self.set_real_road_fc_xy_range_qslider_value_change(1))
+        self.RealRoadFc_Engine_Working_Points_Y_Range_slider.valueChanged.connect(lambda: self.set_real_road_fc_xy_range_qslider_value_change(2))
 
     # ---------------------------- 右键菜单 -----------------------------------------
 
@@ -195,6 +216,19 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
         return
 
+    def createContextMenu_Constant_Speed_tableWidget(self):
+        '''
+
+        :return:
+        '''
+        self.System_Gain_AT_DCT_StablePed_tableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.System_Gain_AT_DCT_StablePed_tableWidget.customContextMenuRequested.connect(lambda: self.showContextMenu('System_Gain_AT_DCT_StablePed_tableWidget'))
+        self.System_Gain_AT_DCT_StablePed_tableWidget.contextMenu = QtWidgets.QMenu(self)
+        self.System_Gain_AT_DCT_StablePed_tableWidget.actionA = self.System_Gain_AT_DCT_StablePed_tableWidget.contextMenu.addAction(QtGui.QIcon("images/0.png"), u'|  删除记录')
+        self.System_Gain_AT_DCT_StablePed_tableWidget.actionA.triggered.connect(self.constant_speed_data_table_view_delete_cs)
+        self.System_Gain_AT_DCT_StablePed_tableWidget.actionB = self.System_Gain_AT_DCT_StablePed_tableWidget.contextMenu.addAction(QtGui.QIcon("images/0.png"), u"|  提交修改")
+        self.System_Gain_AT_DCT_StablePed_tableWidget.actionB.triggered.connect(self.constant_speed_data_table_view_change_cs)
+
     def showContextMenu(self, handle):
         '''''
         右键点击时调用的函数
@@ -213,20 +247,32 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         if self.rawdata_filepath != '':
             self.MainProcess_thread_rd = ThreadProcess(method='read_thread',
                                                        filepath=self.rawdata_filepath,
-                                                       resample_rate=self.DataViewer_setting_Rawdata_mdf_res_TE.toPlainText())
-            self.MainProcess_thread_rd.Message_Finish.connect(self.initial_data_edit)
+                                                       resample_rate=self.DataViewer_setting_Rawdata_mdf_res_TE.toPlainText(),
+                                                       intest_data=self.DataViewer_setting_Rawdata_Intest_RB.isChecked(),
+                                                       feature_row=self.DataViewer_setting_Rawdata_Intest_hang_data_TE.toPlainText(),
+                                                       data_row=self.DataViewer_setting_Rawdata_Intest_hang_feature_TE.toPlainText()
+                                                       )
+            self.MainProcess_thread_rd.Message_Finish.connect(self.load_data_judgement)
             # self.MainProcess_thread_rd.Message_Finish.connect(
             #     lambda: self.combobox_index_initial(self.MainProcess_thread_rd.ax_holder_rd.file_columns_orig))
 
             # self.MainProcess_thread_rd.Message_Finish.connect(self.combobox_index_features_initial)
             self.MainProcess_thread_rd.start()
-            message_str = 'Message: Importing ' + self.rawdata_filepath + ' ...'
+
+            message_str = 'Message: Importing ' + self.rawdata_filepath + '...PLEASE WAIT...'
             self.info_widget_update(message_str)
 
             self.refresh_raw_data_pic()
             self.refresh_cs_data()  # 新导入数据后清空Constant Speed数据
             self.refresh_sg_pics()
             self.enable_pre_select()
+
+    def load_data_judgement(self, message):
+        if message == '导入完成':
+            self.initial_data_edit()
+        elif message == '导入失败':
+            message_str = 'Message: Importing failure, PLEASE CHECK YOUR DATA or Cal Settings！'
+            self.info_widget_update(message_str)
 
     def save_sys_gain_data(self):
         file = QFileDialog.getSaveFileName(self, filter='.pkl')
@@ -341,15 +387,15 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.dr_raw.fig.clear()
         try:
             if self.DataViewer_setting_Time_axis_Dots_RB.isChecked():
-                self.dr_raw.plot_raw_data(time=range(self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.shape[0]),
-                                          df=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.iloc[:, signal_list])
+                self.dr_raw.plot_raw_data(time=range(self.MainProcess_thread_rd.ax_holder_rd.import_data_ful_.shape[0]),
+                                          df=self.MainProcess_thread_rd.ax_holder_rd.import_data_ful_.iloc[:, signal_list])
             elif self.DataViewer_setting_Time_axis_Samples_RB.isChecked():
                 self.dr_raw.plot_raw_data(time=[x/float(self.DataViewer_setting_Time_axis_Samples_TE.toPlainText()) for x in
-                                                range(self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.shape[0])],
-                                          df=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.iloc[:, signal_list])
+                                                range(self.MainProcess_thread_rd.ax_holder_rd.import_data_ful_.shape[0])],
+                                          df=self.MainProcess_thread_rd.ax_holder_rd.import_data_ful_.iloc[:, signal_list])
             elif self.DataViewer_setting_Time_axis_Signal_RB.isChecked():
-                self.dr_raw.plot_raw_data(time=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.iloc[:, self.DataViewer_setting_Time_axis_Samples_comboBox.currentIndex()],
-                                          df=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful.iloc[:, signal_list])
+                self.dr_raw.plot_raw_data(time=self.MainProcess_thread_rd.ax_holder_rd.import_data_ful_.iloc[:, self.DataViewer_setting_Time_axis_Samples_comboBox.currentIndex()],
+                                          df=self.MainProcess_thread_rd.ax_holder_rd.import_data_ful_.iloc[:, signal_list])
         except Exception:
             message_str = 'Error: Wrong Signal TYPE! Please Check!'
             self.info_widget_update(message_str)
@@ -521,7 +567,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                                                               '加速度g', '档位', '扭矩Nm',
                                                               '喷油量ul/s', '发动机转速rpm', '涡轮转速rpm',
                                                               '制动', '纬度°', '经度°', '方向盘转角°',
-                                                              '水温℃', '催化器加热'])
+                                                              '侧向加速度', '水温℃', '催化器加热',])
         for i, car_index in enumerate(self.history_index):
             car_index_item = QtWidgets.QTableWidgetItem(car_index)
             text_font = QtGui.QFont("Yahei", 8, QtGui.QFont.Bold)
@@ -571,7 +617,11 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         if file_path != '':
             self.MainProcess_thread_cs = ThreadProcess(method='cs_read_thread',
                                                        filepath=file_path,
-                                                       resample_rate=self.DataViewer_setting_Rawdata_mdf_res_TE.toPlainText())
+                                                       resample_rate=self.DataViewer_setting_Rawdata_mdf_res_TE.toPlainText(),
+                                                       intest_data=self.DataViewer_setting_Rawdata_Intest_RB.isChecked(),
+                                                       feature_row=self.DataViewer_setting_Rawdata_Intest_hang_data_TE.toPlainText(),
+                                                       data_row=self.DataViewer_setting_Rawdata_Intest_hang_feature_TE.toPlainText()
+                                                       )
             self.MainProcess_thread_cs.Message_Finish.connect(self.constant_speed_cal)
             self.MainProcess_thread_cs.start()
 
@@ -584,7 +634,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             eval('feature_array.append(self.' + i + '.currentText())')
 
         self.MainProcess_thread_cs_cal = ThreadProcess(method='cs_cal_thread',
-                                                       raw_data=self.MainProcess_thread_cs.ax_holder_cs.csv_data_ful,
+                                                       raw_data=self.MainProcess_thread_cs.ax_holder_cs.import_data_ful_,
                                                        feature_list=feature_array,
                                                        frequency=int(self.Constant_Speed_frequency_text_TE.toPlainText()),
                                                        time_block=int(self.Constant_Speed_time_block_text_TE.toPlainText())
@@ -594,25 +644,55 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
     def constant_speed_replace(self):
         self.replace_cs_content = True
-        str_speed = str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table[:, 1].round(0))[1:-1]
-        str_speed = str_speed.replace('.', '')
-        str_speed = ' '.join(str_speed.split())
-        self.Constant_Speed_Show_Speed_text.setText(str_speed)
-        self.Constant_Speed_Show_Speed_text.setFontPointSize(5)
-        str_ped = str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table[:, 2].round(0))[1:-1]
-        str_ped = str_ped.replace('.', '')
-        str_ped = ' '.join(str_ped.split())
-        self.Constant_Speed_Show_Ped_text.setText(str_ped)
-        print(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table)
 
-    def cal_sys_gain_data(self):
+        # str_speed = str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table[:, 1].round(0))[1:-1]
+        # str_speed = str_speed.replace('.', '')
+        # str_speed = ' '.join(str_speed.split())
+        # self.Constant_Speed_Show_Speed_text.setText(str_speed)
+        # self.Constant_Speed_Show_Speed_text.setFontPointSize(5)
+        # str_ped = str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table[:, 2].round(0))[1:-1]
+        # str_ped = str_ped.replace('.', '')
+        # str_ped = ' '.join(str_ped.split())
+        # self.Constant_Speed_Show_Ped_text.setText(str_ped)
+        # print(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table)
+        self.System_Gain_AT_DCT_StablePed_tableWidget.clear()
+        self.System_Gain_AT_DCT_StablePed_tableWidget.setColumnCount(3)
+        self.System_Gain_AT_DCT_StablePed_tableWidget.setRowCount(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.shape[0])
+        self.System_Gain_AT_DCT_StablePed_tableWidget.setHorizontalHeaderLabels(['稳态车速 Km/h', '稳态油门 %', '有问题啊'])
+        for i in range(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.shape[0]):
+            self.System_Gain_AT_DCT_StablePed_tableWidget.setItem(i, 0, QtWidgets.QTableWidgetItem(
+                str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanspd'].iloc[i].round(1))
+            ))
+            self.System_Gain_AT_DCT_StablePed_tableWidget.setItem(i, 1, QtWidgets.QTableWidgetItem(
+                str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanped'].iloc[i].round(1))
+            ))
+
+    def constant_speed_data_table_view_delete_cs(self):
+        current_row = self.System_Gain_AT_DCT_StablePed_tableWidget.currentRow()
+        name_to_delete = self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.iloc[current_row].name
+        self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.drop(name_to_delete, inplace=True)
+        self.constant_speed_replace()
+
+    def constant_speed_data_table_view_change_cs(self):
+        current_row = self.System_Gain_AT_DCT_StablePed_tableWidget.currentRow()
+        # current_col = self.System_Gain_AT_DCT_StablePed_tableWidget.currentColumn()
+        self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.iloc[current_row, 1] = float(
+            self.System_Gain_AT_DCT_StablePed_tableWidget.item(current_row, 0).text())
+        self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.iloc[current_row, 2] = float(
+            self.System_Gain_AT_DCT_StablePed_tableWidget.item(current_row, 1).text())
+        self.constant_speed_replace()
+
+    def cal_sys_gain_data(self):  # Canvas往大调整的时候没问题，重算尺寸自适配，再缩小却不会变回来……目前查不出为什么 20180528 ——LC
+        frame_size = self._set_resolution()
+        self._draw_canvas(frame_size.width(), frame_size.height())
+
         feature_array = []
         for i in self.combo_box_names:  # 编号
             eval('feature_array.append(self.' + i + '.currentText())')
 
         if self.replace_cs_content:
             self.MainProcess_thread_cal = ThreadProcess(method='sg_cal_thread',
-                                                        raw_data=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful,
+                                                        raw_data=self.MainProcess_thread_rd.ax_holder_rd.import_data_ful_,
                                                         feature_array=feature_array,
                                                         pt_type=self.buttonGroup_PT_Type.checkedButton().text(),
                                                         frequency=int(self.DataViewer_setting_Time_axis_Samples_TE.toPlainText()),
@@ -622,7 +702,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                                                         cs_table=self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table)
         else:
             self.MainProcess_thread_cal = ThreadProcess(method='sg_cal_thread',
-                                                        raw_data=self.MainProcess_thread_rd.ax_holder_rd.csv_data_ful,
+                                                        raw_data=self.MainProcess_thread_rd.ax_holder_rd.import_data_ful_,
                                                         feature_array=feature_array,
                                                         pt_type=self.buttonGroup_PT_Type.checkedButton().text(),
                                                         frequency=int(
@@ -750,20 +830,32 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.Constant_Speed_Show_Ped_text.setText('----')
 
     def refresh_sg_pics(self):
-        self.dr_acc_curve.axes.clear()
-        self.PicToolBar_1.dynamic_update()
-        self.dr_sg_curve.axes.clear()
-        self.PicToolBar_2.dynamic_update()
-        self.dr_cons_spd.axes.clear()
-        self.PicToolBar_3.dynamic_update()
-        self.dr_shift_map.axes.clear()
-        self.PicToolBar_4.dynamic_update()
-        self.dr_launch.axes.clear()
-        self.PicToolBar_5.dynamic_update()
-        self.dr_pedal_map.axes.clear()
-        self.PicToolBar_6.dynamic_update()
-        self.dr_max_acc.axes.clear()
-        self.PicToolBar_7.dynamic_update()
+        try:
+            # self.dr_acc_curve.axes.clear()
+            # self.PicToolBar_1.dynamic_update()
+            # self.dr_sg_curve.axes.clear()
+            # self.PicToolBar_2.dynamic_update()
+            # self.dr_cons_spd.axes.clear()
+            # self.PicToolBar_3.dynamic_update()
+            # self.dr_shift_map.axes.clear()
+            # self.PicToolBar_4.dynamic_update()
+            # self.dr_launch.axes.clear()
+            # self.PicToolBar_5.dynamic_update()
+            # self.dr_pedal_map.axes.clear()
+            # self.PicToolBar_6.dynamic_update()
+            # self.dr_max_acc.axes.clear()
+            # self.PicToolBar_7.dynamic_update()
+
+            while self.gridLayout_2.itemAt(0) is not None:  # 删除当前Lay中的元素
+                try:
+                    self.gridLayout_2.itemAt(0).widget().setParent(None)  # 删除当前Lay中widget元素，在此为CheckBox
+                    self.gridLayout_2.itemAt(0).widget().deleteLater()
+                    self.gridLayout_2.removeWidget(self.gridLayout_2.itemAt(0).widget())
+                except AttributeError:
+                    self.gridLayout_2.removeItem(self.gridLayout_2.itemAt(0))  # 删除当前Lay中spacer元素
+
+        except:
+            pass
 
     # -----|--|System Gain --|Compare Results
     def history_data_reload(self):
@@ -780,10 +872,19 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             print(e)
 
     def history_data_plot(self):
+
         legend_list = []
+
         for i in self.history_file_path_list:
             file_name = match(r'^(.+)(/)(.+)(.pkl)$', i)
             legend_list.append(file_name.group(3))
+
+        number_of_history_data = len(self.history_data)
+        frame_size = self._set_resolution()
+        width = frame_size.width()
+        width_fig = width/3/1.2   # 考虑到图之间的间隔等，以系数1.2代替
+        height_fig = width_fig
+        height_fig_for_subplot = width/number_of_history_data/1.3
 
         while self.gridLayout_4.itemAt(0) is not None:  # 删除当前Lay中的元素
             try:
@@ -795,7 +896,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
         self.dr_history_sg_curve = MyFigureCanvas(width=6, height=4, plot_type='2d')
         curve_list = []
-        for i in range(len(self.history_data)):  # 将每次画一根线
+        for i in range(number_of_history_data):  # 将每次画一根线
             self.dr_history_sg_curve.plot_systemgain_curve(vehspd_sg=self.history_data[i].sysGain_class.systemgain.
                                                            vehspd_sg, acc_sg=self.history_data[i].sysGain_class.
                                                            systemgain.acc_sg)
@@ -804,10 +905,10 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.PicToolBar_history1 = NavigationBar(self.dr_history_sg_curve, self)
         self.gridLayout_4.addWidget(self.PicToolBar_history1, 0, 0, 1, 1)
         self.gridLayout_4.addWidget(self.dr_history_sg_curve, 1, 0, 1, 1)
-        self.dr_history_sg_curve.setMinimumSize(QtCore.QSize(0, 600))
+        self.dr_history_sg_curve.setMinimumSize(QtCore.QSize(width_fig, height_fig))
 
         self.dr_history_cons_spd = MyFigureCanvas(width=6, height=4, plot_type='2d')
-        for i in range(len(self.history_data)):  # 将每次画一根线
+        for i in range(number_of_history_data):  # 将每次画一根线
             self.dr_history_cons_spd.plot_constant_speed(vehspd_cs=self.history_data[i].sysGain_class.systemgain.
                                                          vehspd_cs, pedal_cs=self.history_data[i].sysGain_class.
                                                          systemgain.pedal_cs)
@@ -815,44 +916,44 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.PicToolBar_history2 = NavigationBar(self.dr_history_cons_spd, self)
         self.gridLayout_4.addWidget(self.PicToolBar_history2, 0, 1, 1, 1)
         self.gridLayout_4.addWidget(self.dr_history_cons_spd, 1, 1, 1, 1)
-        self.dr_history_cons_spd.setMinimumSize(QtCore.QSize(0, 600))
+        self.dr_history_cons_spd.setMinimumSize(QtCore.QSize(width_fig, height_fig))
 
         self.dr_history_max_acc = MyFigureCanvas(width=6, height=4, plot_type='2d')
-        for i in range(len(self.history_data)):  # 将每次画一根线
+        for i in range(number_of_history_data):  # 将每次画一根线
             self.dr_history_max_acc.plot_max_acc(data=self.history_data[i].sysGain_class.maxacc.data)
         self.dr_history_max_acc.axes.legend(legend_list)
         self.PicToolBar_history3 = NavigationBar(self.dr_history_max_acc, self)
         self.gridLayout_4.addWidget(self.PicToolBar_history3, 0, 2, 1, 1)
         self.gridLayout_4.addWidget(self.dr_history_max_acc, 1, 2, 1, 1)
-        self.dr_history_max_acc.setMinimumSize(QtCore.QSize(0, 600))
+        self.dr_history_max_acc.setMinimumSize(QtCore.QSize(width_fig, height_fig))
 
         self.dr_history_acc_curve = MyFigureCanvas(width=18, height=5, plot_type='3d-subplot')
         self.dr_history_acc_curve.plot_acc_response_subplot(history_data=self.history_data, legend_name=legend_list)
         self.PicToolBar_history4 = NavigationBar(self.dr_history_acc_curve, self)
         self.gridLayout_4.addWidget(self.PicToolBar_history4, 2, 0, 1, 3)
         self.gridLayout_4.addWidget(self.dr_history_acc_curve, 3, 0, 1, 3)
-        self.dr_history_acc_curve.setMinimumSize(QtCore.QSize(0, 600))
+        self.dr_history_acc_curve.setMinimumSize(QtCore.QSize(width_fig, height_fig_for_subplot))
 
         self.dr_history_launch = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
         self.dr_history_launch.plot_launch_subplot(history_data=self.history_data, legend_name=legend_list)
         self.PicToolBar_history5 = NavigationBar(self.dr_history_launch, self)
         self.gridLayout_4.addWidget(self.PicToolBar_history5, 4, 0, 1, 3)
         self.gridLayout_4.addWidget(self.dr_history_launch, 5, 0, 1, 3)
-        self.dr_history_launch.setMinimumSize(QtCore.QSize(0, 600))
+        self.dr_history_launch.setMinimumSize(QtCore.QSize(width_fig, height_fig_for_subplot))
 
         self.dr_history_shift_map = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
         self.dr_history_shift_map.plot_shift_map_subplot(history_data=self.history_data, legend_name=legend_list)
         self.PicToolBar_history6 = NavigationBar(self.dr_history_shift_map, self)
         self.gridLayout_4.addWidget(self.PicToolBar_history6, 6, 0, 1, 3)
         self.gridLayout_4.addWidget(self.dr_history_shift_map, 7, 0, 1, 3)
-        self.dr_history_shift_map.setMinimumSize(QtCore.QSize(0, 600))
+        self.dr_history_shift_map.setMinimumSize(QtCore.QSize(width_fig, height_fig_for_subplot))
 
         self.dr_history_pedal_map = MyFigureCanvas(width=18, height=5, plot_type='2d-subplot')
         self.dr_history_pedal_map.plot_pedal_map_subplot(history_data=self.history_data, legend_name=legend_list)
         self.PicToolBar_history7 = NavigationBar(self.dr_history_pedal_map, self)
         self.gridLayout_4.addWidget(self.PicToolBar_history7, 8, 0, 1, 3)
         self.gridLayout_4.addWidget(self.dr_history_pedal_map, 9, 0, 1, 3)
-        self.dr_history_pedal_map.setMinimumSize(QtCore.QSize(0, 600))
+        self.dr_history_pedal_map.setMinimumSize(QtCore.QSize(width_fig, height_fig_for_subplot))
 
     def data_table_view_show(self, data_list):
         """
@@ -872,9 +973,81 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.DatatableView.setModel(self.model)
         self.DatatableView.resizeColumnsToContents()
 
+    # -----|--|RealRoadFC 页面
+    def real_road_fc_cal(self):
+        feature_array = []
+        for i in self.combo_box_names:  # 编号
+            eval('feature_array.append(self.' + i + '.currentText())')
+
+        self.MainProcess_thread_rrc_cal = ThreadProcess(method='real_road_cal_thread',
+                                                        raw_data=self.MainProcess_thread_rd.ax_holder_rd.import_data_ful_,
+                                                        feature_array=feature_array,)
+        self.MainProcess_thread_rrc_cal.Message_Finish.connect()
+        self.MainProcess_thread_rrc_cal.start()
+        message_str = 'Message: Start calculating real road fuel consumption data ...'
+        self.info_widget_update(message_str)
+
+    def real_road_fc_show(self):
+        pass
+        
     # -----|--|Setting 页面
     def initial_setting_value(self):
         pass
+
+    def enable_disable_set_data_viewer_data_source_dat_mdf(self):
+        if self.DataViewer_setting_Rawdata_mdf_res_RB.isChecked():
+            self.DataViewer_setting_Rawdata_mdf_res_HZ.setEnabled(True)
+            self.DataViewer_setting_Rawdata_mdf_res_TE.setEnabled(True)
+            self.DataViewer_setting_Rawdata_mdf_HZ.setEnabled(True)
+        else:
+            self.DataViewer_setting_Rawdata_mdf_res_HZ.setEnabled(False)
+            self.DataViewer_setting_Rawdata_mdf_res_TE.setEnabled(False)
+            self.DataViewer_setting_Rawdata_mdf_HZ.setEnabled(False)
+
+    def enable_disable_set_data_viewer_data_source_intest(self):
+        if self.DataViewer_setting_Rawdata_Intest_RB.isChecked():
+            self.DataViewer_setting_Rawdata_Intest_feature.setEnabled(True)
+            self.DataViewer_setting_Rawdata_Intest_hang_data_TE.setEnabled(True)
+            self.DataViewer_setting_Rawdata_Intest_hang_feature.setEnabled(True)
+            self.DataViewer_setting_Rawdata_Intest_data.setEnabled(True)
+            self.DataViewer_setting_Rawdata_Intest_hang_feature_TE.setEnabled(True)
+            self.DataViewer_setting_Rawdata_Intest_hang_data.setEnabled(True)
+        else:
+            self.DataViewer_setting_Rawdata_Intest_feature.setEnabled(False)
+            self.DataViewer_setting_Rawdata_Intest_hang_data_TE.setEnabled(False)
+            self.DataViewer_setting_Rawdata_Intest_hang_feature.setEnabled(False)
+            self.DataViewer_setting_Rawdata_Intest_data.setEnabled(False)
+            self.DataViewer_setting_Rawdata_Intest_hang_feature_TE.setEnabled(False)
+            self.DataViewer_setting_Rawdata_Intest_hang_data.setEnabled(False)
+
+    def enable_disable_set_data_viewer_setting_time_axis_fs_base(self):
+
+        if self.DataViewer_setting_Time_axis_Samples_RB.isChecked():
+            self.DataViewer_setting_Time_axis_Samples_TE.setEnabled(True)
+        else:
+            self.DataViewer_setting_Time_axis_Samples_TE.setEnabled(False)
+
+    def enable_disable_set_data_viewer_setting_time_axis_signal_base(self):
+        if self.DataViewer_setting_Time_axis_Signal_RB.isChecked():
+            self.DataViewer_setting_Time_axis_Samples_comboBox.setEnabled(True)
+        else:
+            self.DataViewer_setting_Time_axis_Samples_comboBox.setEnabled(False)
+
+    def enable_disable_set_real_road_fc_button_group_bsfc(self):
+        if self.RealRoadFc_Engine_Working_Points_BSFC_Y_RB.isChecked():
+            self.RealRoadFc_Engine_Working_Points_BSFC_pushbutton.setEnabled(True)
+            self.RealRoadFc_Engine_Working_Points_BSFC_TE.setEnabled(True)
+        elif self.RealRoadFc_Engine_Working_Points_BSFC_N_RB.isChecked():
+            self.RealRoadFc_Engine_Working_Points_BSFC_pushbutton.setEnabled(False)
+            self.RealRoadFc_Engine_Working_Points_BSFC_TE.setEnabled(False)
+
+    def set_real_road_fc_xy_range_qslider_value_change(self, index):
+        if index == 1:
+            text_1 = 5000 + 20 * (self.RealRoadFc_Engine_Working_Points_X_Range_slider.value() - 50)
+            self.RealRoadFc_Engine_Working_Points_X_Range_Show_TE.setPlainText(str(text_1))
+        elif index == 2:
+            text_2 = 350 + 5 * (self.RealRoadFc_Engine_Working_Points_Y_Range_slider.value() - 50)
+            self.RealRoadFc_Engine_Working_Points_Y_Range_Show_TE.setPlainText(str(text_2))
 
 
 class ThreadProcess(QtCore.QThread):
@@ -894,8 +1067,13 @@ class ThreadProcess(QtCore.QThread):
             self.info_widget_update(message_str)
 
     def read_thread(self):
-        self.ax_holder_rd = ReadFile(file_path=self.kwargs['filepath'], resample_rate=self.kwargs['resample_rate'])
-        self.Message_Finish.emit("计算完成！")
+        self.ax_holder_rd = ReadFile(file_path=self.kwargs['filepath'], resample_rate=self.kwargs['resample_rate'],
+                                     intest_data=self.kwargs['intest_data'],
+                                     feature_row=self.kwargs['feature_row'], data_row=self.kwargs['data_row'])
+        if self.ax_holder_rd.import_status == 'Error':
+            self.Message_Finish.emit("导入失败")
+        else:
+            self.Message_Finish.emit("导入完成")
 
     def sg_cal_thread(self):
         if self.kwargs['replace']:
@@ -922,7 +1100,10 @@ class ThreadProcess(QtCore.QThread):
             self.Message_Finish.emit("计算完成")
 
     def cs_read_thread(self):
-        self.ax_holder_cs = ReadFile(file_path=self.kwargs['filepath'], resample_rate=self.kwargs['resample_rate'])
+        self.ax_holder_cs = ReadFile(file_path=self.kwargs['filepath'], resample_rate=self.kwargs['resample_rate'],
+                                     intest_data=self.kwargs['intest_data'],
+                                     feature_row=self.kwargs['feature_row'], data_row=self.kwargs['data_row']
+                                     )
         self.Message_Finish.emit("计算完成！")
 
     def cs_cal_thread(self):
@@ -935,6 +1116,12 @@ class ThreadProcess(QtCore.QThread):
 
     def show_raw_data(self):
         pass
+    
+    def real_road_cal_thread(self):
+        self.ax_holder_rrc = RealRoadFc(raw_data=self.kwargs['raw_data'], feature_array=self.kwargs['feature_array'],
+                                        pt_type=self.kwargs['pt_type'],)
+        self.ax_holder_rrc.real_road_main()
+        self.Message_Finish.emit("计算完成！")
 
 
 class MyQtGraphicView(QtWidgets.QGraphicsView):
