@@ -96,6 +96,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.createContextMenu_Data_Base_tableWidget()
         self.createContextMenu_Constant_Speed_tableWidget()
 
+
         self.dr_raw = MyFigureCanvas(width=15, height=8, plot_type='2d-multi')
         self.PicToolBar_raw = NavigationBar(self.dr_raw, self)
         self.Data_Viewer_page_graphicsView_LayV.addWidget(self.PicToolBar_raw)
@@ -226,8 +227,22 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.System_Gain_AT_DCT_StablePed_tableWidget.contextMenu = QtWidgets.QMenu(self)
         self.System_Gain_AT_DCT_StablePed_tableWidget.actionA = self.System_Gain_AT_DCT_StablePed_tableWidget.contextMenu.addAction(QtGui.QIcon("images/0.png"), u'|  删除记录')
         self.System_Gain_AT_DCT_StablePed_tableWidget.actionA.triggered.connect(self.constant_speed_data_table_view_delete_cs)
-        self.System_Gain_AT_DCT_StablePed_tableWidget.actionB = self.System_Gain_AT_DCT_StablePed_tableWidget.contextMenu.addAction(QtGui.QIcon("images/0.png"), u"|  提交修改")
-        self.System_Gain_AT_DCT_StablePed_tableWidget.actionB.triggered.connect(self.constant_speed_data_table_view_change_cs)
+        self.System_Gain_AT_DCT_StablePed_tableWidget.actionB = self.System_Gain_AT_DCT_StablePed_tableWidget.contextMenu.addAction(QtGui.QIcon("images/0.png"), u'|  增加一行')
+        self.System_Gain_AT_DCT_StablePed_tableWidget.actionB.triggered.connect(self.constant_speed_data_table_view_add_cs)
+        self.System_Gain_AT_DCT_StablePed_tableWidget.actionC = self.System_Gain_AT_DCT_StablePed_tableWidget.contextMenu.addAction(QtGui.QIcon("images/0.png"), u'|  提交修改')
+        self.System_Gain_AT_DCT_StablePed_tableWidget.actionC.triggered.connect(self.constant_speed_data_table_view_change_cs)
+
+
+    def createContextMenu_Launch_graphicView(self):
+        '''
+
+        :return:
+        '''
+        self.dr_launch.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.dr_launch.customContextMenuRequested.connect(lambda: self.showContextMenu('dr_launch'))
+        self.dr_launch.contextMenu = QtWidgets.QMenu(self)
+        self.dr_launch.actionA = self.dr_launch.contextMenu.addAction(QtGui.QIcon("images/0.png"), u'|  导出数据')
+        self.dr_launch.actionA.triggered.connect(self.system_gain_save_launch_features)
 
     def showContextMenu(self, handle):
         '''''
@@ -264,12 +279,14 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
             self.refresh_raw_data_pic()
             self.refresh_cs_data()  # 新导入数据后清空Constant Speed数据
+            self.refresh_data_information()
             self.refresh_sg_pics()
             self.enable_pre_select()
 
     def load_data_judgement(self, message):
         if message == '导入完成':
             self.initial_data_edit()
+            self.initialize_data_information()
         elif message == '导入失败':
             message_str = 'Message: Importing failure, PLEASE CHECK YOUR DATA or Cal Settings！'
             self.info_widget_update(message_str)
@@ -413,6 +430,19 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
     # -----|--|Select Features 页面
     # -----|--|Select Features --|Features Selection
+    def initialize_data_information(self):
+        self.Select_Features_Basic_Info_ProjectNo_TE.setPlainText(self.MainProcess_thread_rd.ax_holder_rd.import_data_information['project_name'])
+        self.Select_Features_Basic_Info_VehicleNo_TE.setPlainText(self.MainProcess_thread_rd.ax_holder_rd.import_data_information['vehicle_name'])
+        self.Select_Features_Basic_Info_Time_TE.setPlainText(self.MainProcess_thread_rd.ax_holder_rd.import_data_information['date_name'])
+
+    def refresh_data_information(self):
+        self.Select_Features_Basic_Info_ProjectNo_TE.clear()
+        self.Select_Features_Basic_Info_VehicleNo_TE.clear()
+        self.Select_Features_Basic_Info_EngineType_TE.clear()
+        self.Select_Features_Basic_Info_TransType_TE.clear()
+        self.Select_Features_Basic_Info_Driver_TE.clear()
+        self.Select_Features_Basic_Info_Time_TE.clear()
+
     def enable_pre_select(self):
         self.Select_Features_SystemGain.setEnabled(True)
         self.Select_Features_RealRoadFC.setEnabled(True)
@@ -642,49 +672,86 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.MainProcess_thread_cs_cal.Message_Finish.connect(self.constant_speed_replace)
         self.MainProcess_thread_cs_cal.start()
 
-    def constant_speed_replace(self):
-        self.replace_cs_content = True
+    def constant_speed_replace(self, message='计算完成'):
+        if message == '计算完成':
+            self.replace_cs_content = True
 
-        # str_speed = str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table[:, 1].round(0))[1:-1]
-        # str_speed = str_speed.replace('.', '')
-        # str_speed = ' '.join(str_speed.split())
-        # self.Constant_Speed_Show_Speed_text.setText(str_speed)
-        # self.Constant_Speed_Show_Speed_text.setFontPointSize(5)
-        # str_ped = str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table[:, 2].round(0))[1:-1]
-        # str_ped = str_ped.replace('.', '')
-        # str_ped = ' '.join(str_ped.split())
-        # self.Constant_Speed_Show_Ped_text.setText(str_ped)
-        # print(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table)
-        self.System_Gain_AT_DCT_StablePed_tableWidget.clear()
-        self.System_Gain_AT_DCT_StablePed_tableWidget.setColumnCount(3)
-        self.System_Gain_AT_DCT_StablePed_tableWidget.setRowCount(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.shape[0])
-        self.System_Gain_AT_DCT_StablePed_tableWidget.setHorizontalHeaderLabels(['稳态车速 Km/h', '稳态油门 %', '有问题啊'])
-        for i in range(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.shape[0]):
-            self.System_Gain_AT_DCT_StablePed_tableWidget.setItem(i, 0, QtWidgets.QTableWidgetItem(
-                str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanspd'].iloc[i].round(1))
-            ))
-            self.System_Gain_AT_DCT_StablePed_tableWidget.setItem(i, 1, QtWidgets.QTableWidgetItem(
-                str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanped'].iloc[i].round(1))
-            ))
+            # str_speed = str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table[:, 1].round(0))[1:-1]
+            # str_speed = str_speed.replace('.', '')
+            # str_speed = ' '.join(str_speed.split())
+            # self.Constant_Speed_Show_Speed_text.setText(str_speed)
+            # self.Constant_Speed_Show_Speed_text.setFontPointSize(5)
+            # str_ped = str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table[:, 2].round(0))[1:-1]
+            # str_ped = str_ped.replace('.', '')
+            # str_ped = ' '.join(str_ped.split())
+            # self.Constant_Speed_Show_Ped_text.setText(str_ped)
+
+            self.System_Gain_AT_DCT_StablePed_tableWidget.clear()
+            self.System_Gain_AT_DCT_StablePed_tableWidget.setColumnCount(2)
+            self.System_Gain_AT_DCT_StablePed_tableWidget.setRowCount(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.shape[0])
+            self.System_Gain_AT_DCT_StablePed_tableWidget.setHorizontalHeaderLabels(['稳态车速 Km/h', '稳态油门 %'])
+            for i in range(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.shape[0]):
+                if isinstance(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanspd'].iloc[i], float) and \
+                        isinstance(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanped'].iloc[i], float):
+                    self.System_Gain_AT_DCT_StablePed_tableWidget.setItem(i, 0, QtWidgets.QTableWidgetItem(
+                        str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanspd'].iloc[i].__round__(1))
+                    ))
+                    self.System_Gain_AT_DCT_StablePed_tableWidget.setItem(i, 1, QtWidgets.QTableWidgetItem(
+                        str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanped'].iloc[i].__round__(1))
+                    ))
+                else:
+                    self.System_Gain_AT_DCT_StablePed_tableWidget.setItem(i, 0, QtWidgets.QTableWidgetItem(
+                        str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanspd'].iloc[i])
+                    ))
+                    self.System_Gain_AT_DCT_StablePed_tableWidget.setItem(i, 1, QtWidgets.QTableWidgetItem(
+                        str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanped'].iloc[i])
+                    ))
+        elif message == '导入失败':
+            self.replace_cs_content = False
+            message_str = 'Error: Importing constant speed file FAILED, please check your raw data...'
+            self.info_widget_update(message_str)
 
     def constant_speed_data_table_view_delete_cs(self):
         current_row = self.System_Gain_AT_DCT_StablePed_tableWidget.currentRow()
         name_to_delete = self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.iloc[current_row].name
+        deleted_item = [self.System_Gain_AT_DCT_StablePed_tableWidget.item(current_row, 0).text(),
+                        self.System_Gain_AT_DCT_StablePed_tableWidget.item(current_row, 1).text()]
         self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.drop(name_to_delete, inplace=True)
         self.constant_speed_replace()
+        message_str = 'Message: Constant Speed Item [' + ','.join(deleted_item) + '] deleted...'
+        self.info_widget_update(message_str)
 
     def constant_speed_data_table_view_change_cs(self):
         current_row = self.System_Gain_AT_DCT_StablePed_tableWidget.currentRow()
         # current_col = self.System_Gain_AT_DCT_StablePed_tableWidget.currentColumn()
-        self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.iloc[current_row, 1] = float(
+        origin_item = [str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanspd'].iloc[current_row]),
+                       str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanped'].iloc[current_row])]
+        self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanspd'].iloc[current_row] = float(
             self.System_Gain_AT_DCT_StablePed_tableWidget.item(current_row, 0).text())
-        self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.iloc[current_row, 2] = float(
+        self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanped'].iloc[current_row] = float(
             self.System_Gain_AT_DCT_StablePed_tableWidget.item(current_row, 1).text())
         self.constant_speed_replace()
+        chaged_item = [self.System_Gain_AT_DCT_StablePed_tableWidget.item(current_row, 0).text(),
+                       self.System_Gain_AT_DCT_StablePed_tableWidget.item(current_row, 1).text()]
+        message_str = 'Message: Constant Speed Item [' + ','.join(origin_item) + '] has been changed to [' + ','.join(chaged_item) + ']...'
+        self.info_widget_update(message_str)
+
+    def constant_speed_data_table_view_add_cs(self):
+        current_row = self.System_Gain_AT_DCT_StablePed_tableWidget.currentRow()
+        self.System_Gain_AT_DCT_StablePed_tableWidget.insertRow(current_row)
+        above = self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.iloc[:current_row]
+        below = self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.iloc[current_row+1:]
+        insert = DataFrame([['请输入', '请输入']], columns=['meanspd', 'meanped'])
+        self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table = concat([above, insert, below], ignore_index=True)
+        self.constant_speed_replace()
+        message_str = 'Message: Constant Speed Item New row added...'
+        self.info_widget_update(message_str)
 
     def cal_sys_gain_data(self):  # Canvas往大调整的时候没问题，重算尺寸自适配，再缩小却不会变回来……目前查不出为什么 20180528 ——LC
         frame_size = self._set_resolution()
         self._draw_canvas(frame_size.width(), frame_size.height())
+
+        self.createContextMenu_Launch_graphicView()
 
         feature_array = []
         for i in self.combo_box_names:  # 编号
@@ -826,8 +893,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
     def refresh_cs_data(self):
         self.replace_cs_content = False
-        self.Constant_Speed_Show_Speed_text.setText('----')
-        self.Constant_Speed_Show_Ped_text.setText('----')
+        self.System_Gain_AT_DCT_StablePed_tableWidget.clear()
 
     def refresh_sg_pics(self):
         try:
@@ -856,6 +922,13 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
 
         except:
             pass
+
+    def system_gain_save_launch_features(self):
+        file = QFileDialog.getSaveFileName(self, filter='.csv')
+        file_path = file[0] + file[1]
+        SaveAndLoad.store_result_in_excel(file_path=file_path,
+                                          store_data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.launch.data[3])
+        pass
 
     # -----|--|System Gain --|Compare Results
     def history_data_reload(self):
@@ -1111,8 +1184,10 @@ class ThreadProcess(QtCore.QThread):
                                               feature_list=self.kwargs['feature_list'],
                                               frequency=self.kwargs['frequency'],
                                               time_block=self.kwargs['time_block'])
-        self.ax_holder_cs_cal.cs_main()
-        self.Message_Finish.emit("计算完成！")
+        if self.ax_holder_cs_cal.calculation_error:
+            self.Message_Finish.emit("导入失败")
+        else:
+            self.Message_Finish.emit("计算完成")
 
     def show_raw_data(self):
         pass

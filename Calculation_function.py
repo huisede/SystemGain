@@ -2,7 +2,7 @@
 
 from numpy import average, transpose, zeros, array, linspace, mean, cov, convolve, arange, cumsum, concatenate, abs, \
     mod, std, ones, diff, interp
-from pandas import read_csv, read_excel, Timedelta, DataFrame
+from pandas import read_csv, read_excel, Timedelta, DataFrame, concat
 from scipy import interpolate
 import matplotlib.pyplot as plt
 from re import match
@@ -211,22 +211,43 @@ class SystemGain(object):
 
     def launch(self, acc_data, pedal_data, pedal_cut_index, pedal_avg):
         try:
-            launch_map = [[], [], []]
+            launch_map = [[], [], [], {}]
+            delay_acc = []
+            delay_time = []
+            peak_acc = []
+            peak_time = []
             for i in range(0, len(pedal_avg)):
-                if int(round(pedal_avg[i] / 5) * 5) in [10, 20, 30, 50, 100]:
+                if int(round(pedal_avg[i] / 5) * 5) in [10, 20, 30, 50, 100] or (pedal_avg[i] == max(pedal_avg)):
                     iTime = [0.05 * (ix - pedal_cut_index[0][i]) for ix in
-                             range(pedal_cut_index[0][i], pedal_cut_index[0][i] + 100)]
-                    iAcc = acc_data[pedal_cut_index[0][i]:pedal_cut_index[0][i] + 100]
-                    launch_map[0].append(pedal_data[pedal_cut_index[0][i]:pedal_cut_index[0][i] + 100])
+                             range(pedal_cut_index[0][i], pedal_cut_index[1][i])]
+                    iAcc = acc_data[pedal_cut_index[0][i]:pedal_cut_index[1][i]]
+                    launch_map[0].append(pedal_data[pedal_cut_index[0][i]:pedal_cut_index[1][i]])
                     launch_map[1].append(iAcc)
                     launch_map[2].append(iTime)
-                elif pedal_avg[i] == max(pedal_avg):
-                    iTime = [0.05 * (ix - pedal_cut_index[0][i]) for ix in
-                             range(pedal_cut_index[0][i], pedal_cut_index[0][i] + 100)]
-                    iAcc = acc_data[pedal_cut_index[0][i]:pedal_cut_index[0][i] + 100]
-                    launch_map[0].append(pedal_data[pedal_cut_index[0][i]:pedal_cut_index[0][i] + 100])
-                    launch_map[1].append(iAcc)
-                    launch_map[2].append(iTime)
+
+                    for j in range(0, len(iTime)):
+                        if iAcc[j] >= 0.02 * 9.8:
+                            delay_acc.append(iAcc[j])
+                            delay_time.append(iTime[j])
+                            break
+                        if j == len(iTime)-1:  # 若到最后都没找到
+                            delay_acc.append(999)
+                            delay_time.append(999)
+
+                    for j in range(0, len(iTime)):
+                        if iAcc[j] >= 0.95 * max(iAcc):
+                            peak_acc.append(iAcc[j])
+                            peak_time.append(iTime[j])
+                            break
+
+            launch_map[3] = {'delay_acc': delay_acc, 'delay_time': delay_time, 'peak_acc': peak_acc, 'peak_time': peak_time}
+                # elif pedal_avg[i] == max(pedal_avg):
+                #     iTime = [0.05 * (ix - pedal_cut_index[0][i]) for ix in
+                #              range(pedal_cut_index[0][i], pedal_cut_index[0][i] + 100)]
+                #     iAcc = acc_data[pedal_cut_index[0][i]:pedal_cut_index[0][i] + 100]
+                #     launch_map[0].append(pedal_data[pedal_cut_index[0][i]:pedal_cut_index[0][i] + 100])
+                #     launch_map[1].append(iAcc)
+                #     launch_map[2].append(iTime)
             obj = self.Launch(launch_map)
         except Exception:
             launch_map = [[], [], []]
@@ -311,15 +332,15 @@ class SystemGain(object):
                 vehspd_sg_for_inter.append(max(ivehspd))
 
             if self.replace_cs:  # 如果有稳态车速实验数据输入
-                cs_ary = self.cs_table[:, 1:3]  # 索引所得第一列为车速，第二列为油门
-                cs_vspd = cs_ary[:, 0]
-                cs_ped = cs_ary[:, 1]
-                if pedal_avg[0] == 0:  # 如果原始数据中有怠速数据，则替换
-                    cs_ped[0] = 0
-                    cs_vspd[0] = vehspd_sg_for_inter[0]  # 怠速车速
-                else:
-                    cs_ped = cs_ped[1:]  # 去掉传递过来不对的怠速转速
-                    cs_vspd = cs_vspd[1:]
+                cs_vspd = self.cs_table['meanspd'].tolist()
+                cs_ped = self.cs_table['meanped'].tolist()
+
+                # if pedal_avg[0] == 0:  # 如果原始数据中有怠速数据，则替换
+                #     cs_ped[0] = 0
+                #     cs_vspd[0] = vehspd_sg_for_inter[0]  # 怠速车速
+                # else:
+                #     cs_ped = cs_ped[1:]  # 去掉传递过来不对的怠速转速
+                #     cs_vspd = cs_vspd[1:]
 
                 cs_interp = interpolate.interp1d(cs_ped, cs_vspd)
                 for i, content in enumerate(pedal_avg):
@@ -533,12 +554,25 @@ class ReadFile(object):
         self.import_data_ful_ = []
         self.mdf_data = []
         self.import_status = 'OK'
+        self.import_data_information = {}
 
         self.start_read()
 
     def start_read(self):
-        file_name_match = match(r'^(\w*)_(\w*)_([\w.]*)$', self.file_path)
+        # 匹配名字信息
+        try:
+            file_name_match = match(r'^(.*/)(\w*)_(\w*)_([\w.]*)$', self.file_path)
+            self.import_data_information['project_name'] = file_name_match.group(2)
+            self.import_data_information['vehicle_name'] = file_name_match.group(3)
+        except AttributeError:
+            self.import_data_information['project_name'] = 'unknown'
+            self.import_data_information['vehicle_name'] = 'unknown'
+        try:
+            self.import_data_information['date_name'] = match(r'^(.*)([0-9]{8})(.*)$', self.file_path).group(2)
+        except AttributeError:
+            self.import_data_information['date_name'] = 'unknown'
 
+        # 正式读取数据
         file_type_match = match(r'^(.+)(\.)(\w*)$', self.file_path)
         file_type = file_type_match.group(3)
         file_type = file_type.lower()  # 小写
@@ -597,6 +631,9 @@ class SaveAndLoad(object):
         # output_file = open(file_path, 'wb')
         # dump(store_data, output_file)
         # output_file.close()
+        # isinstance(store_data,DataFrame):
+        store_data = DataFrame(store_data)
+        store_data.to_csv(file_path)
         return
 
     @staticmethod
@@ -727,6 +764,7 @@ class ConstantSpeed(object):
         self.frequency = frequency
         self.time_block = time_block
         self.gear_consider = True
+        self.calculation_error = False
 
         self.cs_csv_data = self.raw_data.loc[:, feature_list]
         self.veh_spd = self.cs_csv_data.iloc[:, 1].tolist()
@@ -734,22 +772,26 @@ class ConstantSpeed(object):
         self.acc = self.cs_csv_data.iloc[:, 3].tolist()
         self.gear = self.cs_csv_data.iloc[:, 4].tolist()
         self.en_spd = self.cs_csv_data.iloc[:, 7].tolist()
-
-        self.acc_smo = self.smooth(self.acc, 1.5 * self.frequency)
+        try:
+            self.acc_smo = self.smooth(self.acc, 1.5 * self.frequency)
+        except ValueError:
+            self.calculation_error = True
+            return
         self.cs_table = []
+        self.cs_main()
 
     def cs_main(self):
         k = 0
         self.cs_table.append([0, 5, 0, 0, 0, 800, 1, 0])
         #                    [index, meanspd, meanped, meanacc, acc_smooth_rate, meanrpm, gear , spd_std]
 
-        gear_nums = {}
-        for i in self.gear:  # 统计Gear信号中的数据种类
-            gear_nums[i] = gear_nums.get(i, 0) + 1
-        if gear_nums.keys().__len__() > 15:  # 若数据种类大于15种，认为是非DCT/MT/AT车型的，可能为CVT，也可能是选错了信号
-            self.gear_consider = False
-
         try:
+            gear_nums = {}
+            for i in self.gear:  # 统计Gear信号中的数据种类
+                gear_nums[i] = gear_nums.get(i, 0) + 1
+            if gear_nums.keys().__len__() > 15:  # 若数据种类大于15种，认为是非DCT/MT/AT车型的，可能为CVT，也可能是选错了信号
+                self.gear_consider = False
+
             for i in range(0, len(self.veh_spd) - self.frequency * self.time_block, self.frequency):
                 if self.veh_std_cal(i) < 0.7 and self.mean_speed_cal(i) > 5 and \
                         (self.gear_std_cal(i) == 0 and self.gear_consider or not self.gear_consider):
@@ -791,9 +833,8 @@ class ConstantSpeed(object):
             # 排序后请用iloc索引
             pass
 
-        except Exception as e:
-            print('From cs_main')
-            print(e)
+        except Exception :
+            self.calculation_error = True
 
     @staticmethod
     def smooth(data, window):
