@@ -78,7 +78,7 @@
                <x>0</x>
                <y>0</y>
                <width>915</width>
-               <height>586</height>
+               <height>594</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout">
@@ -132,12 +132,51 @@
              <string>Features Selection</string>
             </attribute>
             <layout class="QGridLayout" name="gridLayout_21">
+             <item row="17" column="0" rowspan="7" colspan="2">
+              <widget class="QGroupBox" name="Select_Features_Search_group">
+               <property name="title">
+                <string>索引预选（正则匹配）</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_13">
+                <item>
+                 <widget class="QRadioButton" name="Select_Features_SystemGain">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>System Gain</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="Select_Features_RealRoadFC">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>Real Road FC</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="Select_Features_EmissionCal">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>Emission Cal</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
              <item row="11" column="0">
               <widget class="QLabel" name="Select_Features_Basic_Info_Time_lab">
                <property name="maximumSize">
                 <size>
                  <width>16777215</width>
-                 <height>10</height>
+                 <height>16777215</height>
                 </size>
                </property>
                <property name="text">
@@ -188,6 +227,87 @@
                </property>
                <property name="text">
                 <string>基础信息：</string>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="0">
+              <widget class="QLabel" name="Select_Features_Basic_Info_TransType_lab">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>变速箱</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0">
+              <widget class="QLabel" name="Select_Features_Basic_Info_EngineType_lab">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>发动机</string>
+               </property>
+              </widget>
+             </item>
+             <item row="8" column="0">
+              <widget class="QPlainTextEdit" name="Select_Features_Basic_Info_TransType_TE">
+               <property name="maximumSize">
+                <size>
+                 <width>200</width>
+                 <height>24</height>
+                </size>
+               </property>
+               <property name="verticalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
+               </property>
+               <property name="horizontalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="13" column="0" colspan="2">
+              <widget class="Line" name="Select_Features_line_3">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QPlainTextEdit" name="Select_Features_Basic_Info_VehicleNo_TE">
+               <property name="maximumSize">
+                <size>
+                 <width>200</width>
+                 <height>24</height>
+                </size>
+               </property>
+               <property name="verticalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
+               </property>
+               <property name="horizontalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="16" column="0">
+              <widget class="QPushButton" name="Select_Features_New_Index_PushButton">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton{ background-color:#16A085;border:none;color:#ffffff;
+font-family:'Microsoft YaHei';font-size:14px;font-weight: bold;height:30px;}
+QPushButton:pressed{background-color:#16A055;}
+QPushButton:disabled{background-color:#DDDDDD;}</string>
+               </property>
+               <property name="text">
+                <string>新建索引</string>
                </property>
               </widget>
              </item>
@@ -278,7 +398,7 @@
                   <x>0</x>
                   <y>0</y>
                   <width>668</width>
-                  <height>562</height>
+                  <height>570</height>
                  </rect>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_18">
@@ -873,77 +993,6 @@
                </widget>
               </widget>
              </item>
-             <item row="8" column="0">
-              <widget class="QPlainTextEdit" name="Select_Features_Basic_Info_TransType_TE">
-               <property name="maximumSize">
-                <size>
-                 <width>200</width>
-                 <height>24</height>
-                </size>
-               </property>
-               <property name="verticalScrollBarPolicy">
-                <enum>Qt::ScrollBarAlwaysOff</enum>
-               </property>
-               <property name="horizontalScrollBarPolicy">
-                <enum>Qt::ScrollBarAlwaysOff</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="0">
-              <widget class="QPlainTextEdit" name="Select_Features_Basic_Info_EngineType_TE">
-               <property name="maximumSize">
-                <size>
-                 <width>200</width>
-                 <height>24</height>
-                </size>
-               </property>
-               <property name="verticalScrollBarPolicy">
-                <enum>Qt::ScrollBarAlwaysOff</enum>
-               </property>
-               <property name="horizontalScrollBarPolicy">
-                <enum>Qt::ScrollBarAlwaysOff</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0">
-              <widget class="QPlainTextEdit" name="Select_Features_Basic_Info_VehicleNo_TE">
-               <property name="maximumSize">
-                <size>
-                 <width>200</width>
-                 <height>24</height>
-                </size>
-               </property>
-               <property name="verticalScrollBarPolicy">
-                <enum>Qt::ScrollBarAlwaysOff</enum>
-               </property>
-               <property name="horizontalScrollBarPolicy">
-                <enum>Qt::ScrollBarAlwaysOff</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="16" column="0">
-              <widget class="QPushButton" name="Select_Features_New_Index_PushButton">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">QPushButton{ background-color:#16A085;border:none;color:#ffffff;
-font-family:'Microsoft YaHei';font-size:14px;font-weight: bold;height:30px;}
-QPushButton:pressed{background-color:#16A055;}
-QPushButton:disabled{background-color:#DDDDDD;}</string>
-               </property>
-               <property name="text">
-                <string>新建索引</string>
-               </property>
-              </widget>
-             </item>
-             <item row="13" column="0" colspan="2">
-              <widget class="Line" name="Select_Features_line_3">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-              </widget>
-             </item>
              <item row="2" column="0">
               <widget class="QPlainTextEdit" name="Select_Features_Basic_Info_ProjectNo_TE">
                <property name="maximumSize">
@@ -957,21 +1006,6 @@ QPushButton:disabled{background-color:#DDDDDD;}</string>
                </property>
                <property name="horizontalScrollBarPolicy">
                 <enum>Qt::ScrollBarAlwaysOff</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="15" column="0">
-              <widget class="QComboBox" name="Select_Features_Index_comboBox">
-               <property name="minimumSize">
-                <size>
-                 <width>200</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Microsoft YaHei</family>
-                </font>
                </property>
               </widget>
              </item>
@@ -1005,29 +1039,34 @@ QPushButton:disabled{background-color:#DDDDDD;}</string>
                </property>
               </widget>
              </item>
-             <item row="7" column="0">
-              <widget class="QLabel" name="Select_Features_Basic_Info_TransType_lab">
-               <property name="maximumSize">
+             <item row="15" column="0">
+              <widget class="QComboBox" name="Select_Features_Index_comboBox">
+               <property name="minimumSize">
                 <size>
-                 <width>16777215</width>
-                 <height>10</height>
+                 <width>200</width>
+                 <height>0</height>
                 </size>
                </property>
-               <property name="text">
-                <string>变速箱</string>
+               <property name="font">
+                <font>
+                 <family>Microsoft YaHei</family>
+                </font>
                </property>
               </widget>
              </item>
-             <item row="5" column="0">
-              <widget class="QLabel" name="Select_Features_Basic_Info_EngineType_lab">
+             <item row="6" column="0">
+              <widget class="QPlainTextEdit" name="Select_Features_Basic_Info_EngineType_TE">
                <property name="maximumSize">
                 <size>
-                 <width>16777215</width>
-                 <height>10</height>
+                 <width>200</width>
+                 <height>24</height>
                 </size>
                </property>
-               <property name="text">
-                <string>发动机</string>
+               <property name="verticalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
+               </property>
+               <property name="horizontalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
                </property>
               </widget>
              </item>
@@ -1047,45 +1086,6 @@ QPushButton:disabled{background-color:#DDDDDD;}</string>
                </property>
               </widget>
              </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="Select_Features_Basic_Info_VehicleNo_lab">
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>10</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>车号</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="Select_Features_Basic_Info_ProjectNo_lab">
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>10</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>项目号</string>
-               </property>
-              </widget>
-             </item>
-             <item row="9" column="0">
-              <widget class="QLabel" name="Select_Features_Basic_Info_Driver_lab">
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>10</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>驾驶员</string>
-               </property>
-              </widget>
-             </item>
              <item row="12" column="0">
               <widget class="QPlainTextEdit" name="Select_Features_Basic_Info_Time_TE">
                <property name="maximumSize">
@@ -1102,59 +1102,48 @@ QPushButton:disabled{background-color:#DDDDDD;}</string>
                </property>
               </widget>
              </item>
-             <item row="17" column="0" rowspan="7" colspan="2">
-              <widget class="QGroupBox" name="Select_Features_Search_group">
-               <property name="title">
-                <string>索引预选（正则匹配）</string>
+             <item row="1" column="0">
+              <widget class="QLabel" name="Select_Features_Basic_Info_ProjectNo_lab">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>16777215</height>
+                </size>
                </property>
-               <widget class="QRadioButton" name="Select_Features_SystemGain">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>30</y>
-                  <width>239</width>
-                  <height>20</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>System Gain</string>
-                </property>
-               </widget>
-               <widget class="QRadioButton" name="Select_Features_RealRoadFC">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>70</y>
-                  <width>239</width>
-                  <height>20</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Real Road FC</string>
-                </property>
-               </widget>
-               <widget class="QRadioButton" name="Select_Features_EmissionCal">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>110</y>
-                  <width>239</width>
-                  <height>20</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Emission Cal</string>
-                </property>
-               </widget>
+               <property name="font">
+                <font>
+                 <pointsize>8</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>项目号</string>
+               </property>
+              </widget>
+             </item>
+             <item row="9" column="0">
+              <widget class="QLabel" name="Select_Features_Basic_Info_Driver_lab">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>驾驶员</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="Select_Features_Basic_Info_VehicleNo_lab">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>车号</string>
+               </property>
               </widget>
              </item>
             </layout>
@@ -1316,8 +1305,8 @@ QPushButton:disabled{background-color:#DDDDDD;}</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>605</width>
-                     <height>544</height>
+                     <width>38</width>
+                     <height>18</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_2"/>
@@ -1963,8 +1952,8 @@ QPushButton:pressed{background-color:#16A055;}</string>
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>885</width>
-                       <height>456</height>
+                       <width>58</width>
+                       <height>16</height>
                       </rect>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_4">
@@ -4506,9 +4495,9 @@ QMenu::separator{
  </resources>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_DataViewer_TimeAxisSetting"/>
   <buttongroup name="buttonGroup_Cons_Speed_Feature_Rule"/>
-  <buttongroup name="buttonGroup_BSFC_Need"/>
+  <buttongroup name="buttonGroup_DataViewer_TimeAxisSetting"/>
   <buttongroup name="buttonGroup_PT_Type"/>
+  <buttongroup name="buttonGroup_BSFC_Need"/>
  </buttongroups>
 </ui>

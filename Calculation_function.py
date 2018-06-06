@@ -226,7 +226,7 @@ class SystemGain(object):
                     launch_map[2].append(iTime)
 
                     for j in range(0, len(iTime)):
-                        if iAcc[j] >= 0.02 * 9.8:
+                        if iAcc[j] >= 0.02:
                             delay_acc.append(iAcc[j])
                             delay_time.append(iTime[j])
                             break
@@ -241,13 +241,13 @@ class SystemGain(object):
                             break
 
             launch_map[3] = {'delay_acc': delay_acc, 'delay_time': delay_time, 'peak_acc': peak_acc, 'peak_time': peak_time}
-                # elif pedal_avg[i] == max(pedal_avg):
-                #     iTime = [0.05 * (ix - pedal_cut_index[0][i]) for ix in
-                #              range(pedal_cut_index[0][i], pedal_cut_index[0][i] + 100)]
-                #     iAcc = acc_data[pedal_cut_index[0][i]:pedal_cut_index[0][i] + 100]
-                #     launch_map[0].append(pedal_data[pedal_cut_index[0][i]:pedal_cut_index[0][i] + 100])
-                #     launch_map[1].append(iAcc)
-                #     launch_map[2].append(iTime)
+            # elif pedal_avg[i] == max(pedal_avg):
+            #     iTime = [0.05 * (ix - pedal_cut_index[0][i]) for ix in
+            #              range(pedal_cut_index[0][i], pedal_cut_index[0][i] + 100)]
+            #     iAcc = acc_data[pedal_cut_index[0][i]:pedal_cut_index[0][i] + 100]
+            #     launch_map[0].append(pedal_data[pedal_cut_index[0][i]:pedal_cut_index[0][i] + 100])
+            #     launch_map[1].append(iAcc)
+            #     launch_map[2].append(iTime)
             obj = self.Launch(launch_map)
         except Exception:
             launch_map = [[], [], []]
@@ -334,20 +334,17 @@ class SystemGain(object):
             if self.replace_cs:  # 如果有稳态车速实验数据输入
                 cs_vspd = self.cs_table['meanspd'].tolist()
                 cs_ped = self.cs_table['meanped'].tolist()
+                if False:  # 用CS作为外界差值的参考
+                    cs_interp = interpolate.interp1d(cs_ped, cs_vspd)
+                    for i, content in enumerate(pedal_avg):
+                        if min(cs_ped) < content < max(cs_ped):
+                            vehspd_steady_for_inter.append(cs_interp(content))
+                        else:
+                            vehspd_steady_for_inter.append(vehspd_sg_for_inter[i])
+                else:   # 直接替换为CS
+                    vehspd_steady_for_inter = cs_vspd
+                    pedal_avg = cs_ped
 
-                # if pedal_avg[0] == 0:  # 如果原始数据中有怠速数据，则替换
-                #     cs_ped[0] = 0
-                #     cs_vspd[0] = vehspd_sg_for_inter[0]  # 怠速车速
-                # else:
-                #     cs_ped = cs_ped[1:]  # 去掉传递过来不对的怠速转速
-                #     cs_vspd = cs_vspd[1:]
-
-                cs_interp = interpolate.interp1d(cs_ped, cs_vspd)
-                for i, content in enumerate(pedal_avg):
-                    if min(cs_ped) < content < max(cs_ped):
-                        vehspd_steady_for_inter.append(cs_interp(content))
-                    else:
-                        vehspd_steady_for_inter.append(vehspd_sg_for_inter[i])
             else:
                 vehspd_steady_for_inter = vehspd_sg_for_inter
 
@@ -525,6 +522,7 @@ class SystemGain(object):
             self.rawdata = rawdata
             self.systemgain = systemgain
 
+
     @staticmethod
     def smooth(data, window):
         # a: 1-D array containing the data to be smoothed by sliding method
@@ -628,10 +626,6 @@ class SaveAndLoad(object):
 
     @staticmethod
     def store_result_in_excel(file_path, store_data):
-        # output_file = open(file_path, 'wb')
-        # dump(store_data, output_file)
-        # output_file.close()
-        # isinstance(store_data,DataFrame):
         store_data = DataFrame(store_data)
         store_data.to_csv(file_path)
         return
@@ -829,7 +823,7 @@ class ConstantSpeed(object):
 
             self.cs_table = DataFrame(self.cs_table, columns=['index', 'meanspd', 'meanped', 'meanacc',
                                                               'acc_smooth_rate', 'meanrpm', 'gear', 'spd_std'])
-            self.cs_table.sort_values(by=['meanped'], inplace=True)
+            self.cs_table.sort_values(by=['meanspd'], inplace=True)
             # 排序后请用iloc索引
             pass
 
@@ -1033,12 +1027,12 @@ class RealRoadFc(object):
     def five_points_avg(series):
         l = len(series)
         avg_series = zeros(l)
-        avg_series[0] = (series[1] + series[0]) / 2
+        avg_series[0] = series[1]
         avg_series[1] = (series[2] + series[1] + series[0]) / 3
         for i in range(2, l - 2, 1):
             avg_series[i] = (series[i + 2] + series[i + 1] + series[i] + series[i - 1] + series[i - 2]) / 5
         avg_series[-2] = (series[-1] + series[-2] + series[-3]) / 3
-        avg_series[-1] = (series[-1] + series[-2]) / 2
+        avg_series[-1] = series[-1]
         return avg_series
 
     @staticmethod
