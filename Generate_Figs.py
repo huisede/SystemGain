@@ -37,7 +37,7 @@ class MyFigureCanvas(FigureCanvas):
         self.axes_lim_dic = {'acc_response_x': [0, 150],
                              'acc_response_y': [-5, 105],
                              'acc_response_z': [-0.05, 0.6],
-                             'launch_x': [0, 10],
+                             'launch_x': [-0.5, 10],
                              'launch_y': [-0.05, 0.6],
                              'max_acc_x': [-5, 105],
                              'max_acc_y': [0, 0.6],

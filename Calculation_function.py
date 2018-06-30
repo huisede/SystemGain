@@ -2,7 +2,7 @@
 
 from numpy import average, transpose, zeros, array, linspace, mean, cov, convolve, arange, cumsum, concatenate, abs, \
     mod, std, ones, diff, interp
-from pandas import read_csv, read_excel, Timedelta, DataFrame, concat
+from pandas import read_csv, read_excel, Timedelta, DataFrame, concat, ols, Series
 from scipy import interpolate
 import matplotlib.pyplot as plt
 from re import match
@@ -13,7 +13,7 @@ from pptx.util import Inches
 from datetime import date
 import time
 from requests import get
-from math import sin, cos, sqrt
+from math import sin, cos, sqrt, log
 
 
 class SystemGain(object):
@@ -117,13 +117,6 @@ class SystemGain(object):
                                                                       self.data_cut_time_of_creep,
                                                                       self.data_cut_time_of_pedal)
 
-        # last_item = -10
-        # trigger = False
-        # for item in self.pedal_avg:
-        #     if abs(last_item - item) < 3:
-        #         trigger = True
-        #     last_item = item
-
         trigger = False
         for i, item in enumerate(self.pedal_avg):
             for j, item_ in enumerate(self.pedal_avg):
@@ -216,10 +209,15 @@ class SystemGain(object):
             delay_time = []
             peak_acc = []
             peak_time = []
+            peak_ratio = []
+
+            pedal_cut_index[0] = [int(max(i - 0.5 * self.frequency, 0)) for i in pedal_cut_index[0]]  # max的作用为防止向前超索引
+
             for i in range(0, len(pedal_avg)):
                 if int(round(pedal_avg[i] / 5) * 5) in [10, 20, 30, 50, 100] or (pedal_avg[i] == max(pedal_avg)):
-                    iTime = [0.05 * (ix - pedal_cut_index[0][i]) for ix in
+                    iTime = [1/self.frequency * (ix - pedal_cut_index[0][i]) - 0.5 for ix in
                              range(pedal_cut_index[0][i], pedal_cut_index[1][i])]
+
                     iAcc = acc_data[pedal_cut_index[0][i]:pedal_cut_index[1][i]]
                     launch_map[0].append(pedal_data[pedal_cut_index[0][i]:pedal_cut_index[1][i]])
                     launch_map[1].append(iAcc)
@@ -238,9 +236,12 @@ class SystemGain(object):
                         if iAcc[j] >= 0.95 * max(iAcc):
                             peak_acc.append(iAcc[j])
                             peak_time.append(iTime[j])
+                            peak_ratio.append(iAcc[j]/iTime[j])
                             break
 
-            launch_map[3] = {'delay_acc': delay_acc, 'delay_time': delay_time, 'peak_acc': peak_acc, 'peak_time': peak_time}
+            launch_map[3] = {'delay_acc': delay_acc, 'delay_time': delay_time,
+                             'peak_acc': peak_acc, 'peak_time': peak_time, 'peak_ratio': peak_ratio}
+
             # elif pedal_avg[i] == max(pedal_avg):
             #     iTime = [0.05 * (ix - pedal_cut_index[0][i]) for ix in
             #              range(pedal_cut_index[0][i], pedal_cut_index[0][i] + 100)]
@@ -355,34 +356,69 @@ class SystemGain(object):
             acc_for_inter = array(acc)
 
             pedal_steady_for_inter = [x / 100 * 51 + 12.7 for x in pedal_avg]
-            vehspd_steady_tb_inter = linspace(min(vehspd_steady_for_inter), 120, 200)
+            vehspd_steady_tb_inter = linspace(min(vehspd_steady_for_inter),
+                                              min(max(vehspd_steady_for_inter), 140),
+                                              200)
             pedal_steady_function = interpolate.interp1d(vehspd_steady_for_inter, pedal_steady_for_inter)
             pedal_steady_tb_inter = pedal_steady_function(vehspd_steady_tb_inter)
             points_tb_inter = zeros((len(pedal_steady_tb_inter), 2))
             points_tb_inter[:, 0] = vehspd_steady_tb_inter
             points_tb_inter[:, 1] = pedal_steady_tb_inter
 
-            '# steady velocity & pedal checked: same with matlab'
-            # savetxt('vehspd_steady_for_inter.csv', vehspd_steady_for_inter, delimiter=',')
-            # savetxt('pedal_steady_for_inter.csv', pedal_steady_for_inter, delimiter=',')
-            # savetxt('pedal_steady_tb_inter.csv', pedal_steady_tb_inter, delimiter=',')
-            # savetxt('vehspd_steady_tb_inter.csv', vehspd_steady_tb_inter, delimiter=',')
+            """
+            # steady velocity & pedal checked: same with matlab'
+            savetxt('vehspd_steady_for_inter.csv', vehspd_steady_for_inter, delimiter=',')
+            savetxt('pedal_steady_for_inter.csv', pedal_steady_for_inter, delimiter=',')
+            savetxt('pedal_steady_tb_inter.csv', pedal_steady_tb_inter, delimiter=',')
+            savetxt('vehspd_steady_tb_inter.csv', vehspd_steady_tb_inter, delimiter=',')
+            """
 
             grid_z1 = interpolate.griddata(points_for_inter, acc_for_inter, points_tb_inter, method='linear')
             grid_z1 = grid_z1 / 12.7
             grid_z1 = self.smooth(grid_z1, 5)
 
-            '#  function "griddata" checked: same with matlab'
-            # savetxt('points_for_inter.csv', points_for_inter, delimiter=',')
-            # savetxt('acc_for_inter.csv', acc_for_inter, delimiter=',')
-            # savetxt('points_tb_inter.csv', points_tb_inter, delimiter=',')
-            # savetxt('grid_z1.csv', points_tb_inter, delimiter=',')
+            """
+            # function "griddata" checked: same with matlab'
+            savetxt('points_for_inter.csv', points_for_inter, delimiter=',')
+            savetxt('acc_for_inter.csv', acc_for_inter, delimiter=',')
+            savetxt('points_tb_inter.csv', points_tb_inter, delimiter=',')
+            savetxt('grid_z1.csv', points_tb_inter, delimiter=',')
 
-            # obj = SystemGainPlot()
-            obj = self.SystemGainCurve(vehspd_steady_tb_inter, grid_z1, vehspd_steady_for_inter, pedal_avg)
-        except Exception:
-            obj = self.SystemGainCurve([], [], [], [])
+            obj = SystemGainPlot()
+            """
+
+            acc_vts_after_inter_fun = interpolate.interp1d(vehspd_steady_tb_inter, grid_z1)
+            acc_vts_after_inter = []
+            for i in [10, 20, 40, 60, 80, 100, 120, 140]:
+                try:
+                    acc_vts_after_inter.append(acc_vts_after_inter_fun(i).tolist())
+                except ValueError:
+                    acc_vts_after_inter.append('nan')
+
+            cs_ped_vts_after_inter_fun = interpolate.interp1d(vehspd_steady_for_inter, pedal_avg)
+            cs_ped_vts_after_inter = []
+            for i in [10, 20, 40, 60, 80, 100, 120]:
+                try:
+                    cs_ped_vts_after_inter.append(cs_ped_vts_after_inter_fun(i).tolist())
+                except ValueError:
+                    cs_ped_vts_after_inter.append('nan')
+
+            vehspd_steady_for_inter_log = [log(i) for i in vehspd_steady_tb_inter]
+            # corr_of_vspdlog_and_acc = self.compute_correlation(vehspd_steady_for_inter_log, grid_z1)
+            r2_of_vspdlog_and_acc = round(
+                ols(y=Series(vehspd_steady_for_inter_log), x=DataFrame({"k": grid_z1}))._r2_raw
+                , 3)
+            # grid_z1_steady_for_inter_log = [log(i) for i in grid_z1]
+            # r2_of_vspdlog_and_acc = round(
+            #     ols(y=Series(vehspd_steady_tb_inter), x=DataFrame({"k": grid_z1_steady_for_inter_log}))._r2_raw, 3)
+
+            obj = self.SystemGainCurve(vehspd_steady_tb_inter, grid_z1, vehspd_steady_for_inter, pedal_avg,
+                                       acc_vts_after_inter, cs_ped_vts_after_inter, r2_of_vspdlog_and_acc)
+
+        except Exception as e:
+            obj = self.SystemGainCurve([], [], [], [], [], [], [])
             print('Error From systemgain_curve Cal!')
+            print(e)
         return obj
 
     @staticmethod
@@ -454,6 +490,23 @@ class SystemGain(object):
 
         return pedal_cut_index, pedal_avg
 
+    @staticmethod
+    def compute_correlation(x, y):
+        x_bar = mean(x)
+        y_bar = mean(y)
+        ssr = 0
+        var_x = 0
+        var_y = 0
+
+        for i in range(0, len(x)):
+            diff_xx_bar = x[i] - x_bar
+            diff_yy_bar = y[i] - y_bar
+            ssr += (diff_xx_bar * diff_yy_bar)
+            var_x += diff_xx_bar ** 2
+            var_y += diff_yy_bar ** 2
+        sst = sqrt(var_x * var_y)
+        return ssr / sst
+
     def sort_ped(self):
         ped_h_index = []
         ped_t_index = []
@@ -504,14 +557,16 @@ class SystemGain(object):
             self.kwargs = kwargs
 
     class SystemGainCurve:
-        def __init__(self, vehspd_sg, acc_sg, vehspd_cs, pedal_cs):
+        def __init__(self, vehspd_sg, acc_sg, vehspd_cs, pedal_cs, acc_vts_sg, cs_ped_vts, r2_of_vspdlog_and_acc):
             self.vehspd_sg = vehspd_sg
             self.acc_sg = acc_sg
             self.vehspd_cs = vehspd_cs
             self.pedal_cs = pedal_cs
+            self.acc_vts_sg = acc_vts_sg
+            self.cs_ped_vts = cs_ped_vts
+            self.r2_of_vspdlog_and_acc = r2_of_vspdlog_and_acc
 
     class SystemGainDocker:
-
         def __init__(self, pt_type, accresponce, launch, maxacc, pedalmap, shiftmap, rawdata, systemgain):
             self.pt_type = pt_type
             self.accresponce = accresponce

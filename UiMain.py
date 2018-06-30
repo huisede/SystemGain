@@ -96,7 +96,6 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.createContextMenu_Data_Base_tableWidget()
         self.createContextMenu_Constant_Speed_tableWidget()
 
-
         self.dr_raw = MyFigureCanvas(width=15, height=8, plot_type='2d-multi')
         self.PicToolBar_raw = NavigationBar(self.dr_raw, self)
         self.Data_Viewer_page_graphicsView_LayV.addWidget(self.PicToolBar_raw)
@@ -160,6 +159,11 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.gridLayout_2.addWidget(self.PicToolBar_7, 6, 0, 1, 1)
         self.gridLayout_2.addWidget(self.dr_max_acc, 7, 0, 1, 1)
         self.dr_max_acc.setMinimumSize(QtCore.QSize(width_for_sg, height_for_sg))
+
+        self.dr_rating = MyFigureCanvas(width=2, height=2, plot_type='2d')
+        self.PicToolBar_rating = NavigationBar(self.dr_rating, self)
+        self.Cal_Result_page_rating_curve_LayG.addWidget(self.PicToolBar_rating, 0, 0, 1, 1)
+        self.Cal_Result_page_rating_curve_LayG.addWidget(self.dr_rating, 1, 0, 1, 1)
 
     def triggers(self):
         self.menu_InputData.triggered.connect(self.load_data)
@@ -231,7 +235,9 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.System_Gain_AT_DCT_StablePed_tableWidget.actionB.triggered.connect(self.constant_speed_data_table_view_add_cs)
         self.System_Gain_AT_DCT_StablePed_tableWidget.actionC = self.System_Gain_AT_DCT_StablePed_tableWidget.contextMenu.addAction(QtGui.QIcon("images/0.png"), u'|  提交修改')
         self.System_Gain_AT_DCT_StablePed_tableWidget.actionC.triggered.connect(self.constant_speed_data_table_view_change_cs)
-
+        self.System_Gain_AT_DCT_StablePed_tableWidget.contextMenu.addSeparator()
+        self.System_Gain_AT_DCT_StablePed_tableWidget.actionD = self.System_Gain_AT_DCT_StablePed_tableWidget.contextMenu.addAction(QtGui.QIcon("images/0.png"), u'|  复制')
+        self.System_Gain_AT_DCT_StablePed_tableWidget.actionD.triggered.connect(self.constant_speed_data_set_clip_board)
 
     def createContextMenu_Launch_graphicView(self):
         '''
@@ -243,6 +249,17 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         self.dr_launch.contextMenu = QtWidgets.QMenu(self)
         self.dr_launch.actionA = self.dr_launch.contextMenu.addAction(QtGui.QIcon("images/0.png"), u'|  导出数据')
         self.dr_launch.actionA.triggered.connect(self.system_gain_save_launch_features)
+
+    def createContextMenu_SG_result_features_tableWidget(self):
+        '''
+
+        :return:
+        '''
+        self.Cal_Result_acc_curve_tab_tableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.Cal_Result_acc_curve_tab_tableWidget.customContextMenuRequested.connect(lambda: self.showContextMenu('Cal_Result_acc_curve_tab_tableWidget'))
+        self.Cal_Result_acc_curve_tab_tableWidget.contextMenu = QtWidgets.QMenu(self)
+        self.Cal_Result_acc_curve_tab_tableWidget.actionA = self.Cal_Result_acc_curve_tab_tableWidget.contextMenu.addAction(QtGui.QIcon("images/0.png"), u'|  Copy')
+        self.Cal_Result_acc_curve_tab_tableWidget.actionA.triggered.connect(self.cal_sg_result_features_set_clip_board)
 
     def showContextMenu(self, handle):
         '''''
@@ -726,26 +743,43 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         # current_col = self.System_Gain_AT_DCT_StablePed_tableWidget.currentColumn()
         origin_item = [str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanspd'].iloc[current_row]),
                        str(self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanped'].iloc[current_row])]
-        self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanspd'].iloc[current_row] = float(
-            self.System_Gain_AT_DCT_StablePed_tableWidget.item(current_row, 0).text())
-        self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanped'].iloc[current_row] = float(
-            self.System_Gain_AT_DCT_StablePed_tableWidget.item(current_row, 1).text())
-        self.constant_speed_replace()
-        chaged_item = [self.System_Gain_AT_DCT_StablePed_tableWidget.item(current_row, 0).text(),
-                       self.System_Gain_AT_DCT_StablePed_tableWidget.item(current_row, 1).text()]
-        message_str = 'Message: Constant Speed Item [' + ','.join(origin_item) + '] has been changed to [' + ','.join(chaged_item) + ']...'
-        self.info_widget_update(message_str)
+        try:
+            self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanspd'].iloc[current_row] = float(
+                self.System_Gain_AT_DCT_StablePed_tableWidget.item(current_row, 0).text())
+            self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table['meanped'].iloc[current_row] = float(
+                self.System_Gain_AT_DCT_StablePed_tableWidget.item(current_row, 1).text())
+            self.constant_speed_replace()
+            chaged_item = [self.System_Gain_AT_DCT_StablePed_tableWidget.item(current_row, 0).text(),
+                           self.System_Gain_AT_DCT_StablePed_tableWidget.item(current_row, 1).text()]
+            message_str = 'Message: Constant Speed Item [' + ','.join(origin_item) + '] has been changed to [' + ','.join(chaged_item) + ']...'
+            self.info_widget_update(message_str)
+        except ValueError:
+            message_str = 'Error: Check your input data whether it is a NUMBER?'
+            self.info_widget_update(message_str)
 
     def constant_speed_data_table_view_add_cs(self):
         current_row = self.System_Gain_AT_DCT_StablePed_tableWidget.currentRow()
         self.System_Gain_AT_DCT_StablePed_tableWidget.insertRow(current_row)
         above = self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.iloc[:current_row]
-        below = self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.iloc[current_row+1:]
+        below = self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table.iloc[current_row:]
         insert = DataFrame([['请输入', '请输入']], columns=['meanspd', 'meanped'])
         self.MainProcess_thread_cs_cal.ax_holder_cs_cal.cs_table = concat([above, insert, below], ignore_index=True)
         self.constant_speed_replace()
         message_str = 'Message: Constant Speed Item New row added...'
         self.info_widget_update(message_str)
+
+    def constant_speed_data_set_clip_board(self):
+        copy_text = ''
+        for index in self.System_Gain_AT_DCT_StablePed_tableWidget.selectedIndexes():
+            #  windows 中excel的剪贴板出来的数据格式为'XXXXX\tXXXXX\n'，tab符号分隔
+            if index.column() == 1:  # 保持表格格式
+                copy_text += self.System_Gain_AT_DCT_StablePed_tableWidget.item(index.row(), index.column()).text() + '\n'
+            else:
+                copy_text += self.System_Gain_AT_DCT_StablePed_tableWidget.item(index.row(), index.column()).text() + '\t'
+        clipboard = QtGui.QGuiApplication.clipboard()
+        mime_data = QtCore.QMimeData()
+        mime_data.setText(copy_text)
+        clipboard.setMimeData(mime_data)
 
     def cal_sys_gain_data(self):  # Canvas往大调整的时候没问题，重算尺寸自适配，再缩小却不会变回来……目前查不出为什么 20180528 ——LC
         frame_size = self._set_resolution()
@@ -789,12 +823,13 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
     def show_ax_pictures_sg_del_du(self, message):
         if message == '计算完成':
             self.show_ax_pictures_sg()
+            self.cal_sg_result_features_show()
         elif message == '删除重复':
-            eli_du_ped = UiEliminateDuplicatePed(ped_array=self.MainProcess_thread_cal.ax_holder_SG.pedal_avg,
-                                                 rawdata=self.MainProcess_thread_cal.ax_holder_SG.SG_csv_Data_Selc.iloc[:, 1:3])  # 展现给用户的是车速和Pedal
-            # eli_du_ped.setModal(True)  # 模态显示窗口，即先处理后方可返回主窗体
-            eli_du_ped.show()
-            eli_du_ped.message.connect(self.sg_cal_thread_edp)
+            self.eli_du_ped = UiEliminateDuplicatePed(ped_array=self.MainProcess_thread_cal.ax_holder_SG.pedal_avg,
+                         rawdata=self.MainProcess_thread_cal.ax_holder_SG.SG_csv_Data_Selc.iloc[:, 1:3])  # 展现给用户的是车速和Pedal
+            self.eli_du_ped.setModal(True)  # 模态显示窗口，即先处理后方可返回主窗体
+            self.eli_du_ped.show()
+            self.eli_du_ped.message.connect(self.sg_cal_thread_edp)
         elif message == '数据问题':
             message_str = 'Error: Please Check your data or feature correspondence！'
             self.info_widget_update(message_str)
@@ -802,6 +837,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
     def sg_cal_thread_edp(self, remove_list):
         self.MainProcess_thread_cal.ax_holder_SG.eliminate_duplicate_ped(remove_list)
         self.show_ax_pictures_sg()
+        self.cal_sg_result_features_show()
 
     def show_ax_pictures_sg(self):  # System Gain 绘图函数
         """
@@ -818,7 +854,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                 pedal_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.pedal_cs)
             self.PicToolBar_1.press(self.PicToolBar_1.home())
             self.PicToolBar_1.dynamic_update()
-        except ValueError or AttributeError:
+        except (ValueError, AttributeError):
             message_str = 'Warning: Acc Curve-3D plot failed!'
             self.info_widget_update(message_str)
 
@@ -829,7 +865,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                 acc_sg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.acc_sg)
             self.PicToolBar_2.press(self.PicToolBar_2.home())
             self.PicToolBar_2.dynamic_update()
-        except ValueError or AttributeError:
+        except (ValueError, AttributeError):
             message_str = 'Warning: SystemGain Curve plot failed!'
             self.info_widget_update(message_str)
 
@@ -840,7 +876,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                 pedal_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.pedal_cs)
             self.PicToolBar_3.press(self.PicToolBar_3.home())
             self.PicToolBar_3.dynamic_update()
-        except ValueError or AttributeError:
+        except (ValueError, AttributeError):
             message_str = 'Warning:Constant Speed plot failed!'
             self.info_widget_update(message_str)
 
@@ -857,7 +893,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
                 pass
             self.PicToolBar_4.press(self.PicToolBar_4.home())
             self.PicToolBar_4.dynamic_update()
-        except ValueError or AttributeError:
+        except (ValueError, AttributeError, IndexError):
             message_str = 'Warning: Shift Map plot failed!'
             self.info_widget_update(message_str)
 
@@ -866,7 +902,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             self.dr_launch.plot_launch(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.launch.data)
             self.PicToolBar_5.press(self.PicToolBar_5.home())
             self.PicToolBar_5.dynamic_update()
-        except ValueError or AttributeError:
+        except (ValueError, AttributeError):
             message_str = 'Warning: Launch Map plot failed!'
             self.info_widget_update(message_str)
 
@@ -875,7 +911,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             self.dr_pedal_map.plot_pedal_map(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.pedalmap.data)
             self.PicToolBar_6.press(self.PicToolBar_6.home())
             self.PicToolBar_6.dynamic_update()
-        except ValueError or AttributeError:
+        except (ValueError, AttributeError):
             message_str = 'Warning: Pedal Map plot failed!'
             self.info_widget_update(message_str)
 
@@ -884,7 +920,7 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             self.dr_max_acc.plot_max_acc(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.maxacc.data)
             self.PicToolBar_7.press(self.PicToolBar_7.home())
             self.PicToolBar_7.dynamic_update()
-        except ValueError or AttributeError:
+        except (ValueError, AttributeError):
             message_str = 'Warning: Max Acc Map plot failed!'
             self.info_widget_update(message_str)
 
@@ -929,6 +965,222 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
         SaveAndLoad.store_result_in_excel(file_path=file_path,
                                           store_data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.launch.data[3])
         pass
+
+    # -----|--|System Gain --|Calculation and Rating
+    def cal_sg_result_features_show(self):
+        self.Cal_Result_acc_curve_tab_tableWidget.clear()
+        self.Cal_Result_acc_curve_tab_tableWidget.setColumnCount(3)
+        self.Cal_Result_acc_curve_tab_tableWidget.setRowCount(30)
+        self.Cal_Result_acc_curve_tab_tableWidget.verticalHeader().setVisible(False)
+        self.Cal_Result_acc_curve_tab_tableWidget.horizontalHeader().setVisible(False)
+        self.Cal_Result_acc_curve_tab_tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.Cal_Result_acc_curve_tab_tableWidget.clicked.connect(self.cal_sg_result_features_graphic_replot)
+        self.createContextMenu_SG_result_features_tableWidget()
+        # block1
+        self.Cal_Result_acc_curve_tab_tableWidget.setItem(
+            0, 0, QtWidgets.QTableWidgetItem('加速度和时间包络 Acceleration and Time Envelope')
+        )
+        self.Cal_Result_acc_curve_tab_tableWidget.setSpan(0, 0, 1, 3)
+        self.Cal_Result_acc_curve_tab_tableWidget.item(0, 0).setTextAlignment(QtCore.Qt.AlignCenter)
+        self.Cal_Result_acc_curve_tab_tableWidget.item(0, 0).setBackground(QtGui.QBrush(QtGui.QColor(255, 228, 181)))
+        ped_list = [10, 20, 30, 50, 100]
+        for i in range(ped_list.__len__()):
+            eval(
+                'self.Cal_Result_acc_curve_tab_tableWidget.setItem(' + str(i + 1) + ', 0, QtWidgets.QTableWidgetItem("'
+                + str(ped_list[i]) + '%油门峰值加速度/响应时间"))'
+                 )
+            eval(
+                'self.Cal_Result_acc_curve_tab_tableWidget.setItem(' + str(i + 1) + ', 1, QtWidgets.QTableWidgetItem('
+                'str(self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.launch.data[3]["peak_ratio"][' + str(i) +
+                '])))'
+                )
+            eval(
+                'self.Cal_Result_acc_curve_tab_tableWidget.setItem(' + str(i + 1) + ', 2, QtWidgets.QTableWidgetItem("'
+                'g/s"))'
+            )
+            # self.Cal_Result_acc_curve_tab_tableWidget.setItem(
+            #     1, 0, QtWidgets.QTableWidgetItem('%0油门峰值加速度/响应时间')
+            # )
+            # self.Cal_Result_acc_curve_tab_tableWidget.setItem(1, 1, QtWidgets.QTableWidgetItem(
+            # self.MainProcess_thread_cal.ax_holder_SG.launch.data[3]['peak_ratio'][0])
+            # )
+
+        # block2
+        self.Cal_Result_acc_curve_tab_tableWidget.setItem(
+            6, 0, QtWidgets.QTableWidgetItem('加速度响应-系统增益 Acceleration Response - System Gain')
+        )
+        self.Cal_Result_acc_curve_tab_tableWidget.setSpan(6, 0, 1, 3)
+        self.Cal_Result_acc_curve_tab_tableWidget.item(6, 0).setTextAlignment(QtCore.Qt.AlignCenter)
+        self.Cal_Result_acc_curve_tab_tableWidget.item(6, 0).setBackground(QtGui.QBrush(QtGui.QColor(255, 228, 181)))
+        speed_list = [10, 20, 40, 60, 80, 100, 120, 140]
+        for i in range(speed_list.__len__()):
+            eval(
+                'self.Cal_Result_acc_curve_tab_tableWidget.setItem(' + str(i + 7) + ', 0, QtWidgets.QTableWidgetItem("'
+                '加速度响应-系统增益 System Gain ' + str(speed_list[i]) + ' km/h"))'
+            )
+            eval(
+                'self.Cal_Result_acc_curve_tab_tableWidget.setItem(' + str(i + 7) + ', 1, QtWidgets.QTableWidgetItem('
+                'str(self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.acc_vts_sg[' + str(i) +
+                '])))'
+            )
+            eval(
+                'self.Cal_Result_acc_curve_tab_tableWidget.setItem(' + str(i + 7) + ', 2, QtWidgets.QTableWidgetItem("'
+                'g/mm"))'
+            )
+        self.Cal_Result_acc_curve_tab_tableWidget.setItem(15, 0, QtWidgets.QTableWidgetItem('与车速自然对数线性相关性'))
+        self.Cal_Result_acc_curve_tab_tableWidget.setItem(15, 1, QtWidgets.QTableWidgetItem(
+            str(self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.r2_of_vspdlog_and_acc)))
+        self.Cal_Result_acc_curve_tab_tableWidget.setItem(15, 2, QtWidgets.QTableWidgetItem('r^2'))
+
+        # block3
+        self.Cal_Result_acc_curve_tab_tableWidget.setItem(
+            16, 0, QtWidgets.QTableWidgetItem('稳态车速目标 Constant velocity VS Pedal position')
+        )
+        self.Cal_Result_acc_curve_tab_tableWidget.setSpan(16, 0, 1, 3)
+        self.Cal_Result_acc_curve_tab_tableWidget.item(16, 0).setTextAlignment(QtCore.Qt.AlignCenter)
+        self.Cal_Result_acc_curve_tab_tableWidget.item(16, 0).setBackground(QtGui.QBrush(QtGui.QColor(255, 228, 181)))
+        self.Cal_Result_acc_curve_tab_tableWidget.setItem(17, 0, QtWidgets.QTableWidgetItem('蠕行车速 Creeping Speed'))
+        self.Cal_Result_acc_curve_tab_tableWidget.setItem(17, 1, QtWidgets.QTableWidgetItem(
+            str(self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.vehspd_cs[0])))
+        self.Cal_Result_acc_curve_tab_tableWidget.setItem(17, 2, QtWidgets.QTableWidgetItem('km/h'))
+        speed_list_cs = [10, 20, 40, 60, 80, 100, 120]
+        for i in range(speed_list_cs.__len__()):
+            eval(
+                'self.Cal_Result_acc_curve_tab_tableWidget.setItem(' + str(i + 18) + ', 0, QtWidgets.QTableWidgetItem("'
+                + str(speed_list_cs[i]) + 'km/h等速油门踏板开度目标 Pedal Position at ' + str(speed_list_cs[i]) + ' km/h"))'
+            )
+            eval(
+                'self.Cal_Result_acc_curve_tab_tableWidget.setItem(' + str(i + 18) +', 1, QtWidgets.QTableWidgetItem('
+                'str(self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.cs_ped_vts[' + str(i) +
+                '])))'
+            )
+            eval(
+                'self.Cal_Result_acc_curve_tab_tableWidget.setItem(' + str(i + 18) + ', 2, QtWidgets.QTableWidgetItem("'
+                '%"))'
+            )
+
+    def cal_sg_result_features_graphic_replot(self):
+        """ Choose row index to distinguish different figs to show.
+            Finally, "re.match" may take place.
+            # content_re = match(r'^(.+)(/)(.+)$', content)
+        """
+        _row = self.Cal_Result_acc_curve_tab_tableWidget.currentRow()
+
+        if 1 <= _row <= 5:  # 加速度和时间包络 Acceleration and Time Envelope
+            content = self.Cal_Result_acc_curve_tab_tableWidget.item(_row, 0).text()
+            content_num = self.Cal_Result_acc_curve_tab_tableWidget.item(_row, 1).text()
+            content_re = match(r'^(\d+)(%)(.+)$', content)
+            _pedal = int(content_re.group(1))
+            _pedal_index = [10, 20, 30, 50, 100].index(_pedal)
+            _num = round(float(content_num), 3)  # 斜率
+            try:
+                self.dr_rating.axes.clear()
+                self.dr_rating.plot_launch(data=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.launch.data)
+                _x1 = self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.launch.data[3]['peak_time'][_pedal_index]
+                _y1 = self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.launch.data[3]['peak_acc'][_pedal_index]
+                self.dr_rating.axes.plot([0, _x1], [0, _y1], 'b--', linewidth=2)
+                self.dr_rating.axes.plot([0, _x1], [0, 0], 'b--', linewidth=2)
+                self.dr_rating.axes.plot([_x1, _x1], [0, _y1], 'b--', linewidth=2)
+                self.dr_rating.axes.annotate(s=r'$Gradient: k=%s g/s$' % _num,
+                                             xy=(_x1, _y1),
+                                             xytext=(+30, -30),
+                                             xycoords='data',
+                                             textcoords='offset points',
+                                             fontsize=12,
+                                             arrowprops=dict(arrowstyle='<-',
+                                                             connectionstyle="arc3,rad=.2"))
+                self.PicToolBar_rating.press(self.PicToolBar_rating.home())
+                self.PicToolBar_rating.dynamic_update()
+            except ValueError or AttributeError:
+                message_str = 'Warning: 加速度和时间包络绘制失败!'
+                self.info_widget_update(message_str)
+        elif 7 <= _row <= 14:
+            content = self.Cal_Result_acc_curve_tab_tableWidget.item(_row, 0).text()
+            content_num = self.Cal_Result_acc_curve_tab_tableWidget.item(_row, 1).text()
+            content_re = match(r'^(\D+)(\d+)(.+)$', content)
+            _vspd = int(content_re.group(2))
+            _num = round(float(content_num), 4)  # sg g/mm
+            try:
+                self.dr_rating.axes.clear()
+                self.dr_rating.plot_systemgain_curve(
+                    vehspd_sg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.vehspd_sg,
+                    acc_sg=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.acc_sg)
+                _x1 = _vspd
+                _y1 = _num
+                self.dr_rating.axes.plot([_x1, _x1], [0, _y1], 'r--', linewidth=2)
+                self.dr_rating.axes.plot([0, 0], [_y1, _y1], 'r--', linewidth=2)
+                self.dr_rating.axes.annotate(s='$SG-Acc: %s g/mm$' % _y1,
+                                             xy=(_x1, _y1),
+                                             xytext=(+30, -30),
+                                             xycoords='data',
+                                             textcoords='offset points',
+                                             fontsize=12,
+                                             arrowprops=dict(arrowstyle='<-',
+                                                             connectionstyle="arc3,rad=.2"))
+                self.dr_rating.axes.plot()
+                self.PicToolBar_rating.press(self.PicToolBar_rating.home())
+                self.PicToolBar_rating.dynamic_update()
+            except ValueError or AttributeError:
+                message_str = 'Warning: 加速度响应-系统增益绘制失败!'
+                self.info_widget_update(message_str)
+        elif 18 <= _row <= 24:
+            content = self.Cal_Result_acc_curve_tab_tableWidget.item(_row, 0).text()
+            content_num = self.Cal_Result_acc_curve_tab_tableWidget.item(_row, 1).text()
+            content_re = match(r'^(\d+)(km/h)(.+)$', content)
+            _vspd = int(content_re.group(1))
+            _num = round(float(content_num), 3)  # ped
+            try:
+                self.dr_rating.axes.clear()
+                self.dr_rating.plot_constant_speed(
+                    vehspd_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.vehspd_cs,
+                    pedal_cs=self.MainProcess_thread_cal.ax_holder_SG.sysGain_class.systemgain.pedal_cs)
+                _x1 = _vspd
+                _y1 = _num
+                self.dr_rating.axes.plot([_x1, _x1], [0, _y1], 'r--', linewidth=2)
+                self.dr_rating.axes.plot([0, 0], [_y1, _y1], 'r--', linewidth=2)
+                self.dr_rating.axes.annotate(s='$%s km/h = %s$%% pedal' % (_x1, _y1),
+                                             xy=(_x1, _y1),
+                                             xytext=(+20, +20),
+                                             xycoords='data',
+                                             textcoords='offset points',
+                                             fontsize=12,
+                                             arrowprops=dict(arrowstyle='<-',
+                                                             connectionstyle="arc3,rad=.2"))
+                self.PicToolBar_rating.press(self.PicToolBar_rating.home())
+                self.PicToolBar_rating.dynamic_update()
+            except ValueError or AttributeError:
+                message_str = 'Warning: 稳态车速目标绘制失败!'
+                self.info_widget_update(message_str)
+
+    def cal_sg_result_features_set_clip_board(self):
+        """
+        考虑 for index in self.Cal_Result_acc_curve_tab_tableWidget.selectedIndexes()的遍历顺序问题
+        有时候先列后行，有时候先行后列，为了避免复制发生问题，重构遍历顺序
+        :return:
+        """
+        copy_text = ''
+        start_index = [
+            self.Cal_Result_acc_curve_tab_tableWidget.selectedIndexes()[0].row(),
+            self.Cal_Result_acc_curve_tab_tableWidget.selectedIndexes()[0].column(),
+        ]
+        stop_index = [
+            self.Cal_Result_acc_curve_tab_tableWidget.selectedIndexes()[-1].row(),
+            self.Cal_Result_acc_curve_tab_tableWidget.selectedIndexes()[-1].column(),
+        ]
+        for i in range(start_index[0], stop_index[0] + 1):  # 逐行扫描
+            for j in range(start_index[1], stop_index[1] + 1):
+                try:
+                    if j == 2:  # 保持表格格式
+                        copy_text += self.Cal_Result_acc_curve_tab_tableWidget.item(i, j).text() + '\n'
+                    else:
+                        copy_text += self.Cal_Result_acc_curve_tab_tableWidget.item(i, j).text() + '\t'
+                except AttributeError:
+                    copy_text += '\n'   # 一旦遇到合并的单元格，加换行符后跳转到下一行
+                    break
+        clipboard = QtGui.QGuiApplication.clipboard()
+        mime_data = QtCore.QMimeData()
+        mime_data.setText(copy_text)
+        clipboard.setMimeData(mime_data)
 
     # -----|--|System Gain --|Compare Results
     def history_data_reload(self):
@@ -1122,6 +1374,10 @@ class MainUiWindow(QMainWindow, Ui_MainWindow):
             text_2 = 350 + 5 * (self.RealRoadFc_Engine_Working_Points_Y_Range_slider.value() - 50)
             self.RealRoadFc_Engine_Working_Points_Y_Range_Show_TE.setPlainText(str(text_2))
 
+    # def closeEvent(self, event):
+    #     """Close Window"""
+    #     self.close()
+
 
 class ThreadProcess(QtCore.QThread):
     Message_Finish = QtCore.pyqtSignal(str)
@@ -1162,8 +1418,9 @@ class ThreadProcess(QtCore.QThread):
                                            data_cut_time_of_pedal=self.kwargs['data_cut_time_of_pedal'],)
         try:
             ret = self.ax_holder_SG.sg_main()
-        except Exception:
+        except Exception as e:
             ret = "Error"
+            print(e)
 
         if ret == 'eliminate_duplicate_ped':
             self.Message_Finish.emit("删除重复")
@@ -1248,3 +1505,4 @@ if __name__ == '__main__':
     dlg = MainUiWindow()
     dlg.show()
     exit(app.exec())
+

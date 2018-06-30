@@ -2,12 +2,18 @@
 from sys import setrecursionlimit
 setrecursionlimit(5000)
 block_cipher = None
-
-
+added_files = [
+         ( 'SAIC_Temp.pptx', '.' ),
+         ( 'qt.conf', '.'),
+         ( 'platforms', 'platforms'),
+         ( 'bin', 'bin')
+         ]
 a = Analysis(['UiMain.py'],
-             pathex=['C:\\Users\\Lu\\PycharmProjects\\SystemGain'],
+             pathex=['C:\\Users\\Lu\\PycharmProjects\\SystemGain',
+                     'C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\ucrt\\DLLs\\x86',
+                     'C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\ucrt\\DLLs\\x64'],
              binaries=[],
-             datas=[],
+             datas=added_files,
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],

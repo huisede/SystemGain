@@ -78,7 +78,7 @@
                <x>0</x>
                <y>0</y>
                <width>915</width>
-               <height>594</height>
+               <height>587</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout">
@@ -398,7 +398,7 @@ QPushButton:disabled{background-color:#DDDDDD;}</string>
                   <x>0</x>
                   <y>0</y>
                   <width>668</width>
-                  <height>570</height>
+                  <height>563</height>
                  </rect>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_18">
@@ -721,7 +721,7 @@ QPushButton:disabled{background-color:#DDDDDD;}</string>
                   <widget class="QComboBox" name="Select_Features_Brk">
                    <property name="minimumSize">
                     <size>
-                     <width>200</width>
+                     <width>300</width>
                      <height>0</height>
                     </size>
                    </property>
@@ -872,7 +872,7 @@ QPushButton:disabled{background-color:#DDDDDD;}</string>
                   <widget class="QComboBox" name="Select_Features_Time">
                    <property name="minimumSize">
                     <size>
-                     <width>200</width>
+                     <width>300</width>
                      <height>0</height>
                     </size>
                    </property>
@@ -1305,8 +1305,8 @@ QPushButton:disabled{background-color:#DDDDDD;}</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>38</width>
-                     <height>18</height>
+                     <width>605</width>
+                     <height>545</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_2"/>
@@ -1667,185 +1667,157 @@ QPushButton:pressed{background-color:#16A055;}</string>
              </item>
             </layout>
            </widget>
-           <widget class="QWidget" name="tab">
+           <widget class="QWidget" name="System_Gain_Cal_Rating_lab">
             <attribute name="title">
              <string>Rating</string>
             </attribute>
             <layout class="QHBoxLayout" name="horizontalLayout_3">
              <item>
-              <layout class="QVBoxLayout" name="Cal_Result_page_acc_curve_tabLayV">
-               <property name="spacing">
-                <number>0</number>
+              <widget class="QSplitter" name="splitter">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
                </property>
-               <item>
-                <widget class="QTextBrowser" name="textBrowser">
-                 <property name="minimumSize">
-                  <size>
-                   <width>500</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <property name="html">
-                  <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Microsoft YaHei'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:14pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:26pt; font-weight:600;&quot;&gt;待建设&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <widget class="QTabWidget" name="Cal_Result_tabWidget">
-               <property name="font">
-                <font>
-                 <family>Microsoft YaHei</family>
-                </font>
-               </property>
-               <property name="tabPosition">
-                <enum>QTabWidget::East</enum>
-               </property>
-               <property name="tabShape">
-                <enum>QTabWidget::Triangular</enum>
-               </property>
-               <property name="currentIndex">
-                <number>1</number>
-               </property>
-               <widget class="QWidget" name="Cal_Result_acc_curve_tab">
-                <attribute name="title">
-                 <string>Acc Curve</string>
-                </attribute>
-                <layout class="QHBoxLayout" name="horizontalLayout_2">
-                 <property name="spacing">
-                  <number>0</number>
-                 </property>
-                 <property name="leftMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="topMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="rightMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="bottomMargin">
-                  <number>0</number>
-                 </property>
-                 <item>
-                  <widget class="QSplitter" name="splitter_Cal_Result_acc_curve_tab">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <widget class="QTableWidget" name="Cal_Result_acc_curve_tab_tableWidget">
-                    <row>
-                     <property name="text">
-                      <string>新建行</string>
-                     </property>
-                    </row>
-                    <row>
-                     <property name="text">
-                      <string>新建行</string>
-                     </property>
-                    </row>
-                    <row>
-                     <property name="text">
-                      <string>新建行</string>
-                     </property>
-                    </row>
-                    <row>
-                     <property name="text">
-                      <string>新建行</string>
-                     </property>
-                    </row>
-                    <row>
-                     <property name="text">
-                      <string>新建行</string>
-                     </property>
-                    </row>
-                    <row>
-                     <property name="text">
-                      <string>新建行</string>
-                     </property>
-                    </row>
-                    <column>
-                     <property name="text">
-                      <string>新建列</string>
-                     </property>
-                    </column>
-                    <column>
-                     <property name="text">
-                      <string>新建列</string>
-                     </property>
-                    </column>
-                    <column>
-                     <property name="text">
-                      <string>新建列</string>
-                     </property>
-                    </column>
-                    <column>
-                     <property name="text">
-                      <string>新建列</string>
-                     </property>
-                    </column>
-                    <column>
-                     <property name="text">
-                      <string>新建列</string>
-                     </property>
-                    </column>
+               <widget class="QWidget" name="gridLayoutWidget">
+                <layout class="QGridLayout" name="Cal_Result_page_rating_curve_LayG"/>
+               </widget>
+               <widget class="QTabWidget" name="Cal_Result_tabWidget">
+                <property name="font">
+                 <font>
+                  <family>Microsoft YaHei</family>
+                 </font>
+                </property>
+                <property name="tabPosition">
+                 <enum>QTabWidget::East</enum>
+                </property>
+                <property name="tabShape">
+                 <enum>QTabWidget::Triangular</enum>
+                </property>
+                <property name="currentIndex">
+                 <number>0</number>
+                </property>
+                <widget class="QWidget" name="Cal_Result_acc_curve_tab">
+                 <attribute name="title">
+                  <string>Acc Curve</string>
+                 </attribute>
+                 <layout class="QHBoxLayout" name="horizontalLayout_2">
+                  <property name="spacing">
+                   <number>0</number>
+                  </property>
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QSplitter" name="splitter_Cal_Result_acc_curve_tab">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <widget class="QTableWidget" name="Cal_Result_acc_curve_tab_tableWidget">
+                     <row>
+                      <property name="text">
+                       <string>新建行</string>
+                      </property>
+                     </row>
+                     <row>
+                      <property name="text">
+                       <string>新建行</string>
+                      </property>
+                     </row>
+                     <row>
+                      <property name="text">
+                       <string>新建行</string>
+                      </property>
+                     </row>
+                     <row>
+                      <property name="text">
+                       <string>新建行</string>
+                      </property>
+                     </row>
+                     <row>
+                      <property name="text">
+                       <string>新建行</string>
+                      </property>
+                     </row>
+                     <row>
+                      <property name="text">
+                       <string>新建行</string>
+                      </property>
+                     </row>
+                     <column>
+                      <property name="text">
+                       <string>新建列</string>
+                      </property>
+                     </column>
+                     <column>
+                      <property name="text">
+                       <string>新建列</string>
+                      </property>
+                     </column>
+                     <column>
+                      <property name="text">
+                       <string>新建列</string>
+                      </property>
+                     </column>
+                     <column>
+                      <property name="text">
+                       <string>新建列</string>
+                      </property>
+                     </column>
+                     <column>
+                      <property name="text">
+                       <string>新建列</string>
+                      </property>
+                     </column>
+                    </widget>
                    </widget>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-               <widget class="QWidget" name="tab_2">
-                <attribute name="title">
-                 <string>System Gain Curve</string>
-                </attribute>
-                <layout class="QVBoxLayout" name="verticalLayout_3"/>
-               </widget>
-               <widget class="QWidget" name="tab_3">
-                <attribute name="title">
-                 <string>Cons Speed</string>
-                </attribute>
-               </widget>
-               <widget class="QWidget" name="tab_4">
-                <attribute name="title">
-                 <string>Shift Map</string>
-                </attribute>
-               </widget>
-               <widget class="QWidget" name="tab_5">
-                <attribute name="title">
-                 <string>Launch</string>
-                </attribute>
-               </widget>
-               <widget class="QWidget" name="tab_6">
-                <attribute name="title">
-                 <string>Pedal Map</string>
-                </attribute>
-               </widget>
-               <widget class="QWidget" name="tab_7">
-                <attribute name="title">
-                 <string>Max Acc</string>
-                </attribute>
+                  </item>
+                 </layout>
+                </widget>
+                <widget class="QWidget" name="tab_2">
+                 <attribute name="title">
+                  <string>System Gain Curve</string>
+                 </attribute>
+                 <layout class="QVBoxLayout" name="verticalLayout_3"/>
+                </widget>
+                <widget class="QWidget" name="tab_3">
+                 <attribute name="title">
+                  <string>Cons Speed</string>
+                 </attribute>
+                </widget>
+                <widget class="QWidget" name="tab_4">
+                 <attribute name="title">
+                  <string>Shift Map</string>
+                 </attribute>
+                </widget>
+                <widget class="QWidget" name="tab_5">
+                 <attribute name="title">
+                  <string>Launch</string>
+                 </attribute>
+                </widget>
+                <widget class="QWidget" name="tab_6">
+                 <attribute name="title">
+                  <string>Pedal Map</string>
+                 </attribute>
+                </widget>
+                <widget class="QWidget" name="tab_7">
+                 <attribute name="title">
+                  <string>Max Acc</string>
+                 </attribute>
+                </widget>
                </widget>
               </widget>
              </item>
             </layout>
            </widget>
-           <widget class="QWidget" name="tab_9">
+           <widget class="QWidget" name="History_Data_tab">
             <attribute name="title">
              <string>Compare Results</string>
             </attribute>
@@ -1952,8 +1924,8 @@ QPushButton:pressed{background-color:#16A055;}</string>
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>58</width>
-                       <height>16</height>
+                       <width>885</width>
+                       <height>457</height>
                       </rect>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_4">
@@ -2015,7 +1987,7 @@ QPushButton:pressed{background-color:#16A055;}</string>
            <widget class="QLCDNumber" name="lcdNumber_2">
             <property name="geometry">
              <rect>
-              <x>220</x>
+              <x>300</x>
               <y>160</y>
               <width>251</width>
               <height>101</height>
@@ -2025,7 +1997,7 @@ QPushButton:pressed{background-color:#16A055;}</string>
            <widget class="QLCDNumber" name="lcdNumber">
             <property name="geometry">
              <rect>
-              <x>220</x>
+              <x>300</x>
               <y>20</y>
               <width>251</width>
               <height>101</height>
@@ -2035,7 +2007,7 @@ QPushButton:pressed{background-color:#16A055;}</string>
            <widget class="QLabel" name="label_5">
             <property name="geometry">
              <rect>
-              <x>480</x>
+              <x>560</x>
               <y>80</y>
               <width>241</width>
               <height>51</height>
@@ -2107,7 +2079,7 @@ QPushButton:pressed{background-color:#16A055;}</string>
            <widget class="QLabel" name="label_9">
             <property name="geometry">
              <rect>
-              <x>480</x>
+              <x>560</x>
               <y>220</y>
               <width>241</width>
               <height>51</height>
@@ -2942,7 +2914,7 @@ QPushButton:pressed{background-color:#16A055;}</string>
             <enum>QTabWidget::Triangular</enum>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>4</number>
            </property>
            <widget class="QWidget" name="DataViewer_setting">
             <attribute name="title">
@@ -4495,8 +4467,8 @@ QMenu::separator{
  </resources>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_Cons_Speed_Feature_Rule"/>
   <buttongroup name="buttonGroup_DataViewer_TimeAxisSetting"/>
+  <buttongroup name="buttonGroup_Cons_Speed_Feature_Rule"/>
   <buttongroup name="buttonGroup_PT_Type"/>
   <buttongroup name="buttonGroup_BSFC_Need"/>
  </buttongroups>
