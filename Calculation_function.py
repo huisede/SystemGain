@@ -405,9 +405,12 @@ class SystemGain(object):
 
             vehspd_steady_for_inter_log = [log(i) for i in vehspd_steady_tb_inter]
             # corr_of_vspdlog_and_acc = self.compute_correlation(vehspd_steady_for_inter_log, grid_z1)
-            r2_of_vspdlog_and_acc = round(
-                ols(y=Series(vehspd_steady_for_inter_log), x=DataFrame({"k": grid_z1}))._r2_raw
-                , 3)
+
+            # r2_of_vspdlog_and_acc = round(
+            #     ols(y=Series(vehspd_steady_for_inter_log), x=DataFrame({"k": grid_z1}))._r2_raw
+            #     , 3)
+            r2_of_vspdlog_and_acc = 1
+
             # grid_z1_steady_for_inter_log = [log(i) for i in grid_z1]
             # r2_of_vspdlog_and_acc = round(
             #     ols(y=Series(vehspd_steady_tb_inter), x=DataFrame({"k": grid_z1_steady_for_inter_log}))._r2_raw, 3)

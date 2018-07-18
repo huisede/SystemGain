@@ -11,7 +11,9 @@ added_files = [
 a = Analysis(['UiMain.py'],
              pathex=['C:\\Users\\Lu\\PycharmProjects\\SystemGain',
                      'C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\ucrt\\DLLs\\x86',
-                     'C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\ucrt\\DLLs\\x64'],
+                     'C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\ucrt\\DLLs\\x64',
+                     # 'C:\\Users\\Lu\\AppData\\Local\\Programs\\Python\\venv\\Lib\\site-packages\\scipy\\extra-dll'
+                     ],
              binaries=[],
              datas=added_files,
              hiddenimports=[],
